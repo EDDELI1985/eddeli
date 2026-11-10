@@ -8,56 +8,86 @@
 <title>EDDELI | Plataforma Digital</title>
 
 <style>
+:root{
+--dark:#191817;
+--gold:#c6a36a;
+--cream:#f5f2ec;
+--white:#fff;
+--text:#29251f;
+}
 *{box-sizing:border-box}
 body{
 margin:0;
 font-family:Arial,sans-serif;
-background:#f5f2ec;
-color:#29251f;
+background:var(--cream);
+color:var(--text);
 }
 header{
-background:#191817;
+background:var(--dark);
 color:white;
-padding:25px;
-text-align:center;
-border-bottom:4px solid #c6a36a;
+padding:18px 5%;
+border-bottom:3px solid var(--gold);
+display:flex;
+align-items:center;
+justify-content:space-between;
+flex-wrap:wrap;
+gap:15px;
 }
 .logo{
 font-family:Georgia,serif;
-font-size:38px;
-letter-spacing:7px;
+font-size:30px;
+letter-spacing:6px;
 color:#dfbd80;
 }
-header p{font-size:11px;letter-spacing:3px}
-main{max-width:950px;margin:35px auto;padding:15px}
+nav{display:flex;gap:9px;flex-wrap:wrap}
+nav button{
+background:transparent;
+border:1px solid #64533b;
+padding:10px 13px;
+}
+nav button:hover{background:var(--gold)}
+main{max-width:1150px;margin:auto;padding:25px 18px}
+.view{display:none}
+.view.active{display:block}
 .hero{
 background:linear-gradient(120deg,#29251f,#695238);
 color:white;
-padding:45px 25px;
+padding:65px 25px;
 border-radius:15px;
 text-align:center;
 }
-.hero h1{color:#e5c58c;font-family:Georgia,serif}
-.hero p{line-height:1.7}
+.hero h1{
+font-family:Georgia,serif;
+font-size:38px;
+color:#e5c58c;
+}
+.hero p{line-height:1.8}
+.section-title{
+font-family:Georgia,serif;
+color:#987849;
+margin:30px 0 18px;
+}
 .grid{
 display:grid;
-grid-template-columns:repeat(2,1fr);
+grid-template-columns:repeat(2,minmax(0,1fr));
 gap:18px;
 margin-top:25px;
 }
+.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
 .card{
 background:white;
-padding:25px;
+padding:24px;
 border-radius:12px;
-text-align:center;
 border:1px solid #e7dfd2;
+box-shadow:0 4px 14px #00000008;
 }
-.card h2{color:#987849}
+.card h2,.card h3{color:#987849}
+.card p{line-height:1.6}
 button{
 background:#292621;
 color:white;
 border:0;
-padding:14px 22px;
+padding:13px 20px;
 border-radius:7px;
 cursor:pointer;
 font-size:14px;
@@ -65,31 +95,58 @@ font-size:14px;
 button:hover{background:#a88751}
 input{
 width:100%;
-padding:14px;
-margin:10px 0;
+padding:13px;
+margin:8px 0 15px;
 border:1px solid #ccc;
 border-radius:7px;
 }
-.panel{
-display:none;
-background:white;
+label{font-size:13px;font-weight:bold}
+.form-card{max-width:480px;margin:35px auto}
+.panel-head{
+background:#29251f;
+color:white;
 padding:25px;
 border-radius:12px;
-margin-top:20px;
 }
-.panel h2{color:#987849}
+.panel-head h1{color:#dfbd80}
+.stat{
+font-size:27px;
+font-weight:bold;
+color:#987849;
+}
+.module{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:12px;
+margin:12px 0;
+}
+.module button{white-space:nowrap}
+.tag{
+display:inline-block;
+padding:5px 9px;
+background:#f1e8d9;
+color:#80643b;
+border-radius:20px;
+font-size:11px;
+}
+.back{margin-top:20px}
 footer{
-background:#191817;
-color:#c6a36a;
+background:var(--dark);
+color:var(--gold);
 text-align:center;
 padding:25px;
 margin-top:50px;
 font-size:12px;
 }
-@media(max-width:600px){
-.logo{font-size:29px}
-.grid{grid-template-columns:1fr}
-.hero{padding:30px 18px}
+.small{font-size:12px;color:#777}
+@media(max-width:700px){
+header{justify-content:center;text-align:center}
+nav{justify-content:center}
+.grid,.grid.three{grid-template-columns:1fr}
+.hero{padding:38px 18px}
+.hero h1{font-size:29px}
+.module{align-items:flex-start;flex-direction:column}
 }
 </style>
 </head>
@@ -98,68 +155,304 @@ font-size:12px;
 
 <header>
 <div class="logo">EDDELI</div>
-<p>PLATAFORMA DIGITAL</p>
+<nav>
+<button onclick="go('inicio')">Inicio</button>
+<button onclick="go('acceso')">Acceso</button>
+<button onclick="go('academia')">Academia</button>
+</nav>
 </header>
 
 <main>
-<section class="hero">
-<h1>Bienvenido a EDDELI</h1>
-<p>Un espacio digital para aprender, crecer y desarrollar tu futuro profesional.</p>
-</section>
 
+<!-- INICIO -->
+<section id="inicio" class="view active">
+<div class="hero">
+<h1>Bienvenido a EDDELI</h1>
+<p>Tu plataforma digital de formación, aprendizaje y desarrollo profesional.</p>
+<button onclick="go('acceso')">ENTRAR A EDDELI</button>
+</div>
+
+<h2 class="section-title">Descubre nuestra plataforma</h2>
 <div class="grid">
 <div class="card">
 <h2>Administración</h2>
-<p>Panel privado de gestión de la plataforma.</p>
-<button onclick="abrir('admin')">ENTRAR</button>
+<p>Gestión de alumnos, formación, cursos y certificados.</p>
+<button onclick="go('login-admin')">ENTRAR</button>
 </div>
-
 <div class="card">
 <h2>Estudiantes</h2>
-<p>Accede a tu formación y consulta tu progreso.</p>
-<button onclick="abrir('alumno')">ENTRAR</button>
+<p>Accede a tus cursos, módulos y progreso académico.</p>
+<button onclick="go('login-alumno')">ENTRAR</button>
 </div>
 </div>
 
-<section class="panel" id="admin">
-<h2>Panel de administración</h2>
-<p>Bienvenido al espacio de administración de EDDELI.</p>
-<p>Desde aquí prepararemos la gestión de alumnos, cursos y certificados.</p>
-<button onclick="cerrar()">VOLVER</button>
+<div class="card" style="margin-top:20px">
+<h2>ELI BEAUTY ACADEMY</h2>
+<p>Un espacio de formación profesional en belleza, estética y especialidades.</p>
+<button onclick="go('academia')">CONOCER LA ACADEMIA</button>
+</div>
 </section>
 
-<section class="panel" id="alumno">
-<h2>Área de estudiantes</h2>
-<p>Bienvenido a tu espacio de formación.</p>
+<!-- ACCESO -->
+<section id="acceso" class="view">
+<h1 class="section-title">Acceso a EDDELI</h1>
+<div class="grid">
 <div class="card">
-<h2>ELI BEAUTY ACADEMY</h2>
-<p>Formación profesional en extensiones de pestañas.</p>
-<p>12 módulos de aprendizaje.</p>
-<button onclick="alert('Conexión con la academia pendiente de configurar.')">
-ACCEDER A LA ACADEMIA
-</button>
+<h2>Administración</h2>
+<p>Acceso al área de gestión.</p>
+<button onclick="go('login-admin')">CONTINUAR</button>
 </div>
-<button onclick="cerrar()">VOLVER</button>
+<div class="card">
+<h2>Estudiantes</h2>
+<p>Acceso a tu espacio académico.</p>
+<button onclick="go('login-alumno')">CONTINUAR</button>
+</div>
+</div>
+</section>
+
+<!-- LOGIN ADMIN -->
+<section id="login-admin" class="view">
+<div class="card form-card">
+<h2>Acceso de administración</h2>
+<form onsubmit="demoLogin(event,'admin')">
+<label>Correo electrónico</label>
+<input type="email" placeholder="Correo electrónico" required>
+<label>Contraseña</label>
+<input type="password" placeholder="Contraseña" required>
+<button type="submit">ENTRAR</button>
+</form>
+<p class="small">El acceso seguro se configurará en la siguiente etapa.</p>
+<button onclick="go('acceso')">VOLVER</button>
+</div>
+</section>
+
+<!-- LOGIN ALUMNO -->
+<section id="login-alumno" class="view">
+<div class="card form-card">
+<h2>Acceso de estudiantes</h2>
+<form onsubmit="demoLogin(event,'alumno')">
+<label>Correo electrónico</label>
+<input type="email" placeholder="Tu correo electrónico" required>
+<label>Contraseña</label>
+<input type="password" placeholder="Tu contraseña" required>
+<button type="submit">ENTRAR</button>
+</form>
+<p class="small">El acceso seguro se configurará en la siguiente etapa.</p>
+<button onclick="go('acceso')">VOLVER</button>
+</div>
+</section>
+
+<!-- REGISTRO -->
+<section id="registro" class="view">
+<div class="card form-card">
+<h2>Registro de estudiante</h2>
+<form onsubmit="registroDemo(event)">
+<label>Nombre completo</label>
+<input type="text" placeholder="Nombre y apellidos" required>
+<label>Correo electrónico</label>
+<input type="email" placeholder="Correo electrónico" required>
+<label>Teléfono</label>
+<input type="tel" placeholder="Teléfono">
+<label>País</label>
+<input type="text" placeholder="País">
+<button type="submit">SOLICITAR REGISTRO</button>
+</form>
+<p class="small">El registro real se habilitará al configurar las cuentas.</p>
+<button onclick="go('acceso')">VOLVER</button>
+</div>
+</section>
+
+<!-- ADMINISTRADOR -->
+<section id="admin" class="view">
+<div class="panel-head">
+<h1>Panel de administración</h1>
+<p>Centro de control de EDDELI</p>
+</div>
+
+<div class="grid three">
+<div class="card">
+<h3>Alumnos</h3>
+<p class="stat">Gestión</p>
+<button onclick="go('admin-alumnos')">ABRIR</button>
+</div>
+<div class="card">
+<h3>Cursos</h3>
+<p class="stat">Formación</p>
+<button onclick="go('admin-cursos')">ABRIR</button>
+</div>
+<div class="card">
+<h3>Certificados</h3>
+<p class="stat">Académicos</p>
+<button onclick="go('admin-certificados')">ABRIR</button>
+</div>
+<div class="card">
+<h3>Exámenes</h3>
+<p>Evaluaciones y resultados.</p>
+<button onclick="go('admin-examenes')">ABRIR</button>
+</div>
+<div class="card">
+<h3>Contenido</h3>
+<p>Materiales y módulos.</p>
+<button onclick="go('academia')">ABRIR</button>
+</div>
+<div class="card">
+<h3>Configuración</h3>
+<p>Opciones de la plataforma.</p>
+<button onclick="go('admin-config')">ABRIR</button>
+</div>
+</div>
+<button class="back" onclick="go('inicio')">SALIR</button>
+</section>
+
+<!-- SECCIONES ADMIN -->
+<section id="admin-alumnos" class="view">
+<div class="card">
+<h2>Gestión de alumnos</h2>
+<p>Aquí construiremos el registro, listado, búsqueda y seguimiento de estudiantes.</p>
+<button onclick="go('admin')">VOLVER AL PANEL</button>
+</div>
+</section>
+
+<section id="admin-cursos" class="view">
+<div class="card">
+<h2>Gestión de cursos</h2>
+<p>Aquí organizaremos los cursos, sus contenidos y módulos.</p>
+<button onclick="go('admin')">VOLVER AL PANEL</button>
+</div>
+</section>
+
+<section id="admin-certificados" class="view">
+<div class="card">
+<h2>Certificados</h2>
+<p>Aquí gestionaremos la emisión y consulta de certificados.</p>
+<button onclick="go('admin')">VOLVER AL PANEL</button>
+</div>
+</section>
+
+<section id="admin-examenes" class="view">
+<div class="card">
+<h2>Exámenes y evaluaciones</h2>
+<p>Aquí construiremos las pruebas, preguntas y resultados.</p>
+<button onclick="go('admin')">VOLVER AL PANEL</button>
+</div>
+</section>
+
+<section id="admin-config" class="view">
+<div class="card">
+<h2>Configuración</h2>
+<p>Aquí estarán las opciones generales de EDDELI.</p>
+<button onclick="go('admin')">VOLVER AL PANEL</button>
+</div>
+</section>
+
+<!-- ESTUDIANTE -->
+<section id="alumno" class="view">
+<div class="panel-head">
+<h1>Área de estudiantes</h1>
+<p>Tu espacio de formación y aprendizaje.</p>
+</div>
+<div class="grid">
+<div class="card">
+<h2>Mis cursos</h2>
+<p>Consulta tus formaciones.</p>
+<button onclick="go('academia')">VER CURSOS</button>
+</div>
+<div class="card">
+<h2>Mi progreso</h2>
+<p>Seguimiento de tu aprendizaje.</p>
+<span class="tag">Disponible al activar las cuentas</span>
+</div>
+<div class="card">
+<h2>Mis exámenes</h2>
+<p>Consulta tus evaluaciones.</p>
+</div>
+<div class="card">
+<h2>Mis certificados</h2>
+<p>Consulta tus acreditaciones.</p>
+</div>
+</div>
+<button class="back" onclick="go('inicio')">SALIR</button>
+</section>
+
+<!-- ACADEMIA -->
+<section id="academia" class="view">
+<div class="hero">
+<h1>ELI BEAUTY ACADEMY</h1>
+<p>Formación profesional para desarrollar conocimientos y habilidades en el mundo de la belleza.</p>
+</div>
+
+<h2 class="section-title">Programa de formación</h2>
+<div id="modules" class="grid"></div>
+
+<button class="back" onclick="go('inicio')">VOLVER AL INICIO</button>
+</section>
+
+<!-- MODULOS -->
+<section id="modulo" class="view">
+<div class="card">
+<span class="tag">ELI BEAUTY ACADEMY</span>
+<h1 id="module-title" class="section-title">Módulo</h1>
+<p id="module-description">Contenido académico.</p>
+<p>El material didáctico, las lecciones, imágenes y evaluaciones se incorporarán en la siguiente etapa.</p>
+<button onclick="go('academia')">VOLVER A LOS MÓDULOS</button>
+</div>
 </section>
 
 </main>
 
 <footer>
 EDDELI · PLATAFORMA DIGITAL
+<p>ELI BEAUTY ACADEMY</p>
 </footer>
 
 <script>
-function abrir(tipo){
-document.querySelector('.grid').style.display='none';
-document.querySelector('.hero').style.display='none';
-document.querySelectorAll('.panel').forEach(p=>p.style.display='none');
-document.getElementById(tipo).style.display='block';
+const modules = [
+"Introducción a la belleza y la estética",
+"Higiene, desinfección y bioseguridad",
+"Anatomía y cuidado de la piel",
+"Extensiones de pestañas",
+"Tipos de pestañas y diseños",
+"Instrumentos y herramientas profesionales",
+"Lámparas y equipos de trabajo",
+"Adhesivos y productos profesionales",
+"Preparación y aplicación",
+"Mantenimiento y retirada",
+"Contraindicaciones y seguridad",
+"Evaluación y práctica profesional"
+];
+
+function go(id){
+document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+const page=document.getElementById(id);
+if(page) page.classList.add('active');
+window.scrollTo({top:0,behavior:'smooth'});
 }
-function cerrar(){
-document.querySelector('.grid').style.display='grid';
-document.querySelector('.hero').style.display='block';
-document.querySelectorAll('.panel').forEach(p=>p.style.display='none');
+
+function demoLogin(event,type){
+event.preventDefault();
+alert("La interfaz está preparada. El inicio de sesión real se activará cuando configuremos la autenticación.");
 }
+
+function registroDemo(event){
+event.preventDefault();
+alert("El formulario visual está preparado. El registro real se activará en la siguiente etapa.");
+}
+
+function openModule(index){
+document.getElementById('module-title').textContent=
+" Módulo "+(index+1)+": "+modules[index];
+document.getElementById('module-description').textContent=
+"Contenido formativo de "+modules[index]+".";
+go('modulo');
+}
+
+document.getElementById('modules').innerHTML=modules.map((name,i)=>`
+<div class="card">
+<span class="tag">MÓDULO ${i+1}</span>
+<h3>${name}</h3>
+<button onclick="openModule(${i})">VER MÓDULO</button>
+</div>
+`).join('');
 </script>
 
 </body>
