@@ -3,410 +3,346 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#171613">
-<title>EDDELI | Plataforma Digital</title>
-
+<title>EDDELI | Tu espacio digital</title>
 <style>
 :root{
---dark:#191817;
---gold:#c6a36a;
---cream:#f5f2ec;
---white:#fff;
---text:#29251f;
+--dark:#171613;--panel:#22201c;--gold:#c9a66b;
+--cream:#f5f2ec;--white:#fff;--muted:#99948b;
+--line:#e9e4da;
 }
 *{box-sizing:border-box}
-body{
-margin:0;
-font-family:Arial,sans-serif;
-background:var(--cream);
-color:var(--text);
+body{margin:0;background:var(--cream);color:#28251f;
+font-family:Arial,sans-serif}
+button,input{font:inherit}
+button{cursor:pointer}
+.topbar{
+height:68px;background:var(--dark);color:white;
+display:flex;align-items:center;justify-content:space-between;
+padding:0 25px;position:sticky;top:0;z-index:10;
+border-bottom:2px solid var(--gold)
 }
-header{
-background:var(--dark);
-color:white;
-padding:18px 5%;
-border-bottom:3px solid var(--gold);
-display:flex;
-align-items:center;
-justify-content:space-between;
-flex-wrap:wrap;
-gap:15px;
+.brand{font-family:Georgia,serif;font-size:27px;
+letter-spacing:5px;color:#dfbd80;font-weight:bold}
+.top-actions{display:flex;align-items:center;gap:12px}
+.search{background:#302e29;border:1px solid #51483a;
+border-radius:25px;padding:10px 16px;color:white;width:220px}
+.circle{
+width:39px;height:39px;border-radius:50%;border:1px solid #66563c;
+background:#302e29;color:#e2c18a;font-size:17px
 }
-.logo{
-font-family:Georgia,serif;
-font-size:30px;
-letter-spacing:6px;
-color:#dfbd80;
+.layout{display:flex;max-width:1500px;margin:auto;min-height:calc(100vh - 68px)}
+.sidebar{
+width:235px;flex-shrink:0;background:#fff;
+border-right:1px solid var(--line);padding:23px 14px;
+position:sticky;top:68px;height:calc(100vh - 68px)
 }
-nav{display:flex;gap:9px;flex-wrap:wrap}
-nav button{
-background:transparent;
-border:1px solid #64533b;
-padding:10px 13px;
+.side-label{font-size:10px;color:#9b8a6c;letter-spacing:2px;
+font-weight:bold;padding:15px 12px 8px}
+.navbtn{
+width:100%;display:flex;align-items:center;gap:13px;
+border:0;background:transparent;padding:13px 14px;
+border-radius:10px;text-align:left;color:#514b42;margin:2px 0
 }
-nav button:hover{background:var(--gold)}
-main{max-width:1150px;margin:auto;padding:25px 18px}
-.view{display:none}
+.navbtn:hover,.navbtn.active{background:#f2eadc;color:#987747}
+.navicon{font-size:19px;width:24px;text-align:center}
+.content{flex:1;min-width:0;padding:27px}
+.view{display:none;max-width:1050px;margin:auto}
 .view.active{display:block}
-.hero{
-background:linear-gradient(120deg,#29251f,#695238);
-color:white;
-padding:65px 25px;
-border-radius:15px;
-text-align:center;
+.welcome{
+background:linear-gradient(115deg,#211f1b,#665035);
+color:white;border-radius:18px;padding:34px;
+display:flex;justify-content:space-between;align-items:center;
+gap:20px;overflow:hidden
 }
-.hero h1{
-font-family:Georgia,serif;
-font-size:38px;
-color:#e5c58c;
+.welcome h1{font-family:Georgia,serif;color:#e3c38d;
+font-size:34px;margin:8px 0}
+.welcome p{line-height:1.7;color:#eee5d6;max-width:520px}
+.eyebrow{color:#d7b77f;font-size:11px;letter-spacing:2px}
+.primary{
+border:0;background:var(--gold);color:#211d17;
+padding:12px 19px;border-radius:9px;font-weight:bold
 }
-.hero p{line-height:1.8}
-.section-title{
-font-family:Georgia,serif;
-color:#987849;
-margin:30px 0 18px;
+.secondary{
+border:1px solid #c9b58f;background:white;color:#715b37;
+padding:11px 17px;border-radius:9px
 }
-.grid{
-display:grid;
-grid-template-columns:repeat(2,minmax(0,1fr));
-gap:18px;
-margin-top:25px;
-}
+.section-title{font-family:Georgia,serif;color:#8b7048;
+font-size:23px;margin:27px 0 15px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px}
 .grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
 .card{
-background:white;
-padding:24px;
-border-radius:12px;
-border:1px solid #e7dfd2;
-box-shadow:0 4px 14px #00000008;
+background:white;border:1px solid var(--line);border-radius:15px;
+padding:21px;box-shadow:0 5px 18px #29251f08
 }
-.card h2,.card h3{color:#987849}
-.card p{line-height:1.6}
-button{
-background:#292621;
-color:white;
-border:0;
-padding:13px 20px;
-border-radius:7px;
-cursor:pointer;
-font-size:14px;
+.card h2,.card h3{margin-top:7px;color:#82663d}
+.card p{line-height:1.65;color:#69635a;font-size:14px}
+.card-icon{
+width:45px;height:45px;border-radius:13px;background:#f2eadc;
+display:grid;place-items:center;font-size:22px
 }
-button:hover{background:#a88751}
-input{
-width:100%;
-padding:13px;
-margin:8px 0 15px;
-border:1px solid #ccc;
-border-radius:7px;
+.pill{display:inline-block;background:#f1e8d9;color:#80643b;
+border-radius:20px;padding:5px 10px;font-size:10px;font-weight:bold}
+.feed-head{display:flex;align-items:center;gap:12px}
+.avatar{
+width:43px;height:43px;border-radius:50%;
+background:linear-gradient(135deg,#d9bd8d,#775b36);
+display:grid;place-items:center;color:white;font-weight:bold
 }
-label{font-size:13px;font-weight:bold}
-.form-card{max-width:480px;margin:35px auto}
-.panel-head{
-background:#29251f;
-color:white;
-padding:25px;
-border-radius:12px;
+.post{margin-top:17px}
+.post-top{display:flex;align-items:center;gap:11px}
+.post-top small{color:#928b80}
+.post-banner{
+margin-top:16px;border-radius:12px;padding:27px;
+background:linear-gradient(120deg,#28231e,#94734a);
+color:#fff;text-align:center
 }
-.panel-head h1{color:#dfbd80}
-.stat{
-font-size:27px;
-font-weight:bold;
-color:#987849;
+.post-banner h2{color:#f0d6a7;font-family:Georgia,serif}
+.quick{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.quick button{flex:1;min-width:120px}
+.module-card{display:flex;flex-direction:column;gap:9px}
+.module-card button{align-self:flex-start;margin-top:auto}
+.stat{font-size:27px;font-weight:bold;color:#987849}
+.form-card{max-width:460px;margin:35px auto}
+.form-card input{
+width:100%;padding:13px;border:1px solid #d8d1c6;
+border-radius:8px;margin:7px 0 16px;background:#fff
 }
-.module{
-display:flex;
-align-items:center;
-justify-content:space-between;
-gap:12px;
-margin:12px 0;
+.form-card label{font-size:12px;font-weight:bold;color:#655b4c}
+.form-card button{margin:5px 5px 5px 0}
+.notice{padding:15px;border-bottom:1px solid var(--line)}
+.notice strong{color:#725a35}
+.profile-head{display:flex;align-items:center;gap:20px;
+padding:25px;background:white;border-radius:15px}
+.big-avatar{width:75px;height:75px;font-size:25px}
+.mobile-nav{display:none}
+footer{text-align:center;padding:25px;color:#927b56;font-size:11px}
+.back{margin-top:18px}
+.empty{color:#8c857a;background:white;padding:25px;border-radius:12px}
+@media(max-width:850px){
+.sidebar{display:none}
+.content{padding:19px 14px 95px}
+.topbar{padding:0 15px;height:60px}
+.search{display:none}
+.mobile-nav{
+display:flex;position:fixed;bottom:0;left:0;right:0;
+height:67px;background:#191815;color:white;z-index:20;
+justify-content:space-around;align-items:center;
+border-top:2px solid var(--gold);padding-bottom:env(safe-area-inset-bottom)
 }
-.module button{white-space:nowrap}
-.tag{
-display:inline-block;
-padding:5px 9px;
-background:#f1e8d9;
-color:#80643b;
-border-radius:20px;
-font-size:11px;
+.mobile-nav button{
+border:0;background:transparent;color:#d4c8b2;
+display:flex;flex-direction:column;align-items:center;gap:4px;
+font-size:10px;min-width:48px
 }
-.back{margin-top:20px}
-footer{
-background:var(--dark);
-color:var(--gold);
-text-align:center;
-padding:25px;
-margin-top:50px;
-font-size:12px;
-}
-.small{font-size:12px;color:#777}
-@media(max-width:700px){
-header{justify-content:center;text-align:center}
-nav{justify-content:center}
+.mobile-nav button span:first-child{font-size:20px}
+.mobile-nav button.active{color:#e2bd7e}
+.welcome{padding:26px 20px}
+.welcome h1{font-size:28px}
 .grid,.grid.three{grid-template-columns:1fr}
-.hero{padding:38px 18px}
-.hero h1{font-size:29px}
-.module{align-items:flex-start;flex-direction:column}
+}
+@media(min-width:851px){
+.mobile-nav{display:none}
 }
 </style>
 </head>
-
 <body>
 
-<header>
-<div class="logo">EDDELI</div>
-<nav>
-<button onclick="go('inicio')">Inicio</button>
-<button onclick="go('acceso')">Acceso</button>
-<button onclick="go('academia')">Academia</button>
-</nav>
+<header class="topbar">
+  <div class="brand">EDDELI</div>
+  <div class="top-actions">
+    <input class="search" placeholder="Buscar en EDDELI..." oninput="searchContent(this.value)">
+    <button class="circle" onclick="go('notificaciones')" title="Notificaciones">♧</button>
+    <button class="circle" onclick="go('perfil')" title="Perfil">●</button>
+  </div>
 </header>
 
-<main>
+<div class="layout">
+<aside class="sidebar">
+  <div class="side-label">MENÚ PRINCIPAL</div>
+  <button class="navbtn active" data-page="inicio" onclick="go('inicio')"><span class="navicon">⌂</span> Inicio</button>
+  <button class="navbtn" data-page="academia" onclick="go('academia')"><span class="navicon">🎓</span> Academia</button>
+  <button class="navbtn" data-page="cursos" onclick="go('cursos')"><span class="navicon">▤</span> Cursos</button>
+  <button class="navbtn" data-page="biblioteca" onclick="go('biblioteca')"><span class="navicon">▣</span> Biblioteca</button>
+  <button class="navbtn" data-page="notificaciones" onclick="go('notificaciones')"><span class="navicon">♧</span> Notificaciones</button>
+  <div class="side-label">MI ESPACIO</div>
+  <button class="navbtn" data-page="perfil" onclick="go('perfil')"><span class="navicon">◉</span> Mi perfil</button>
+  <button class="navbtn" data-page="acceso" onclick="go('acceso')"><span class="navicon">⇥</span> Acceder</button>
+  <div class="side-label">GESTIÓN</div>
+  <button class="navbtn" data-page="login-admin" onclick="go('login-admin')"><span class="navicon">⚙</span> Administración</button>
+  <button class="navbtn" data-page="login-alumno" onclick="go('login-alumno')"><span class="navicon">♙</span> Estudiantes</button>
+</aside>
 
-<!-- INICIO -->
+<main class="content">
+
 <section id="inicio" class="view active">
-<div class="hero">
-<h1>Bienvenido a EDDELI</h1>
-<p>Tu plataforma digital de formación, aprendizaje y desarrollo profesional.</p>
-<button onclick="go('acceso')">ENTRAR A EDDELI</button>
-</div>
+  <div class="welcome">
+    <div>
+      <span class="eyebrow">TU ESPACIO DIGITAL</span>
+      <h1>Bienvenido a EDDELI</h1>
+      <p>Aprende, descubre y desarrolla tu talento. Un espacio para la formación, el conocimiento y el crecimiento profesional.</p>
+      <button class="primary" onclick="go('academia')">EXPLORAR ACADEMIA →</button>
+    </div>
+    <div style="font-size:75px;opacity:.85">✦</div>
+  </div>
 
-<h2 class="section-title">Descubre nuestra plataforma</h2>
-<div class="grid">
-<div class="card">
-<h2>Administración</h2>
-<p>Gestión de alumnos, formación, cursos y certificados.</p>
-<button onclick="go('login-admin')">ENTRAR</button>
-</div>
-<div class="card">
-<h2>Estudiantes</h2>
-<p>Accede a tus cursos, módulos y progreso académico.</p>
-<button onclick="go('login-alumno')">ENTRAR</button>
-</div>
-</div>
+  <h2 class="section-title">Explora EDDELI</h2>
+  <div class="grid three">
+    <div class="card"><div class="card-icon">🎓</div><h3>Academia</h3><p>Descubre nuestra formación profesional.</p><button class="secondary" onclick="go('academia')">Explorar</button></div>
+    <div class="card"><div class="card-icon">📚</div><h3>Biblioteca</h3><p>Materiales y recursos de aprendizaje.</p><button class="secondary" onclick="go('biblioteca')">Explorar</button></div>
+    <div class="card"><div class="card-icon">👤</div><h3>Mi espacio</h3><p>Accede a tu área personal.</p><button class="secondary" onclick="go('acceso')">Entrar</button></div>
+  </div>
 
-<div class="card" style="margin-top:20px">
-<h2>ELI BEAUTY ACADEMY</h2>
-<p>Un espacio de formación profesional en belleza, estética y especialidades.</p>
-<button onclick="go('academia')">CONOCER LA ACADEMIA</button>
-</div>
+  <h2 class="section-title">Novedades de EDDELI</h2>
+  <div class="card post">
+    <div class="post-top"><div class="avatar">E</div><div><strong>EDDELI</strong><br><small>Plataforma digital · Bienvenida</small></div></div>
+    <div class="post-banner"><span class="eyebrow">ELI BEAUTY ACADEMY</span><h2>El conocimiento transforma tu futuro</h2><p>Aprende y desarrolla nuevas habilidades profesionales.</p></div>
+    <div class="quick">
+      <button class="secondary" onclick="go('academia')">Ver academia</button>
+      <button class="secondary" onclick="go('cursos')">Ver cursos</button>
+    </div>
+  </div>
 </section>
 
-<!-- ACCESO -->
 <section id="acceso" class="view">
-<h1 class="section-title">Acceso a EDDELI</h1>
-<div class="grid">
-<div class="card">
-<h2>Administración</h2>
-<p>Acceso al área de gestión.</p>
-<button onclick="go('login-admin')">CONTINUAR</button>
-</div>
-<div class="card">
-<h2>Estudiantes</h2>
-<p>Acceso a tu espacio académico.</p>
-<button onclick="go('login-alumno')">CONTINUAR</button>
-</div>
-</div>
+  <h1 class="section-title">Acceso a EDDELI</h1>
+  <div class="grid">
+    <div class="card"><div class="card-icon">⚙</div><h2>Administración</h2><p>Gestión general de la plataforma.</p><button class="primary" onclick="go('login-admin')">CONTINUAR</button></div>
+    <div class="card"><div class="card-icon">🎓</div><h2>Estudiantes</h2><p>Acceso al espacio académico.</p><button class="primary" onclick="go('login-alumno')">CONTINUAR</button></div>
+  </div>
+  <div class="card" style="margin-top:17px"><h3>¿Todavía no tienes cuenta?</h3><p>Solicita tu registro como estudiante.</p><button class="secondary" onclick="go('registro')">SOLICITAR REGISTRO</button></div>
 </section>
 
-<!-- LOGIN ADMIN -->
 <section id="login-admin" class="view">
-<div class="card form-card">
-<h2>Acceso de administración</h2>
-<form onsubmit="demoLogin(event,'admin')">
-<label>Correo electrónico</label>
-<input type="email" placeholder="Correo electrónico" required>
-<label>Contraseña</label>
-<input type="password" placeholder="Contraseña" required>
-<button type="submit">ENTRAR</button>
-</form>
-<p class="small">El acceso seguro se configurará en la siguiente etapa.</p>
-<button onclick="go('acceso')">VOLVER</button>
-</div>
+  <div class="card form-card">
+    <h2>Acceso administrativo</h2>
+    <p>Vista de demostración. El acceso seguro se conectará posteriormente.</p>
+    <form onsubmit="demoLogin(event,'admin')">
+      <label>Correo electrónico</label><input type="email" required placeholder="Correo electrónico">
+      <label>Contraseña</label><input type="password" required placeholder="Contraseña">
+      <button class="primary">ENTRAR</button>
+    </form>
+    <button class="secondary" onclick="go('acceso')">VOLVER</button>
+  </div>
 </section>
 
-<!-- LOGIN ALUMNO -->
 <section id="login-alumno" class="view">
-<div class="card form-card">
-<h2>Acceso de estudiantes</h2>
-<form onsubmit="demoLogin(event,'alumno')">
-<label>Correo electrónico</label>
-<input type="email" placeholder="Tu correo electrónico" required>
-<label>Contraseña</label>
-<input type="password" placeholder="Tu contraseña" required>
-<button type="submit">ENTRAR</button>
-</form>
-<p class="small">El acceso seguro se configurará en la siguiente etapa.</p>
-<button onclick="go('acceso')">VOLVER</button>
-</div>
+  <div class="card form-card">
+    <h2>Acceso de estudiantes</h2>
+    <p>Vista de demostración. Las cuentas reales se habilitarán posteriormente.</p>
+    <form onsubmit="demoLogin(event,'alumno')">
+      <label>Correo electrónico</label><input type="email" required placeholder="Tu correo">
+      <label>Contraseña</label><input type="password" required placeholder="Tu contraseña">
+      <button class="primary">ENTRAR</button>
+    </form>
+    <button class="secondary" onclick="go('registro')">REGISTRARME</button>
+    <button class="secondary" onclick="go('acceso')">VOLVER</button>
+  </div>
 </section>
 
-<!-- REGISTRO -->
 <section id="registro" class="view">
-<div class="card form-card">
-<h2>Registro de estudiante</h2>
-<form onsubmit="registroDemo(event)">
-<label>Nombre completo</label>
-<input type="text" placeholder="Nombre y apellidos" required>
-<label>Correo electrónico</label>
-<input type="email" placeholder="Correo electrónico" required>
-<label>Teléfono</label>
-<input type="tel" placeholder="Teléfono">
-<label>País</label>
-<input type="text" placeholder="País">
-<button type="submit">SOLICITAR REGISTRO</button>
-</form>
-<p class="small">El registro real se habilitará al configurar las cuentas.</p>
-<button onclick="go('acceso')">VOLVER</button>
-</div>
+  <div class="card form-card">
+    <h2>Registro de estudiante</h2>
+    <form onsubmit="registroDemo(event)">
+      <label>Nombre completo</label><input required placeholder="Nombre y apellidos">
+      <label>Correo electrónico</label><input type="email" required placeholder="Correo electrónico">
+      <label>Teléfono</label><input type="tel" placeholder="Teléfono">
+      <label>País</label><input placeholder="País">
+      <button class="primary">SOLICITAR REGISTRO</button>
+    </form>
+    <p class="small">Formulario visual de demostración; todavía no guarda datos.</p>
+    <button class="secondary" onclick="go('acceso')">VOLVER</button>
+  </div>
 </section>
 
-<!-- ADMINISTRADOR -->
 <section id="admin" class="view">
-<div class="panel-head">
-<h1>Panel de administración</h1>
-<p>Centro de control de EDDELI</p>
-</div>
-
-<div class="grid three">
-<div class="card">
-<h3>Alumnos</h3>
-<p class="stat">Gestión</p>
-<button onclick="go('admin-alumnos')">ABRIR</button>
-</div>
-<div class="card">
-<h3>Cursos</h3>
-<p class="stat">Formación</p>
-<button onclick="go('admin-cursos')">ABRIR</button>
-</div>
-<div class="card">
-<h3>Certificados</h3>
-<p class="stat">Académicos</p>
-<button onclick="go('admin-certificados')">ABRIR</button>
-</div>
-<div class="card">
-<h3>Exámenes</h3>
-<p>Evaluaciones y resultados.</p>
-<button onclick="go('admin-examenes')">ABRIR</button>
-</div>
-<div class="card">
-<h3>Contenido</h3>
-<p>Materiales y módulos.</p>
-<button onclick="go('academia')">ABRIR</button>
-</div>
-<div class="card">
-<h3>Configuración</h3>
-<p>Opciones de la plataforma.</p>
-<button onclick="go('admin-config')">ABRIR</button>
-</div>
-</div>
-<button class="back" onclick="go('inicio')">SALIR</button>
+  <div class="welcome"><div><span class="eyebrow">CENTRO DE CONTROL</span><h1>Administración</h1><p>Bienvenido al panel de gestión de EDDELI.</p></div><div style="font-size:55px">⚙</div></div>
+  <h2 class="section-title">Herramientas de gestión</h2>
+  <div class="grid three">
+    <div class="card"><div class="card-icon">👥</div><h3>Alumnos</h3><p>Registro y seguimiento.</p><button class="secondary" onclick="go('admin-alumnos')">ABRIR</button></div>
+    <div class="card"><div class="card-icon">📚</div><h3>Cursos</h3><p>Organización académica.</p><button class="secondary" onclick="go('admin-cursos')">ABRIR</button></div>
+    <div class="card"><div class="card-icon">📝</div><h3>Exámenes</h3><p>Evaluaciones y pruebas.</p><button class="secondary" onclick="go('admin-examenes')">ABRIR</button></div>
+    <div class="card"><div class="card-icon">🏅</div><h3>Certificados</h3><p>Emisión y consulta.</p><button class="secondary" onclick="go('admin-certificados')">ABRIR</button></div>
+    <div class="card"><div class="card-icon">📖</div><h3>Contenido</h3><p>Materiales y lecciones.</p><button class="secondary" onclick="go('academia')">ABRIR</button></div>
+    <div class="card"><div class="card-icon">🔧</div><h3>Configuración</h3><p>Opciones de EDDELI.</p><button class="secondary" onclick="go('admin-config')">ABRIR</button></div>
+  </div>
+  <button class="secondary back" onclick="go('inicio')">SALIR</button>
 </section>
 
-<!-- SECCIONES ADMIN -->
-<section id="admin-alumnos" class="view">
-<div class="card">
-<h2>Gestión de alumnos</h2>
-<p>Aquí construiremos el registro, listado, búsqueda y seguimiento de estudiantes.</p>
-<button onclick="go('admin')">VOLVER AL PANEL</button>
-</div>
+<section id="admin-alumnos" class="view"><div class="card"><h2>Gestión de alumnos</h2><p>Aquí construiremos el listado, búsqueda, matrículas y seguimiento.</p><button class="secondary" onclick="go('admin')">VOLVER</button></div></section>
+<section id="admin-cursos" class="view"><div class="card"><h2>Gestión de cursos</h2><p>Aquí organizaremos cursos, programas y módulos.</p><button class="secondary" onclick="go('admin')">VOLVER</button></div></section>
+<section id="admin-examenes" class="view"><div class="card"><h2>Exámenes</h2><p>Creación de preguntas, pruebas y evaluaciones.</p><button class="secondary" onclick="go('admin')">VOLVER</button></div></section>
+<section id="admin-certificados" class="view"><div class="card"><h2>Certificados</h2><p>Gestión de certificados académicos.</p><button class="secondary" onclick="go('admin')">VOLVER</button></div></section>
+<section id="admin-config" class="view"><div class="card"><h2>Configuración</h2><p>Opciones generales de la plataforma.</p><button class="secondary" onclick="go('admin')">VOLVER</button></div></section>
+
+<section id="estudiante" class="view">
+  <div class="welcome"><div><span class="eyebrow">TU ESPACIO DE APRENDIZAJE</span><h1>Hola, estudiante</h1><p>Continúa tu formación y descubre tus próximos retos.</p></div><div style="font-size:55px">🎓</div></div>
+  <h2 class="section-title">Mi espacio académico</h2>
+  <div class="grid">
+    <div class="card"><h3>Mis cursos</h3><p>Consulta tus formaciones.</p><button class="secondary" onclick="go('cursos')">VER CURSOS</button></div>
+    <div class="card"><h3>Mi progreso</h3><p>Seguimiento de tu aprendizaje.</p><span class="pill">Se activará con las cuentas reales</span></div>
+    <div class="card"><h3>Mis exámenes</h3><p>Consulta tus evaluaciones.</p></div>
+    <div class="card"><h3>Mis certificados</h3><p>Consulta tus acreditaciones.</p></div>
+  </div>
+  <button class="secondary back" onclick="go('inicio')">SALIR</button>
 </section>
 
-<section id="admin-cursos" class="view">
-<div class="card">
-<h2>Gestión de cursos</h2>
-<p>Aquí organizaremos los cursos, sus contenidos y módulos.</p>
-<button onclick="go('admin')">VOLVER AL PANEL</button>
-</div>
-</section>
-
-<section id="admin-certificados" class="view">
-<div class="card">
-<h2>Certificados</h2>
-<p>Aquí gestionaremos la emisión y consulta de certificados.</p>
-<button onclick="go('admin')">VOLVER AL PANEL</button>
-</div>
-</section>
-
-<section id="admin-examenes" class="view">
-<div class="card">
-<h2>Exámenes y evaluaciones</h2>
-<p>Aquí construiremos las pruebas, preguntas y resultados.</p>
-<button onclick="go('admin')">VOLVER AL PANEL</button>
-</div>
-</section>
-
-<section id="admin-config" class="view">
-<div class="card">
-<h2>Configuración</h2>
-<p>Aquí estarán las opciones generales de EDDELI.</p>
-<button onclick="go('admin')">VOLVER AL PANEL</button>
-</div>
-</section>
-
-<!-- ESTUDIANTE -->
-<section id="alumno" class="view">
-<div class="panel-head">
-<h1>Área de estudiantes</h1>
-<p>Tu espacio de formación y aprendizaje.</p>
-</div>
-<div class="grid">
-<div class="card">
-<h2>Mis cursos</h2>
-<p>Consulta tus formaciones.</p>
-<button onclick="go('academia')">VER CURSOS</button>
-</div>
-<div class="card">
-<h2>Mi progreso</h2>
-<p>Seguimiento de tu aprendizaje.</p>
-<span class="tag">Disponible al activar las cuentas</span>
-</div>
-<div class="card">
-<h2>Mis exámenes</h2>
-<p>Consulta tus evaluaciones.</p>
-</div>
-<div class="card">
-<h2>Mis certificados</h2>
-<p>Consulta tus acreditaciones.</p>
-</div>
-</div>
-<button class="back" onclick="go('inicio')">SALIR</button>
-</section>
-
-<!-- ACADEMIA -->
 <section id="academia" class="view">
-<div class="hero">
-<h1>ELI BEAUTY ACADEMY</h1>
-<p>Formación profesional para desarrollar conocimientos y habilidades en el mundo de la belleza.</p>
-</div>
-
-<h2 class="section-title">Programa de formación</h2>
-<div id="modules" class="grid"></div>
-
-<button class="back" onclick="go('inicio')">VOLVER AL INICIO</button>
+  <div class="welcome"><div><span class="eyebrow">FORMACIÓN PROFESIONAL</span><h1>ELI BEAUTY ACADEMY</h1><p>Conocimiento, práctica y desarrollo profesional en el mundo de la belleza.</p></div><div style="font-size:65px">✦</div></div>
+  <h2 class="section-title">Programa de formación</h2>
+  <div id="modules" class="grid"></div>
 </section>
 
-<!-- MODULOS -->
 <section id="modulo" class="view">
-<div class="card">
-<span class="tag">ELI BEAUTY ACADEMY</span>
-<h1 id="module-title" class="section-title">Módulo</h1>
-<p id="module-description">Contenido académico.</p>
-<p>El material didáctico, las lecciones, imágenes y evaluaciones se incorporarán en la siguiente etapa.</p>
-<button onclick="go('academia')">VOLVER A LOS MÓDULOS</button>
-</div>
+  <div class="card">
+    <span class="pill">ELI BEAUTY ACADEMY</span>
+    <h1 id="module-title" class="section-title">Módulo</h1>
+    <p id="module-description"></p>
+    <p>Las lecciones, imágenes, materiales y evaluaciones se incorporarán en la siguiente etapa.</p>
+    <button class="secondary" onclick="go('academia')">VOLVER A LA ACADEMIA</button>
+  </div>
+</section>
+
+<section id="cursos" class="view">
+  <h1 class="section-title">Mis cursos y formaciones</h1>
+  <div class="card"><span class="pill">ELI BEAUTY ACADEMY</span><h2>Formación profesional en belleza</h2><p>Explora el programa académico y sus módulos.</p><button class="primary" onclick="go('academia')">EXPLORAR FORMACIÓN</button></div>
+</section>
+
+<section id="biblioteca" class="view">
+  <h1 class="section-title">Biblioteca académica</h1>
+  <div class="card"><div class="card-icon">📚</div><h2>Centro de recursos</h2><p>Aquí organizaremos libros, manuales, imágenes, guías y materiales de estudio.</p><span class="pill">En construcción</span></div>
+</section>
+
+<section id="notificaciones" class="view">
+  <h1 class="section-title">Notificaciones</h1>
+  <div class="card">
+    <div class="notice"><strong>Bienvenido a EDDELI</strong><p>Tu plataforma digital está en construcción.</p></div>
+    <div class="notice"><strong>ELI BEAUTY ACADEMY</strong><p>Próximamente tendrás nuevos materiales de formación.</p></div>
+  </div>
+</section>
+
+<section id="perfil" class="view">
+  <h1 class="section-title">Mi perfil</h1>
+  <div class="profile-head"><div class="avatar big-avatar">E</div><div><h2>Mi espacio personal</h2><p>Tu perfil estará disponible al activar las cuentas.</p><span class="pill">Vista de demostración</span></div></div>
+  <div class="card" style="margin-top:17px"><h3>Información personal</h3><p>Nombre, correo, país y datos académicos.</p><button class="secondary" onclick="go('acceso')">ACCEDER</button></div>
 </section>
 
 </main>
+</div>
 
-<footer>
-EDDELI · PLATAFORMA DIGITAL
-<p>ELI BEAUTY ACADEMY</p>
-</footer>
+<nav class="mobile-nav">
+  <button class="active" data-page="inicio" onclick="go('inicio')"><span>⌂</span>Inicio</button>
+  <button data-page="academia" onclick="go('academia')"><span>🎓</span>Academia</button>
+  <button data-page="cursos" onclick="go('cursos')"><span>▤</span>Cursos</button>
+  <button data-page="notificaciones" onclick="go('notificaciones')"><span>♧</span>Avisos</button>
+  <button data-page="perfil" onclick="go('perfil')"><span>◉</span>Perfil</button>
+</nav>
+
+<footer>EDDELI · PLATAFORMA DIGITAL · ELI BEAUTY ACADEMY</footer>
 
 <script>
-const modules = [
+const modules=[
 "Introducción a la belleza y la estética",
 "Higiene, desinfección y bioseguridad",
 "Anatomía y cuidado de la piel",
@@ -422,38 +358,46 @@ const modules = [
 ];
 
 function go(id){
-document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-const page=document.getElementById(id);
-if(page) page.classList.add('active');
-window.scrollTo({top:0,behavior:'smooth'});
+ document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+ const page=document.getElementById(id);
+ if(page) page.classList.add('active');
+ document.querySelectorAll('[data-page]').forEach(b=>{
+   b.classList.toggle('active',b.dataset.page===id);
+ });
+ window.scrollTo({top:0,behavior:'smooth'});
 }
-
 function demoLogin(event,type){
-event.preventDefault();
-alert("La interfaz está preparada. El inicio de sesión real se activará cuando configuremos la autenticación.");
+ event.preventDefault();
+ alert("Acceso de demostración. La autenticación segura se conectará más adelante.");
+ if(type==="admin") go('admin');
+ else go('estudiante');
 }
-
 function registroDemo(event){
-event.preventDefault();
-alert("El formulario visual está preparado. El registro real se activará en la siguiente etapa.");
+ event.preventDefault();
+ alert("Formulario de demostración. El registro real se habilitará posteriormente.");
 }
-
 function openModule(index){
-document.getElementById('module-title').textContent=
-" Módulo "+(index+1)+": "+modules[index];
-document.getElementById('module-description').textContent=
-"Contenido formativo de "+modules[index]+".";
-go('modulo');
+ document.getElementById('module-title').textContent=
+ "Módulo "+(index+1)+": "+modules[index];
+ document.getElementById('module-description').textContent=
+ "Contenido formativo de "+modules[index]+".";
+ go('modulo');
 }
-
 document.getElementById('modules').innerHTML=modules.map((name,i)=>`
-<div class="card">
-<span class="tag">MÓDULO ${i+1}</span>
-<h3>${name}</h3>
-<button onclick="openModule(${i})">VER MÓDULO</button>
-</div>
+ <article class="card module-card">
+  <span class="pill">MÓDULO ${i+1}</span>
+  <div class="card-icon">✦</div>
+  <h3>${name}</h3>
+  <p>Formación profesional · ELI BEAUTY ACADEMY</p>
+  <button class="secondary" onclick="openModule(${i})">VER MÓDULO →</button>
+ </article>
 `).join('');
+function searchContent(value){
+ if(value.trim().length>1){
+  const match=modules.findIndex(m=>m.toLowerCase().includes(value.toLowerCase()));
+  if(match>=0){go('academia');}
+ }
+}
 </script>
-
 </body>
 </html>
