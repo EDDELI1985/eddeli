@@ -5,6 +5,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#171613">
+<meta name="description" content="EDDELI, plataforma digital de formación profesional.">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <title>EDDELI | Tu espacio digital</title>
 <style>
 :root{
@@ -247,11 +249,12 @@ font-size:10px;min-width:48px
     <form onsubmit="registroDemo(event)">
       <label>Nombre completo</label><input required placeholder="Nombre y apellidos">
       <label>Correo electrónico</label><input type="email" required placeholder="Correo electrónico">
-      <label>Teléfono</label><input type="tel" placeholder="Teléfono">
-      <label>País</label><input placeholder="País">
+      <label>Contraseña (mínimo 8 caracteres)</label><input id="reg-password" type="password" minlength="8" required autocomplete="new-password" placeholder="Crea una contraseña">
+<label>Teléfono</label><input id="reg-phone" type="tel" maxlength="30" placeholder="Teléfono">
+      <label>País</label><input id="reg-country" maxlength="80" placeholder="País">
       <button class="primary">SOLICITAR REGISTRO</button>
     </form>
-    <p class="small">Formulario visual de demostración; todavía no guarda datos.</p>
+    <p class="small">Confirma tu correo. Después, la administración revisará tu solicitud antes de habilitar el acceso académico.</p>
     <button class="secondary" onclick="go('acceso')">VOLVER</button>
   </div>
 </section>
@@ -270,7 +273,7 @@ font-size:10px;min-width:48px
   <button class="secondary back" onclick="go('inicio')">SALIR</button>
 </section>
 
-<section id="admin-alumnos" class="view"><div class="card"><h2>Gestión de alumnos</h2><p>Aquí construiremos el listado, búsqueda, matrículas y seguimiento.</p><button class="secondary" onclick="go('admin')">VOLVER</button></div></section>
+<section id="admin-alumnos" class="view"><div class="card"><h2>Gestión de alumnos</h2><p>Revisa solicitudes y aprueba o rechaza el acceso de los estudiantes.</p><div id="students-list">Cargando solicitudes...</div><button class="secondary" onclick="loadStudents()">ACTUALIZAR</button> <button class="secondary" onclick="go('admin')">VOLVER</button></div></section>
 <section id="admin-cursos" class="view"><div class="card"><h2>Gestión de cursos</h2><p>Aquí organizaremos cursos, programas y módulos.</p><button class="secondary" onclick="go('admin')">VOLVER</button></div></section>
 <section id="admin-examenes" class="view"><div class="card"><h2>Exámenes</h2><p>Creación de preguntas, pruebas y evaluaciones.</p><button class="secondary" onclick="go('admin')">VOLVER</button></div></section>
 <section id="admin-certificados" class="view"><div class="card"><h2>Certificados</h2><p>Gestión de certificados académicos.</p><button class="secondary" onclick="go('admin')">VOLVER</button></div></section>
@@ -285,7 +288,7 @@ font-size:10px;min-width:48px
     <div class="card"><h3>Mis exámenes</h3><p>Consulta tus evaluaciones.</p></div>
     <div class="card"><h3>Mis certificados</h3><p>Consulta tus acreditaciones.</p></div>
   </div>
-  <button class="secondary back" onclick="go('inicio')">SALIR</button>
+  <button class="secondary back" onclick="signOut()">CERRAR SESIÓN</button>
 </section>
 
 <section id="academia" class="view">
@@ -398,6 +401,45 @@ function searchContent(value){
   if(match>=0){go('academia');}
  }
 }
+</script>
+
+<script>
+const SUPABASE_URL="https://ywkqfmxtceyktovyzhbt.supabase.co";
+const SUPABASE_KEY="sb_publishable_2ZgoXcKwdlpE7RsAj98zbw_7eVCNVCf";
+const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let currentUser=null,currentProfile=null;
+async function demoLogin(event,type){
+ event.preventDefault();const form=event.currentTarget,email=form.querySelector('input[type="email"]').value.trim(),password=form.querySelector('input[type="password"]').value,button=form.querySelector('button');
+ button.disabled=true;button.textContent="VERIFICANDO...";
+ try{const result=await supabaseClient.auth.signInWithPassword({email,password});if(result.error)throw result.error;currentUser=result.data.user;
+ const pr=await supabaseClient.from("profiles").select("id,full_name,role,approval_status,phone,country").eq("id",currentUser.id).single();if(pr.error)throw pr.error;currentProfile=pr.data;
+ if(currentProfile.approval_status!=="approved"){await supabaseClient.auth.signOut();currentUser=null;alert("Tu cuenta está pendiente de aprobación administrativa.");return;}
+ if(type==="admin"&&currentProfile.role!=="admin"){await supabaseClient.auth.signOut();currentUser=null;alert("Esta cuenta no tiene permisos de administración.");return;}
+ if(type==="alumno"&&currentProfile.role!=="student"){await supabaseClient.auth.signOut();currentUser=null;alert("Utiliza el acceso administrativo para esta cuenta.");return;}
+ go(type==="admin"?"admin":"estudiante");
+ }catch(err){alert("No se pudo iniciar sesión: "+(err.message||"Comprueba tus datos."));}
+ finally{button.disabled=false;button.textContent="ENTRAR";}
+}
+async function registroDemo(event){
+ event.preventDefault();const form=event.currentTarget,inputs=form.querySelectorAll("input"),name=inputs[0].value.trim(),email=inputs[1].value.trim(),password=document.getElementById("reg-password").value,phone=document.getElementById("reg-phone").value.trim(),country=document.getElementById("reg-country").value.trim();
+ try{const r=await supabaseClient.auth.signUp({email,password,options:{data:{full_name:name},emailRedirectTo:window.location.origin+window.location.pathname}});if(r.error)throw r.error;
+ if(r.data.user){const p=await supabaseClient.from("profiles").update({full_name:name,phone:phone||null,country:country||null}).eq("id",r.data.user.id);if(p.error)console.warn(p.error.message);}
+ form.reset();alert("Registro enviado. Revisa tu correo y confirma tu dirección. Después, tu cuenta quedará pendiente de aprobación.");go("acceso");
+ }catch(err){alert("No se pudo completar el registro: "+(err.message||"Inténtalo de nuevo."));}
+}
+async function signOut(){await supabaseClient.auth.signOut();currentUser=null;currentProfile=null;go("inicio");}
+async function loadStudents(){
+ const box=document.getElementById("students-list");if(!box)return;box.textContent="Cargando...";
+ try{const r=await supabaseClient.from("profiles").select("id,full_name,role,approval_status,created_at").order("created_at",{ascending:false});if(r.error)throw r.error;box.replaceChildren();
+ if(!r.data.length){box.textContent="Todavía no hay solicitudes.";return;}
+ r.data.forEach(function(s){const item=document.createElement("div");item.className="notice";const title=document.createElement("strong");title.textContent=s.full_name||"Sin nombre";const info=document.createElement("p");info.textContent=s.role+" · "+s.approval_status;item.append(title,info);
+ if(s.role==="student"){["approved","rejected"].forEach(function(status){const b=document.createElement("button");b.className="secondary";b.textContent=status==="approved"?"APROBAR":"RECHAZAR";b.onclick=function(){setApproval(s.id,status);};item.appendChild(b);});}box.appendChild(item);});
+ }catch(err){box.textContent="No se pudo cargar la lista: "+err.message;}
+}
+async function setApproval(id,status){try{const r=await supabaseClient.from("profiles").update({approval_status:status,approval_updated_at:new Date().toISOString()}).eq("id",id).eq("role","student");if(r.error)throw r.error;loadStudents();}catch(err){alert("No se pudo actualizar: "+err.message);}}
+async function restoreSession(){const r=await supabaseClient.auth.getSession();if(r.data.session){currentUser=r.data.session.user;const p=await supabaseClient.from("profiles").select("id,full_name,role,approval_status").eq("id",currentUser.id).maybeSingle();currentProfile=p.data;if(currentProfile&&currentProfile.approval_status==="approved")go(currentProfile.role==="admin"?"admin":"estudiante");}}
+restoreSession();
+supabaseClient.auth.onAuthStateChange(function(event,session){currentUser=session?session.user:null;});
 </script>
 </body>
 </html>
