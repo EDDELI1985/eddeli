@@ -646,6 +646,15 @@ async function checkSystem(){const el=document.getElementById("system-status");t
       console.warn("EDDELI: pantalla no encontrada:", page);
       return false;
     }
+    if(page !== "academia"){
+      const academy=document.getElementById("academia");
+      const panel=document.getElementById("lash-lesson-panel");
+      const modules=document.getElementById("modules");
+      if(academy)academy.classList.remove("lash-studying");
+      if(panel)panel.hidden=true;
+      if(modules)modules.hidden=false;
+      window.__lashViewState=null;
+    }
     if(adminPages.has(page) && (typeof currentProfile === "undefined" || !currentProfile || currentProfile.role !== "admin" || currentProfile.approval_status !== "approved")){
       page = "login-admin";
     } else if(studentPages.has(page) && (typeof currentProfile === "undefined" || !currentProfile || currentProfile.role !== "student" || currentProfile.approval_status !== "approved")){
@@ -676,6 +685,12 @@ async function checkSystem(){const el=document.getElementById("system-status");t
       alert("No se encontró el área de ELI BEAUTY ACADEMY. Recarga EDDELI e inténtalo de nuevo.");
       return false;
     }
+    const lessonPanel = document.getElementById("lash-lesson-panel");
+    const modules = document.getElementById("modules");
+    target.classList.remove("lash-studying");
+    if(lessonPanel) lessonPanel.hidden = true;
+    if(modules) modules.hidden = false;
+    window.__lashViewState = null;
     document.querySelectorAll(".view").forEach(section => section.classList.remove("active"));
     target.classList.add("active");
     document.querySelectorAll(".navbtn").forEach(button => button.classList.remove("active"));
