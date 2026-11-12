@@ -219,7 +219,7 @@ font-size:10px;min-width:48px
 <section id="login-admin" class="view">
   <div class="card form-card">
     <h2>Acceso administrativo</h2>
-    <p>Vista de demostración. El acceso seguro se conectará posteriormente.</p>
+    <p>Accede con el correo y la contraseña de tu cuenta administrativa.</p>
     <form onsubmit="demoLogin(event,'admin')">
       <label>Correo electrónico</label><input type="email" required placeholder="Correo electrónico">
       <label>Contraseña</label><input type="password" required placeholder="Contraseña">
@@ -233,7 +233,7 @@ font-size:10px;min-width:48px
 <section id="login-alumno" class="view">
   <div class="card form-card">
     <h2>Acceso de estudiantes</h2>
-    <p>Vista de demostración. Las cuentas reales se habilitarán posteriormente.</p>
+    <p>Accede con tu correo y contraseña. Tu cuenta debe estar aprobada para entrar.</p>
     <form onsubmit="demoLogin(event,'alumno')">
       <label>Correo electrónico</label><input type="email" required placeholder="Tu correo">
       <label>Contraseña</label><input type="password" required placeholder="Tu contraseña">
@@ -367,6 +367,7 @@ function go(id){
  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
  const page=document.getElementById(id);
  if(page) page.classList.add('active');
+ if(id==="admin-alumnos" && typeof loadStudents==="function") loadStudents();
  document.querySelectorAll('[data-page]').forEach(b=>{
    b.classList.toggle('active',b.dataset.page===id);
  });
