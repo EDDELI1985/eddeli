@@ -620,6 +620,10 @@ window.renderLashStage=function(index){
  if(index<2){if(originalStage)originalStage(index);const panel=document.getElementById('lash-lesson-panel');if(panel)panel.insertAdjacentHTML('beforeend',addPracticeSection(index,getLang())+addReferences(getLang())+printableForms(getLang()));return;}
  const lang=getLang(),d=stages[index-2];if(!d)return;
  const panel=document.getElementById("lash-lesson-panel");if(!panel)return;
+ const academy=document.getElementById("academia");
+ const modules=document.getElementById("modules");
+ if(academy)academy.classList.add("lash-studying");
+ if(modules)modules.hidden=true;
  const en=lang==="en",stageTitle=en?stageNamesEn[index-2]:d.title,stageIntro=en?stageIntrosEn[index-2]:d.intro;let html='<header class="lash-stage-heading"><span class="pill">'+(en?"STAGE ":"ETAPA ")+(index+1)+' / 13 · '+escapeHTML(stageTitle)+'</span><h1>'+escapeHTML(stageTitle)+'</h1><p>'+escapeHTML(stageIntro)+'</p><div class="lash-progress"><span style="width:'+Math.round((index+1)/13*100)+'%"></span></div><small>'+(en?"4 lessons · Stage ":"4 lecciones · Etapa ")+(index+1)+' of 13</small></header><section class="expanded-course"><h2>'+(en?"Lesson content":"Contenido de las lecciones")+'</h2>';
  if(index===5){const video='<div class="lash-intro-video" style="display:flex;justify-content:center;margin:22px 0 26px"><div style="position:relative;overflow:hidden;width:100%;max-width:760px;aspect-ratio:16/9;border-radius:14px;background:#111"><iframe src="https://www.youtube.com/embed/qafmxW0imKw?rel=0&modestbranding=1" title="Etapa 6: Higiene, desinfección y bioseguridad" style="position:absolute;inset:0;width:100%;height:100%;border:0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>';html=html.replace('<section class="expanded-course">',video+'<section class="expanded-course">');}
  d.lessons.forEach((l,i)=>{const x=l[lang];html+='<article class="expanded-lesson"><span class="tech-kicker">'+(en?"LESSON ":"LECCIÓN ")+(i+1)+' / 4</span><h2>'+escapeHTML(x.title)+'</h2><p><strong>'+(en?"Learning objective: ":"Objetivo de aprendizaje: ")+'</strong>'+escapeHTML(x.objective)+'</p><h3>'+(en?"Lesson development":"Desarrollo de la lección")+'</h3>'+x.content.map(p=>'<p>'+escapeHTML(p)+'</p>').join("")+'<h3>'+(en?"Guided learning steps":"Pasos de aprendizaje guiado")+'</h3><ol>'+x.steps.map(v=>'<li>'+escapeHTML(v)+'</li>').join("")+'</ol><h3>'+(en?"Errors and unsafe actions to avoid":"Errores y acciones inseguras que debes evitar")+'</h3><ul>'+x.avoid.map(v=>'<li>'+escapeHTML(v)+'</li>').join("")+'</ul></article>';});
@@ -741,26 +745,26 @@ window.renderLashLesson=function(index,lessonIndex){
  if(lessonIndex>3){window.renderLashTest(index);return;}
  let title="",intro="",level="",lessonHtml="",videoHtml="",visualHtml="",sheetHtml="";
  if(legacy){
-  if(typeof originalStage==="function")originalStage(index);
-  const temp=document.createElement("div");temp.innerHTML=panel.innerHTML;
-  const items=[...temp.querySelectorAll(".expanded-course .expanded-lesson")];
-  const heading=temp.querySelector(".lash-stage-heading h1");
-  const introNode=temp.querySelector(".lash-stage-heading>p");
-  const levelNode=temp.querySelector(".lash-stage-heading .pill");
-  if(!items[lessonIndex]){
+  const curriculum=lashCurriculum[index];
+  const item=curriculum&&Array.isArray(curriculum.lessons)?curriculum.lessons[lessonIndex]:null;
+  if(!item){
    panel.hidden=false;
-   panel.innerHTML='<section class="lash-locked-screen"><h2>'+(en?"Lesson content could not be loaded":"No se pudo cargar el contenido de esta lección")+'</h2><p>'+(en?"Return to the course map and open the stage again.":"Vuelve al itinerario y abre de nuevo esta etapa. El contenido original se ha conservado.")+'</p><button class="primary" onclick="closeLashPanel()">'+(en?"BACK TO COURSE MAP":"VOLVER AL ITINERARIO")+'</button></section>';
+   panel.innerHTML='<section class="lash-locked-screen"><h2>'+(en?"Lesson content unavailable":"Contenido de la lección no disponible")+'</h2><p>'+(en?"The original lesson could not be read. Return to the course map.":"No se pudo leer la lección original. Vuelve al itinerario.")+'</p><button class="primary" onclick="closeLashPanel()">'+(en?"BACK TO COURSE MAP":"VOLVER AL ITINERARIO")+'</button></section>';
    return;
   }
-  title=heading?heading.textContent.trim():(en?"Stage "+(index+1):"Etapa "+(index+1));
-  intro=introNode?introNode.textContent.trim():"";
-  level=levelNode?levelNode.textContent.trim():"";
-  lessonHtml=items[lessonIndex].outerHTML;
-  if(index===0&&lessonIndex===3){const v=temp.querySelector(".lash-intro-video");if(v)videoHtml=v.outerHTML;}
-  const visual=temp.querySelectorAll(".atlas-card")[lessonIndex];
+  title=curriculum.title;
+  intro=curriculum.intro;
+  level=curriculum.level||"";
+  lessonHtml='<article class="expanded-lesson"><span class="tech-kicker">'+(en?"LESSON ":"LECCIÓN ")+(lessonIndex+1)+' / 4</span><h2>'+escapeHTML(item[0])+'</h2><p>'+escapeHTML(item[1])+'</p></article>';
+  const visualBox=document.createElement("div");
+  visualBox.innerHTML=window.buildVisuals?window.buildVisuals(index):"";
+  const visual=visualBox.querySelectorAll(".atlas-card")[lessonIndex];
   if(visual)visualHtml='<section class="lash-one-support"><h3>'+(en?"Visual guide":"Guía visual")+'</h3>'+visual.outerHTML+'</section>';
-  const sheet=temp.querySelectorAll(".tech-sheet")[lessonIndex];
+  const sheetBox=document.createElement("div");
+  sheetBox.innerHTML=window.buildTechnicalSheets?window.buildTechnicalSheets(index):"";
+  const sheet=sheetBox.querySelectorAll(".tech-sheet")[lessonIndex];
   if(sheet)sheetHtml='<section class="lash-one-support"><h3>'+(en?"Technical reference":"Ficha técnica")+'</h3>'+sheet.outerHTML+'</section>';
+
  }else{
   title=en?(stageNamesEn[index-2]||advanced.title):advanced.title;
   intro=en?(stageIntrosEn[index-2]||advanced.intro):advanced.intro;
