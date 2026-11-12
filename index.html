@@ -624,14 +624,50 @@ async function registroDemo(event){
 async function signOut(){await supabaseClient.auth.signOut();currentUser=null;currentProfile=null;go("inicio");}
 async function recoverPassword(form){const email=form.querySelector('input[type="email"]').value.trim();if(!email){alert("Escribe primero tu correo electrónico.");return;}try{const r=await supabaseClient.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname});if(r.error)throw r.error;alert("Si el correo existe, recibirás un mensaje para restablecer tu contraseña.");}catch(err){alert("No se pudo solicitar el cambio: "+err.message);}}
 async function loadStudents(){
- const box=document.getElementById("students-list");if(!box)return;box.textContent="Cargando...";
- try{const r=await supabaseClient.from("profiles").select("id,full_name,email,role,approval_status,created_at").order("created_at",{ascending:false});if(r.error)throw r.error;box.replaceChildren();
- if(!r.data.length){box.textContent="Todavía no hay solicitudes.";return;}
- r.data.forEach(function(s){const item=document.createElement("div");item.className="notice";const title=document.createElement("strong");title.textContent=s.full_name||"Sin nombre";const info=document.createElement("p");info.textContent=(s.email||"Sin correo")+" · "+s.role+" · "+s.approval_status;item.append(title,info);
- if(s.role==="student"){["approved","rejected"].forEach(function(status){const b=document.createElement("button");b.className="secondary";b.textContent=status==="approved"?"APROBAR":"RECHAZAR";b.onclick=function(){setApproval(s.id,status);};item.appendChild(b);});}box.appendChild(item);});
- }catch(err){box.textContent="No se pudo cargar la lista: "+err.message;}
+ const box=document.getElementById("students-list");if(!box)return;box.textContent="Cargando solicitudes...";
+ try{
+  const r=await supabaseClient.from("profiles").select("id,full_name,email,role,approval_status,created_at").order("created_at",{ascending:false});
+  if(r.error)throw r.error;
+  box.replaceChildren();
+  if(!r.data.length){box.textContent="Todavía no hay solicitudes.";return;}
+  r.data.forEach(function(s){
+   const item=document.createElement("div");item.className="notice";
+   const title=document.createElement("strong");title.textContent=s.full_name||"Sin nombre";
+   const info=document.createElement("p");
+   const state=s.approval_status||"pending";
+   info.textContent=(s.email||"Sin correo")+" · "+s.role+" · Estado: "+(state==="approved"?"APROBADO":state==="rejected"?"RECHAZADO":"PENDIENTE");
+   item.append(title,info);
+   if(s.role==="student"){
+    const approve=document.createElement("button");approve.className="secondary";
+    approve.textContent=state==="approved"?"APROBADO":"APROBAR";
+    approve.disabled=state==="approved";
+    approve.onclick=function(){setApproval(s.id,"approved",approve);};
+    const reject=document.createElement("button");reject.className="secondary";
+    reject.textContent=state==="rejected"?"RECHAZADO":"RECHAZAR";
+    reject.disabled=state==="rejected";
+    reject.onclick=function(){setApproval(s.id,"rejected",reject);};
+    item.append(approve,reject);
+   }
+   box.appendChild(item);
+  });
+ }catch(err){box.textContent="No se pudo cargar la lista: "+(err.message||"Error desconocido");}
 }
-async function setApproval(id,status){try{const r=await supabaseClient.rpc("eddeli_set_student_approval",{p_student_id:id,p_status:status});if(r.error)throw r.error;loadStudents();}catch(err){alert("No se pudo actualizar: "+err.message);}}
+async function setApproval(id,status,button){
+ if(button){button.disabled=true;button.textContent=status==="approved"?"APROBANDO...":"ACTUALIZANDO...";}
+ try{
+  const r=await supabaseClient.rpc("eddeli_set_student_approval",{p_student_id:id,p_status:status});
+  if(r.error)throw r.error;
+  const check=await supabaseClient.from("profiles").select("approval_status").eq("id",id).single();
+  if(check.error)throw check.error;
+  if(check.data.approval_status!==status)throw new Error("La base de datos no confirmó el nuevo estado. Estado actual: "+check.data.approval_status);
+  await loadStudents();
+  alert(status==="approved"?"Aprobación confirmada. El estudiante ya figura como APROBADO.":"La solicitud se ha actualizado a RECHAZADO.");
+ }catch(err){
+  if(button){button.disabled=false;button.textContent=status==="approved"?"APROBAR":"RECHAZAR";}
+  const detail=[err.message,err.details,err.hint,err.code].filter(Boolean).join("\n");
+  alert("No se pudo actualizar la solicitud:\n"+(detail||"Error desconocido"));
+ }
+}
 async function restoreSession(){try{const r=await supabaseClient.auth.getSession();if(r.error){console.warn("No se pudo comprobar la sesión; se conserva para reintentar:",r.error);return;}if(!r.data.session)return;currentUser=r.data.session.user;if(!currentUser.email_confirmed_at){await supabaseClient.auth.signOut();currentUser=null;currentProfile=null;return;}const p=await supabaseClient.from("profiles").select("id,full_name,role,approval_status,phone,country").eq("id",currentUser.id).maybeSingle();if(p.error){console.warn("No se pudo cargar el perfil; no se cerrará la sesión automáticamente:",p.error);return;}if(!p.data){console.warn("La sesión existe, pero el perfil aún no está disponible.");return;}currentProfile=p.data;if(currentProfile.approval_status!=="approved"){await supabaseClient.auth.signOut();currentUser=null;currentProfile=null;return;}go(currentProfile.role==="admin"?"admin":"estudiante");}catch(err){console.error("Error al restaurar la sesión:",err);}}
 restoreSession();
 
