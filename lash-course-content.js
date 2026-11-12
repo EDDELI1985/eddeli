@@ -160,6 +160,33 @@ en:{title:"Tray types and presentation",objective:"Distinguish tray formats and 
 ]
 };
 
+// Completa las etapas que aún no tenían desarrollo ampliado, usando los objetivos
+// y criterios específicos de cada etapa del currículo principal de EDDELI.
+for(let stage=2;stage<lashCurriculum.length;stage++){
+ const unit=lashCurriculum[stage];
+ stageContent[stage]=unit.lessons.map((lesson,i)=>{
+  const title=lesson[0],summary=lesson[1];
+  const objective="Al terminar esta lección podrás explicar y aplicar el criterio descrito, reconocer sus límites y justificar tus decisiones de forma profesional.";
+  const content=[
+   summary,
+   "Contexto de la etapa: "+unit.intro,
+   "Aplicación y criterio profesional: "+unit.safety+" Relaciona este criterio con el material, la ficha técnica y las condiciones reales del servicio; si falta información, detén el procedimiento y consulta la fuente responsable."
+  ];
+  const steps=[
+   "Lee el contenido y subraya los conceptos técnicos relacionados con: "+title+".",
+   "Identifica en una ficha, muestra o esquema de entrenamiento los elementos descritos; no improvises medidas ni parámetros.",
+   "Realiza la práctica propuesta para esta etapa: "+unit.practice,
+   "Registra qué observaste, qué decisión tomaste y qué información del fabricante o norma necesitas verificar."
+  ];
+  const avoid=[
+   "No aplicar el concepto de forma automática sin valorar el caso, el material y las instrucciones del fabricante.",
+   "No inventar medidas, tiempos, mezclas, compatibilidades ni resultados que no estén respaldados por documentación.",
+   "No continuar ante dolor, irritación, lesión, contaminación o cualquier señal de riesgo.",
+   unit.safety
+  ];
+  return {es:{title,objective,content,steps,avoid,check:"¿Qué debes tener en cuenta para trabajar correctamente el tema «"+title+"»?",answer:summary}};
+ });
+}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function language(){try{return localStorage.getItem("eddeli-language")==="en"?"en":"es";}catch(e){return "es";}}
 function render(stage){
