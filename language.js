@@ -77,7 +77,7 @@ const translations={
 "Control de base y simetría":"Base control and symmetry",
 "Selección responsable de densidad":"Responsible density selection",
 "Cuidados posteriores":"Aftercare",
-"Valoración para relleno":"Inf fill assessment",
+"Valoración para relleno":"Infill assessment",
 "Retirada profesional":"Professional removal",
 "Registro y planificación":"Record keeping and planning",
 "Irritación frente a posible alergia":"Irritation versus possible allergy",
