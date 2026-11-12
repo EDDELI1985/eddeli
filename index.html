@@ -548,7 +548,7 @@ function openModule(index){
  panel.innerHTML='<span class="pill">ETAPA '+(index+1)+' · '+esc(m.level)+'</span><h2>'+esc(m.title)+'</h2><p>'+esc(m.intro)+'</p><h3>Lecciones de esta etapa</h3>'+m.lessons.map((l,i)=>'<div class="notice"><strong>Lección '+(i+1)+'. '+esc(l[0])+'</strong><p>'+esc(l[1])+'</p></div>').join("")+buildVisuals(index)+buildTechnicalSheets(index)+'<div class="notice"><strong>Guía de referencia</strong><p>'+esc(m.visual)+'</p></div><div class="notice"><strong>Práctica propuesta</strong><p>'+esc(m.practice)+'</p></div><div class="notice"><strong>Seguridad profesional</strong><p>'+esc(m.safety)+'</p></div><button class="secondary" onclick="openModule('+(Math.max(0,index-1))+')">← ETAPA ANTERIOR</button> <button class="primary" onclick="openModule('+(Math.min(lashCurriculum.length-1,index+1))+')">SIGUIENTE ETAPA →</button> <button class="secondary" onclick="document.getElementById(\\'lash-lesson-panel\\').hidden=true">CERRAR</button>';
  panel.scrollIntoView({behavior:"smooth",block:"start"});
 }
-renderLashCurriculum();
+/* La lista se renderiza al final, cuando ya está disponible la función esc(). */
 
 const learningAreas={beauty:{name:"Belleza y estética",description:"ELI BEAUTY ACADEMY es la primera academia de EDDELI. Aquí se reúne la formación profesional relacionada con belleza, cabello, uñas, estética y bienestar.",status:"Disponible"},professional:{name:"Academia y cursos",description:"Un espacio para reunir programas de formación profesional de diferentes especialidades y nuevas academias.",status:"En preparación"},health:{name:"Salud y bienestar",description:"Aprendizaje sobre bienestar, hábitos saludables y cuidado personal.",status:"Próximamente"},food:{name:"Cocina y gastronomía",description:"Técnicas culinarias, cocina y formación gastronómica.",status:"Próximamente"},technology:{name:"Tecnología e innovación",description:"Herramientas digitales, informática e innovación.",status:"Próximamente"},art:{name:"Arte y creatividad",description:"Diseño, fotografía, arte y expresión creativa.",status:"Próximamente"},languages:{name:"Idiomas",description:"Aprende idiomas y desarrolla habilidades para comunicarte con el mundo.",status:"Próximamente"},business:{name:"Desarrollo personal y negocios",description:"Emprendimiento, productividad, liderazgo y habilidades para impulsar proyectos.",status:"Próximamente"},more:{name:"Nuevas áreas",description:"EDDELI está diseñada para incorporar nuevas especialidades, academias, profesores y cursos.",status:"En expansión"}};
 function openLearningArea(key){const area=learningAreas[key];if(!area)return;if(key==="beauty"){go("academia");return;}const box=document.getElementById("area-detail");if(!box)return;box.hidden=false;box.innerHTML="<span class='pill'>"+esc(area.status)+"</span><h2>"+esc(area.name)+"</h2><p>"+esc(area.description)+"</p><p>Esta área formará parte del catálogo de EDDELI. Estamos preparando su contenido.</p>";box.scrollIntoView({behavior:"smooth",block:"nearest"});}
@@ -700,6 +700,11 @@ async function checkSystem(){const el=document.getElementById("system-status");t
     box.scrollIntoView({behavior:"smooth",block:"nearest"});
   };
 })();
+
+/* Renderizar las etapas después de cargar todos los scripts de la academia. */
+if (typeof window.renderLashCurriculum === "function") {
+  window.renderLashCurriculum();
+}
 </script>
 
 </body>
