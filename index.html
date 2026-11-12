@@ -229,6 +229,14 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
 @media(max-width:520px){.hero-art{display:none}.platform-hero h1{font-size:34px}.home-heading{display:block}.learning-name{font-size:14px}.learning-desc{font-size:10px}.platform-promise .primary{margin-left:0;width:100%}}
 
 
+
+/* INSTALACION DE EDDELI */
+.install-app-card{display:flex;align-items:center;gap:18px;margin:22px 0 28px;padding:22px 24px;background:#fff;border:1px solid #dce4ef;border-radius:18px;box-shadow:0 9px 25px #1c31500b}
+.install-app-icon{flex:0 0 52px;width:52px;height:52px;border-radius:15px;display:grid;place-items:center;background:#142747;color:#f0c66e;font-size:28px}
+.install-app-copy{min-width:0}.install-app-copy h2{margin:5px 0;color:#1a2b4b;font-size:21px}.install-app-copy p{margin:5px 0 12px;color:#6c7789;font-size:13px;line-height:1.6}
+.install-app-actions{display:flex;gap:10px;flex-wrap:wrap}.install-app-actions button{min-height:42px}.install-app-copy small{display:block;margin-top:10px;color:#8791a1;font-size:11px;line-height:1.5}
+@media(max-width:600px){.install-app-card{align-items:flex-start;padding:18px 15px;gap:12px}.install-app-icon{flex-basis:43px;width:43px;height:43px}.install-app-copy h2{font-size:19px}.install-app-actions{flex-direction:column}.install-app-actions button{width:100%}}
+
 /* FICHAS TÉCNICAS DE ESTUDIO */
 .tech-library{margin:18px 0}.tech-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.tech-sheet{background:#fff;border:1px solid #dfe6ef;border-radius:13px;padding:15px}.tech-sheet h4{margin:5px 0 9px;color:#1c3559;font-size:15px}.tech-sheet p{font-size:12px;line-height:1.6;color:#657287;margin:7px 0}.tech-sheet strong{color:#344b6d}.tech-kicker{font-size:9px;letter-spacing:1.5px;color:#98743d;font-weight:800}.tech-warning{background:#fff7e8;border:1px solid #ead8b5;border-radius:11px;padding:13px;color:#665338;font-size:12px;line-height:1.6;margin-top:13px}@media(max-width:650px){.tech-grid{grid-template-columns:1fr}}
 </style>
@@ -265,6 +273,20 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
 
 <section id="inicio" class="view active">
 <div class="platform-hero"><div class="hero-copy"><span class="eyebrow">TU UNIVERSO DE APRENDIZAJE</span><h1>Aprende algo nuevo.<br><em>Construye tu futuro.</em></h1><p>EDDELI reúne academias, profesores y cursos de distintas especialidades en un solo lugar. Tú eliges qué quieres aprender.</p><button class="primary" onclick="go('areas')">EXPLORAR ÁREAS →</button></div><div class="hero-art"><div class="hero-globe">✦</div><span class="float-tag tag-one">IDEAS</span><span class="float-tag tag-two">TALENTO</span><span class="float-tag tag-three">FUTURO</span></div></div>
+
+<div class="install-app-card">
+  <div class="install-app-icon">↓</div>
+  <div class="install-app-copy">
+    <span class="eyebrow dark-eyebrow">EDDELI EN TU DISPOSITIVO</span>
+    <h2>Instala la aplicación</h2>
+    <p>Añade EDDELI a tu móvil, tablet u ordenador para abrirla desde un icono, como una aplicación.</p>
+    <div class="install-app-actions">
+      <button class="primary" id="install-app-button" type="button">⬇ Instalar EDDELI</button>
+      <button class="secondary" id="ios-install-help" type="button"> Cómo instalar en iPhone / iPad</button>
+    </div>
+    <small id="install-app-status">Disponible para Android, iPhone, iPad y ordenador mediante instalación desde el navegador.</small>
+  </div>
+</div>
 <div class="home-heading"><div><span class="eyebrow dark-eyebrow">DESCUBRE TU PRÓXIMO PASO</span><h2 class="section-title">¿Qué te gustaría aprender?</h2><p>Explora nuestras áreas de conocimiento y encuentra el camino que va contigo.</p></div><button class="text-action" onclick="go('areas')">Ver todas las áreas →</button></div>
 <div class="learning-grid">
 <button class="learning-card beauty-card" onclick="openLearningArea('beauty')"><span class="learning-icon">✿</span><span class="learning-name">Belleza y estética</span><span class="learning-desc">ELI BEAUTY ACADEMY</span><span class="learning-arrow">↗</span></button>
@@ -606,6 +628,22 @@ async function loadStudents(){
 async function setApproval(id,status){try{const r=await supabaseClient.from("profiles").update({approval_status:status,approval_updated_at:new Date().toISOString()}).eq("id",id).eq("role","student");if(r.error)throw r.error;loadStudents();}catch(err){alert("No se pudo actualizar: "+err.message);}}
 async function restoreSession(){try{const r=await supabaseClient.auth.getSession();if(r.error){console.warn("No se pudo comprobar la sesión; se conserva para reintentar:",r.error);return;}if(!r.data.session)return;currentUser=r.data.session.user;const p=await supabaseClient.from("profiles").select("id,full_name,role,approval_status,phone,country").eq("id",currentUser.id).maybeSingle();if(p.error){console.warn("No se pudo cargar el perfil; no se cerrará la sesión automáticamente:",p.error);return;}if(!p.data){console.warn("La sesión existe, pero el perfil aún no está disponible.");return;}currentProfile=p.data;if(currentProfile.approval_status!=="approved"){await supabaseClient.auth.signOut();currentUser=null;currentProfile=null;return;}go(currentProfile.role==="admin"?"admin":"estudiante");}catch(err){console.error("Error al restaurar la sesión:",err);}}
 restoreSession();
+
+let eddeliInstallPrompt=null;
+window.addEventListener("beforeinstallprompt",function(event){event.preventDefault();eddeliInstallPrompt=event;});
+window.addEventListener("appinstalled",function(){eddeliInstallPrompt=null;const status=document.getElementById("install-app-status");if(status)status.textContent="EDDELI se ha instalado correctamente en este dispositivo.";});
+document.addEventListener("DOMContentLoaded",function(){
+ const installButton=document.getElementById("install-app-button");
+ const iosHelp=document.getElementById("ios-install-help");
+ if(installButton)installButton.addEventListener("click",async function(){
+  if(eddeliInstallPrompt){eddeliInstallPrompt.prompt();const choice=await eddeliInstallPrompt.userChoice;eddeliInstallPrompt=null;const status=document.getElementById("install-app-status");if(status)status.textContent=choice.outcome==="accepted"?"Has aceptado instalar EDDELI.":"Puedes instalar EDDELI más tarde desde el menú del navegador.";return;}
+  const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  if(isIOS){alert("Para instalar EDDELI en iPhone o iPad:\n1. Abre esta página en Safari.\n2. Pulsa el botón Compartir.\n3. Selecciona «Añadir a pantalla de inicio».\n4. Pulsa «Añadir».");}
+  else{alert("Para instalar EDDELI:\n• En Android, abre esta página en Chrome, pulsa ⋮ y elige «Instalar aplicación» o «Añadir a pantalla de inicio».\n• En ordenador, busca el icono Instalar en la barra de direcciones o abre el menú del navegador y elige «Instalar EDDELI».");}
+ });
+ if(iosHelp)iosHelp.addEventListener("click",function(){alert("En iPhone o iPad: abre EDDELI en Safari, pulsa Compartir (el cuadrado con la flecha hacia arriba), elige «Añadir a pantalla de inicio» y confirma con «Añadir». EDDELI aparecerá como un icono junto a tus aplicaciones.");});
+});
+
 if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(err=>console.warn("PWA:",err)));}
 supabaseClient.auth.onAuthStateChange(function(event,session){currentUser=session?session.user:null;if(event==="PASSWORD_RECOVERY"){setTimeout(async function(){const password=prompt("Escribe tu nueva contraseña (mínimo 8 caracteres):");if(!password||password.length<8){alert("La contraseña debe tener al menos 8 caracteres.");return;}const result=await supabaseClient.auth.updateUser({password:password});if(result.error)alert("No se pudo cambiar la contraseña: "+result.error.message);else alert("Contraseña actualizada correctamente.");},0);}});
 </script>
