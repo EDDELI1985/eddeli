@@ -403,8 +403,8 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
   <div class="grid">
     <div class="card"><div class="card-icon">✿</div><h3>Mi formación</h3><p>Accede directamente al programa de Especialista en Extensiones de Pestañas de ELI BEAUTY ACADEMY.</p><button class="primary" onclick="openStudentAcademy()">CONTINUAR MI FORMACIÓN</button></div><div class="card"><h3>Mis cursos</h3><p>Consulta tus formaciones disponibles.</p><button class="secondary" onclick="go('cursos')">VER CURSOS</button></div>
     <div class="card"><h3>Mi progreso</h3><p id="student-progress-overview">Cargando tu progreso académico…</p><button class="secondary" onclick="go('cursos')">VER MI PROGRESO</button></div>
-    <div class="card"><h3>Mis exámenes</h3><p>Consulta tus evaluaciones.</p></div>
-    <div class="card"><h3>Mis certificados</h3><p>Consulta tus acreditaciones.</p></div>
+    <div class="card"><h3>Mis exámenes</h3><p>Historial de tus evaluaciones y calificaciones.</p><div id="student-exam-history">Cargando tus resultados…</div></div>
+    <div class="card"><h3>Mis certificados</h3><p>Consulta tus acreditaciones.</p><button class="secondary" onclick="go('perfil')">VER MIS CERTIFICADOS</button></div>
   </div>
   <button class="secondary back" onclick="signOut()">CERRAR SESIÓN</button>
 </section>
@@ -691,6 +691,16 @@ async function loadStudentProgress(){
   box.textContent=done+" de "+modules.data.length+" etapas aprobadas · "+percent+"% completado.";
  }catch(err){box.textContent="No se pudo cargar el progreso: "+err.message;}
 }
+async function loadStudentResults(){
+ const box=document.getElementById("student-exam-history");if(!box||!currentUser)return;
+ box.textContent="Cargando tus resultados…";
+ try{
+  const r=await supabaseClient.from("assessment_attempts").select("score,passed,completed_at,assessments(title,title_en)").eq("student_id",currentUser.id).order("completed_at",{ascending:false}).limit(12);
+  if(r.error)throw r.error;box.replaceChildren();
+  if(!r.data.length){box.textContent="Todavía no has entregado evaluaciones.";return;}
+  r.data.forEach(a=>{const p=document.createElement("p");p.textContent=(a.assessments?.title||"Evaluación")+" · "+Number(a.score||0).toFixed(1)+"% · "+(a.passed?"APROBADO":"NO APROBADO")+" · "+(a.completed_at?new Date(a.completed_at).toLocaleDateString():"");box.append(p);});
+ }catch(err){box.textContent="No se pudieron cargar tus resultados: "+err.message;}
+}
 async function loadStudentCourses(){
  const box=document.getElementById("student-courses");if(!box)return;box.replaceChildren();
  const academy=document.createElement("article");academy.className="card";
@@ -786,11 +796,13 @@ async function checkSystem(){const el=document.getElementById("system-status");t
     if(page === "admin-certificados" && typeof window.loadCertificates === "function") window.loadCertificates(true);
     if(page === "cursos" && typeof window.loadStudentCourses === "function") window.loadStudentCourses();
     if(page === "estudiante" && typeof window.loadStudentProgress === "function") window.loadStudentProgress();
+    if(page === "estudiante" && typeof window.loadStudentResults === "function") window.loadStudentResults();
     if(page === "perfil" && typeof window.fillProfile === "function") window.fillProfile();
     window.scrollTo({top:0,behavior:"auto"});
     return true;
   };
   window.loadStudentProgress = typeof loadStudentProgress === "function" ? loadStudentProgress : undefined;
+  window.loadStudentResults = typeof loadStudentResults === "function" ? loadStudentResults : undefined;
   window.openStudentAcademy = function(){
     const target = document.getElementById("academia");
     if(!target){
