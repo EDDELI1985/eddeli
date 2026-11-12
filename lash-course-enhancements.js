@@ -697,9 +697,15 @@ async function renderDatabaseLashAssessment(stageIndex,isFinal){
      const cert=await supabaseClient.from("certificates").select("certificate_code,issued_at").eq("student_id",currentUser.id).eq("course_id","8b097e3a-4a76-4896-a79f-e4097c1b68dc").maybeSingle();
      if(!cert.error&&cert.data)box.insertAdjacentHTML("beforeend",'<div class="lash-result"><h2>'+(en?"Certificate issued":"Certificado emitido")+'</h2><p>'+escapeHTML(cert.data.certificate_code)+'</p></div>');
     }
+    const fixedNav=panel.querySelector(".lash-course-nav");
     if(!isFinal&&outcome.passed){
      const next=document.createElement("button");next.className="primary";next.textContent=stageIndex<12?(en?"CONTINUE TO NEXT STAGE →":"CONTINUAR A LA SIGUIENTE ETAPA →"):(en?"OPEN FINAL EXAM →":"ABRIR EXAMEN FINAL →");
-     next.onclick=()=>stageIndex<12?window.renderLashStage(stageIndex+1):window.renderLashFinalExam();box.append(next);
+     next.onclick=()=>stageIndex<12?window.renderLashStage(stageIndex+1):window.renderLashFinalExam();
+     if(fixedNav)fixedNav.append(next);else box.append(next);
+    }else if(!isFinal&&!outcome.passed){
+     const retry=document.createElement("button");retry.className="primary";retry.textContent=en?"RETRY STAGE TEST":"REPETIR TEST DE ETAPA";
+     retry.onclick=()=>window.renderLashTest(stageIndex);
+     if(fixedNav)fixedNav.append(retry);else box.append(retry);
     }
     if(typeof window.loadStudentCourses==="function")window.loadStudentCourses();
    }catch(err){
