@@ -3,6 +3,40 @@
    No realiza escrituras en Supabase ni altera expedientes. */
 (function(){
 "use strict";
+
+function addParagraphVectorSchemes(panel){
+ const root=panel.querySelector(".lash-single-lesson .expanded-lesson");
+ if(!root||root.dataset.vectorSchemes==="1")return;
+ root.dataset.vectorSchemes="1";
+ const en=getLang()==="en";
+ const rules=[
+  {k:/ojo|p[aá]rpado|c[oó]rnea|conjuntiva|anatom|eyelid|cornea|conjunctiva/i,n:["Anatomía ocular","Ocular anatomy"],s:'<path d="M8 45 Q50 4 92 45 Q50 86 8 45Z" fill="#e8f1fa" stroke="#315d83" stroke-width="3"/><circle cx="50" cy="45" r="17" fill="#fff" stroke="#315d83" stroke-width="3"/><circle cx="50" cy="45" r="8" fill="#315d83"/><path d="M14 45 Q50 13 86 45" fill="none" stroke="#b87956" stroke-width="4"/>'},
+  {k:/crecimiento|an[aá]gen|cat[aá]gen|tel[oó]gen|growth|cycle|fol[ií]cul/i,n:["Ciclo de crecimiento","Growth cycle"],s:'<circle cx="50" cy="45" r="31" fill="none" stroke="#b9c9d8" stroke-width="8"/><path d="M50 14 A31 31 0 0 1 80 52" fill="none" stroke="#39856b" stroke-width="8"/><path d="M80 52 A31 31 0 0 1 30 70" fill="none" stroke="#d39b45" stroke-width="8"/><path d="M30 70 A31 31 0 0 1 50 14" fill="none" stroke="#6689b0" stroke-width="8"/>'},
+  {k:/curvatura|longitud|di[aá]metro|fibra|extensi[oó]n|pesta[nñ]a natural|curl|diameter|length|fibre|fiber/i,n:["Fibras y medidas","Fibres and measurements"],s:'<path d="M18 76 Q12 42 43 18" fill="none" stroke="#315d83" stroke-width="5" stroke-linecap="round"/><path d="M42 76 Q28 38 64 14" fill="none" stroke="#39856b" stroke-width="5" stroke-linecap="round"/><path d="M65 76 Q47 36 86 22" fill="none" stroke="#d39b45" stroke-width="5" stroke-linecap="round"/><path d="M14 84H88" stroke="#64748b" stroke-width="2"/>'},
+  {k:/adhesivo|pegamento|gota|viscosidad|cianoacrilato|adhesive|glue|drop/i,n:["Adhesivo y control","Adhesive and control"],s:'<path d="M50 12 C40 29 25 44 25 60 A25 25 0 0 0 75 60 C75 44 60 29 50 12Z" fill="#dcecf8" stroke="#315d83" stroke-width="3"/><path d="M39 62 Q43 73 56 72" fill="none" stroke="#39856b" stroke-width="3" stroke-linecap="round"/>'},
+  {k:/pinza|herramienta|cepillo|aplicador|tweezer|brush|tool/i,n:["Herramientas","Tools"],s:'<path d="M22 16 L50 54 L78 16" fill="none" stroke="#315d83" stroke-width="5" stroke-linecap="round"/><path d="M50 54 L45 84 M50 54 L56 84" stroke="#39856b" stroke-width="4" stroke-linecap="round"/><circle cx="50" cy="54" r="5" fill="#d39b45"/>'},
+  {k:/humedad|temperatura|ventilaci[oó]n|ambiente|higr[oó]metro|humidity|temperature|ventilation/i,n:["Control ambiental","Environmental control"],s:'<rect x="38" y="14" width="24" height="56" rx="12" fill="#fff" stroke="#315d83" stroke-width="3"/><path d="M50 35V70" stroke="#d39b45" stroke-width="8" stroke-linecap="round"/><circle cx="50" cy="72" r="10" fill="#d39b45"/><path d="M70 27 Q86 40 70 54 M78 18 Q101 40 78 63" fill="none" stroke="#39856b" stroke-width="3" stroke-linecap="round"/>'},
+  {k:/higiene|limpieza|desinfecci[oó]n|esterilizaci[oó]n|residuo|hygiene|clean|disinfect|steriliz/i,n:["Higiene y limpieza","Hygiene and cleaning"],s:'<path d="M50 10 L82 22 V47 Q78 70 50 85 Q22 70 18 47 V22Z" fill="#e8f4ed" stroke="#39856b" stroke-width="3"/><path d="M33 47 L45 59 L68 34" fill="none" stroke="#39856b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>'},
+  {k:/mapa|zona interna|zona central|zona externa|dise[nñ]o|mapping|inner|outer zone/i,n:["Mapa de diseño","Design mapping"],s:'<path d="M12 48 Q50 9 88 48" fill="none" stroke="#315d83" stroke-width="4"/><path d="M18 47 Q29 28 39 25 M39 25 Q52 17 63 25 M63 25 Q76 30 84 47" fill="none" stroke="#39856b" stroke-width="4"/><path d="M18 55V70 M50 55V70 M84 55V70" stroke="#d39b45" stroke-width="3"/>'},
+  {k:/aisla|aislamiento|separar|isolation|isolat/i,n:["Aislamiento","Isolation"],s:'<path d="M50 78 Q45 49 50 14" stroke="#315d83" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M50 42 Q28 29 20 16 M50 42 Q72 29 80 16" stroke="#d39b45" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M50 42 L50 12" stroke="#39856b" stroke-width="3"/>'},
+  {k:/abanico|volumen|h[ií]brido|fan|volume|hybrid/i,n:["Abanico y volumen","Fan and volume"],s:'<path d="M50 82 L18 20 M50 82 L34 12 M50 82 L50 8 M50 82 L66 12 M50 82 L82 20" stroke="#315d83" stroke-width="4" stroke-linecap="round"/><path d="M50 82 L50 55" stroke="#d39b45" stroke-width="6" stroke-linecap="round"/>'},
+  {k:/seguridad|riesgo|irritaci[oó]n|reacci[oó]n|dolor|alarma|safety|risk|irritation|reaction/i,n:["Seguridad","Safety"],s:'<path d="M50 12 L91 82 H9Z" fill="#fff3df" stroke="#b87935" stroke-width="3" stroke-linejoin="round"/><path d="M50 34V57" stroke="#b87935" stroke-width="6" stroke-linecap="round"/><circle cx="50" cy="69" r="3.5" fill="#b87935"/>'},
+  {k:/consulta|consentimiento|ficha|registro|cliente|expectativa|consult|consent|record|client/i,n:["Consulta y registro","Consultation and record"],s:'<rect x="25" y="12" width="50" height="72" rx="6" fill="#eef3f8" stroke="#315d83" stroke-width="3"/><path d="M36 32H64 M36 45H64 M36 58H57" stroke="#39856b" stroke-width="4" stroke-linecap="round"/><path d="M40 12V7H60V12" fill="none" stroke="#315d83" stroke-width="3"/>'}
+ ];
+ const fallback={n:["Proceso de trabajo","Workflow"],s:'<rect x="12" y="30" width="22" height="28" rx="5" fill="#e8f1fa" stroke="#315d83" stroke-width="2"/><rect x="39" y="30" width="22" height="28" rx="5" fill="#e8f4ed" stroke="#39856b" stroke-width="2"/><rect x="66" y="30" width="22" height="28" rx="5" fill="#fff3df" stroke="#b87935" stroke-width="2"/><path d="M34 44H39 M61 44H66" stroke="#64748b" stroke-width="3"/><path d="M36 40L40 44L36 48 M63 40L67 44L63 48" fill="none" stroke="#64748b" stroke-width="2"/>'};
+ root.querySelectorAll("p").forEach(p=>{
+  if(!p.textContent.trim()||p.closest(".paragraph-vector"))return;
+  const t=p.textContent;
+  const match=rules.find(x=>x.k.test(t));
+  const item=match||fallback;
+  const figure=document.createElement("figure");
+  figure.className="paragraph-vector";
+  figure.setAttribute("role","img");
+  figure.setAttribute("aria-label",(en?item.n[1]:item.n[0])+" — "+t.slice(0,180));
+  figure.innerHTML='<svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">'+item.s+'</svg><figcaption>'+(en?"Vector diagram: ":"Esquema vectorial: ")+(en?item.n[1]:item.n[0])+'</figcaption>';
+  p.insertAdjacentElement("afterend",figure);
+ });
+}
 const originalStage = typeof window.renderLashStage === "function" ? window.renderLashStage.bind(window) : null;
 const lesson=(tEs,tEn,oEs,oEn,cEs,cEn,sEs,sEn,aEs,aEn,qEs,qEn,rEs,rEn)=>({
  es:{title:tEs,objective:oEs,content:cEs,steps:sEs,avoid:aEs,check:qEs,answer:rEs},
@@ -794,6 +828,7 @@ window.renderLashLesson=function(index,lessonIndex){
  const testShortcut=lessonIndex===3?'<button class="secondary" type="button" onclick="window.renderLashTest('+index+')">'+(en?"STAGE TEST":"TEST DE ETAPA")+'</button>':"";
  panel.hidden=false;
  panel.innerHTML='<header class="lash-stage-heading"><span class="pill">'+(en?"STAGE ":"ETAPA ")+(index+1)+' / 13 · '+escapeHTML(level)+'</span><h1>'+escapeHTML(title)+'</h1><p>'+escapeHTML(intro)+'</p><div class="lash-progress"><span style="width:'+Math.round(((index*4+lessonIndex+1)/52)*100)+'%"></span></div><small>'+(en?"LESSON ":"LECCIÓN ")+(lessonIndex+1)+' / 4 · '+(en?"STAGE ":"ETAPA ")+(index+1)+' / 13</small></header><div class="lash-single-lesson">'+videoHtml+lessonHtml+visualHtml+sheetHtml+extras+'</div><nav class="lash-course-nav">'+previous+'<span class="lash-nav-count">'+(index*4+lessonIndex+1)+' / 52</span>'+testShortcut+next+'</nav>';
+ addParagraphVectorSchemes(panel);
  window.__lashViewState={mode:"lesson",index,lesson:lessonIndex};
  lashPanelTop();
 };
