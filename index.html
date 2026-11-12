@@ -698,7 +698,7 @@ async function loadStudentResults(){
   const r=await supabaseClient.from("assessment_attempts").select("score,passed,completed_at,assessments(title,title_en)").eq("student_id",currentUser.id).order("completed_at",{ascending:false}).limit(12);
   if(r.error)throw r.error;box.replaceChildren();
   if(!r.data.length){box.textContent="Todavía no has entregado evaluaciones.";return;}
-  r.data.forEach(a=>{const p=document.createElement("p");p.textContent=(a.assessments?.title||"Evaluación")+" · "+Number(a.score||0).toFixed(1)+"% · "+(a.passed?"APROBADO":"NO APROBADO")+" · "+(a.completed_at?new Date(a.completed_at).toLocaleDateString():"");box.append(p);});
+  r.data.forEach(a=>{const p=document.createElement("p");const en=localStorage.getItem("eddeli-language")==="en";p.textContent=((en?a.assessments?.title_en:a.assessments?.title)||(a.assessments?.title)||"Evaluación")+" · "+Number(a.score||0).toFixed(1)+"% · "+(a.passed?(en?"PASSED":"APROBADO"):(en?"NOT PASSED":"NO APROBADO"))+" · "+(a.completed_at?new Date(a.completed_at).toLocaleDateString():"");box.append(p);});
  }catch(err){box.textContent="No se pudieron cargar tus resultados: "+err.message;}
 }
 async function loadStudentCourses(){
@@ -726,7 +726,7 @@ async function loadStudentCourses(){
    const count=modules.data.filter(m=>done.get(m.id)?.completed).length;
    p.textContent=count+" de "+modules.data.length+" etapas aprobadas · "+Math.round(count/Math.max(1,modules.data.length)*100)+"%.";
    const list=document.createElement("div");
-   modules.data.forEach(m=>{const row=document.createElement("p");const state=done.get(m.id);row.textContent=(state?.completed?"✓ ":"○ ")+m.module_number+". "+m.title+(state?.completed?" · "+Number(state.grade||0).toFixed(0)+"%":" · Pendiente");list.append(row);});
+   modules.data.forEach(m=>{const row=document.createElement("p");const state=done.get(m.id);const en=localStorage.getItem("eddeli-language")==="en";row.textContent=(state?.completed?"✓ ":"○ ")+m.module_number+". "+(en?(m.title_en||m.title):m.title)+(state?.completed?" · "+Number(state.grade||0).toFixed(0)+"%":(en?" · Pending":" · Pendiente"));list.append(row);});
    summary.append(list);
   }catch(err){p.textContent="No se pudo cargar el progreso: "+err.message;}
  }
