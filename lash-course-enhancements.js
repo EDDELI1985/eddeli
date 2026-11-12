@@ -735,17 +735,26 @@ function lashShowLocked(index,reason){
 }
 window.renderLashLesson=function(index,lessonIndex){
  const panel=document.getElementById("lash-lesson-panel");if(!panel)return;
- const en=getLang()==="en",legacy=index<2?lashCurriculum[index]:null,advanced=index>=2?stages[index-2]:null;
+ const en=getLang()==="en",legacy=index<2,advanced=index>=2?stages[index-2]:null;
  if(!legacy&&!advanced)return;
  if(lessonIndex<0){if(index>0)window.renderLashLesson(index-1,3);else closeLashPanel();return;}
  if(lessonIndex>3){window.renderLashTest(index);return;}
  let title="",intro="",level="",lessonHtml="",videoHtml="",visualHtml="",sheetHtml="";
  if(legacy){
-  if(originalStage)originalStage(index);
+  if(typeof originalStage==="function")originalStage(index);
   const temp=document.createElement("div");temp.innerHTML=panel.innerHTML;
   const items=[...temp.querySelectorAll(".expanded-course .expanded-lesson")];
-  if(!items[lessonIndex])return;
-  title=legacy.title;intro=legacy.intro;level=legacy.level||"";
+  const heading=temp.querySelector(".lash-stage-heading h1");
+  const introNode=temp.querySelector(".lash-stage-heading>p");
+  const levelNode=temp.querySelector(".lash-stage-heading .pill");
+  if(!items[lessonIndex]){
+   panel.hidden=false;
+   panel.innerHTML='<section class="lash-locked-screen"><h2>'+(en?"Lesson content could not be loaded":"No se pudo cargar el contenido de esta lección")+'</h2><p>'+(en?"Return to the course map and open the stage again.":"Vuelve al itinerario y abre de nuevo esta etapa. El contenido original se ha conservado.")+'</p><button class="primary" onclick="closeLashPanel()">'+(en?"BACK TO COURSE MAP":"VOLVER AL ITINERARIO")+'</button></section>';
+   return;
+  }
+  title=heading?heading.textContent.trim():(en?"Stage "+(index+1):"Etapa "+(index+1));
+  intro=introNode?introNode.textContent.trim():"";
+  level=levelNode?levelNode.textContent.trim():"";
   lessonHtml=items[lessonIndex].outerHTML;
   if(index===0&&lessonIndex===3){const v=temp.querySelector(".lash-intro-video");if(v)videoHtml=v.outerHTML;}
   const visual=temp.querySelectorAll(".atlas-card")[lessonIndex];
