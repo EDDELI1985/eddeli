@@ -1,5 +1,5 @@
-const CACHE_NAME = "eddeli-shell-v14";
-const APP_SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg", "./icon-512.png", "./language.js", "./lash-visual-library.js", "./lash-course-content.js?v=20261112-academy-final", "./lash-course-enhancements.js?v=20261112-no-page-jump-v2"];
+const CACHE_NAME = "eddeli-shell-v15";
+const APP_SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg", "./icon-512.png", "./language.js", "./lash-visual-library.js", "./lash-course-content.js?v=20261112-academy-final", "./lash-course-enhancements.js?v=20261112-no-page-jump-v3"];
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)));
   self.skipWaiting();
