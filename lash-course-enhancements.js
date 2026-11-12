@@ -642,4 +642,77 @@ window.renderLashFinalExam=function(){
 const css=document.createElement("style");
 css.textContent='.lash-practical,.lash-references,.lash-forms{margin:24px 0;padding:20px;border:1px solid #dfe6ef;border-radius:14px;background:#fff}.lash-practical h2,.lash-references h2,.lash-forms h2{color:#1d3153}.lash-rubric{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.lash-rubric article{border:1px solid #e3e8ef;border-radius:10px;padding:13px}.lash-rubric article p{line-height:1.6;color:#536178}.lash-rubric-levels{display:grid;gap:7px;font-size:12px}.lash-rubric-levels label{display:block}.lash-feedback{width:100%;min-height:85px;padding:10px;border:1px solid #d8e0ea;border-radius:8px}.lash-form-buttons{display:flex;flex-wrap:wrap;gap:8px}.lash-references li{margin:8px 0;line-height:1.6}.lash-print-sheet{display:none}.lash-print-field{margin:15px 0}.lash-print-field>div{height:36px;border-bottom:1px solid #999}.lash-print-sign{margin-top:35px}.lash-forms button{margin:5px 4px 5px 0}@media(max-width:650px){.lash-rubric{grid-template-columns:1fr}}@media print{body *{visibility:hidden!important}#lash-print-form,#lash-print-form *{visibility:visible!important}.lash-print-sheet{display:block!important;position:absolute;left:0;top:0;width:100%;padding:20px;color:#111}.lash-print-sheet h1,.lash-print-sheet h2{color:#111}.lash-print-field>div{height:42px}.lash-print-sign{margin-top:40px}}';
 document.head.appendChild(css);
+
+/* EDDELI · Evaluaciones conectadas a Supabase: las claves nunca se envían al navegador. */
+async function renderDatabaseLashAssessment(stageIndex,isFinal){
+ const panel=document.getElementById("lash-lesson-panel");
+ if(!panel)return;
+ const en=getLang()==="en";
+ if(!currentUser||!currentProfile||currentProfile.role!=="student"||currentProfile.approval_status!=="approved"){
+  panel.innerHTML='<div class="lash-result"><h2>'+(en?"Student access required":"Acceso de estudiante requerido")+'</h2><p>'+(en?"Sign in with an approved student account to take this assessment.":"Inicia sesión con una cuenta de estudiante aprobada para realizar esta evaluación.")+'</p></div>';
+  return;
+ }
+ panel.hidden=false;
+ panel.innerHTML='<p class="study-note">'+(en?"Loading the official assessment…":"Cargando la evaluación oficial…")+'</p>';
+ try{
+  let assessment;
+  if(isFinal){
+   const a=await supabaseClient.from("assessments").select("id,title,title_en,passing_score").eq("is_final",true).single();
+   if(a.error)throw a.error;assessment=a.data;
+  }else{
+   const m=await supabaseClient.from("academy_modules").select("id,module_number,title,title_en").eq("module_number",stageIndex+1).eq("published",true).single();
+   if(m.error)throw m.error;
+   const a=await supabaseClient.from("assessments").select("id,title,title_en,passing_score").eq("module_id",m.data.id).eq("is_final",false).single();
+   if(a.error)throw a.error;assessment=a.data;
+  }
+  const qr=await supabaseClient.from("exam_questions").select("id,question_text,question_text_en,options,options_en,question_order").eq("assessment_id",assessment.id).order("question_order",{ascending:true});
+  if(qr.error)throw qr.error;
+  if(!qr.data.length)throw new Error(en?"No questions have been added yet.":"Esta evaluación todavía no tiene preguntas.");
+  const questions=qr.data;
+  const title=en?(assessment.title_en||assessment.title):assessment.title;
+  let html='<header class="lash-test-heading"><span class="pill">ELI BEAUTY ACADEMY · '+(isFinal?(en?"FINAL EXAM":"EXAMEN FINAL"):(en?"STAGE "+(stageIndex+1):"ETAPA "+(stageIndex+1)))+'</span><h1>'+escapeHTML(title)+'</h1><p>'+(en?"Answer every question. Your answers and score are recorded in your academic record.":"Responde todas las preguntas. Tus respuestas y tu nota quedarán registradas en tu expediente académico.")+'</p></header><form id="lash-db-assessment-form" class="lash-quiz">';
+  questions.forEach((q,i)=>{
+   const opts=en&&Array.isArray(q.options_en)&&q.options_en.length?q.options_en:q.options;
+   const question=en?(q.question_text_en||q.question_text):q.question_text;
+   html+='<fieldset class="lash-question"><legend>'+(i+1)+'. '+escapeHTML(question)+'</legend>'+opts.map((o,j)=>'<label class="lash-option"><input type="radio" name="'+escapeHTML(q.id)+'" value="'+escapeHTML(String(o))+'" required><span>'+escapeHTML(String(o))+'</span></label>').join("")+'</fieldset>';
+  });
+  html+='<button class="primary" type="submit">'+(en?"SUBMIT ASSESSMENT":"ENVIAR EVALUACIÓN")+'</button></form><div id="lash-db-assessment-result" aria-live="polite"></div><nav class="lash-course-nav"><button type="button" class="secondary" id="lash-db-back">'+(en?"BACK TO LESSONS":"VOLVER A LAS LECCIONES")+'</button></nav>';
+  panel.innerHTML=html;
+  document.getElementById("lash-db-back").onclick=()=>isFinal?window.renderLashStage(12):window.renderLashStage(stageIndex);
+  const form=document.getElementById("lash-db-assessment-form");
+  form.onsubmit=async ev=>{
+   ev.preventDefault();
+   const submit=form.querySelector('button[type="submit"]');submit.disabled=true;
+   submit.textContent=en?"SENDING…":"ENVIANDO…";
+   const answers={};questions.forEach(q=>{answers[q.id]=new FormData(form).get(q.id);});
+   try{
+    if(Object.values(answers).some(v=>!v))throw new Error(en?"Answer every question before submitting.":"Debes responder todas las preguntas.");
+    const result=await supabaseClient.rpc("eddeli_submit_assessment",{p_assessment_id:assessment.id,p_answers:answers});
+    if(result.error)throw result.error;
+    const outcome=result.data&&result.data[0];if(!outcome)throw new Error(en?"No result was returned.":"No se recibió el resultado de la evaluación.");
+    form.remove();
+    const box=document.getElementById("lash-db-assessment-result");
+    box.innerHTML='<div class="lash-result"><h2>'+(en?"Recorded score: ":"Nota registrada: ")+Number(outcome.score).toFixed(2)+'%</h2><p>'+(outcome.passed?(en?"Assessment passed. Your academic record has been updated.":"Evaluación aprobada. Tu expediente académico ha sido actualizado."):(en?"Not passed yet. Review the lessons and try again.":"Todavía no aprobada. Repasa las lecciones y vuelve a intentarlo."))+'</p><p>'+(en?"Passing threshold: ":"Nota mínima: ")+assessment.passing_score+'%</p></div>';
+    if(isFinal&&outcome.passed){
+     const cert=await supabaseClient.from("certificates").select("certificate_code,issued_at").eq("student_id",currentUser.id).eq("course_id","8b097e3a-4a76-4896-a79f-e4097c1b68dc").maybeSingle();
+     if(!cert.error&&cert.data)box.insertAdjacentHTML("beforeend",'<div class="lash-result"><h2>'+(en?"Certificate issued":"Certificado emitido")+'</h2><p>'+escapeHTML(cert.data.certificate_code)+'</p></div>');
+    }
+    if(!isFinal&&outcome.passed){
+     const next=document.createElement("button");next.className="primary";next.textContent=stageIndex<12?(en?"CONTINUE TO NEXT STAGE →":"CONTINUAR A LA SIGUIENTE ETAPA →"):(en?"OPEN FINAL EXAM →":"ABRIR EXAMEN FINAL →");
+     next.onclick=()=>stageIndex<12?window.renderLashStage(stageIndex+1):window.renderLashFinalExam();box.append(next);
+    }
+    if(typeof window.loadStudentCourses==="function")window.loadStudentCourses();
+   }catch(err){
+    const box=document.getElementById("lash-db-assessment-result");box.textContent=(en?"Could not record the assessment: ":"No se pudo registrar la evaluación: ")+(err.message||String(err));
+    submit.disabled=false;submit.textContent=en?"SUBMIT ASSESSMENT":"ENVIAR EVALUACIÓN";
+   }
+  };
+  window.__lashViewState={mode:isFinal?"final-db":"test-db",index:stageIndex};
+ }catch(err){
+  panel.innerHTML='<div class="lash-result"><h2>'+(en?"Assessment unavailable":"Evaluación no disponible")+'</h2><p>'+escapeHTML(err.message||String(err))+'</p><button class="secondary" onclick="window.renderLashStage('+(isFinal?12:stageIndex)+')">'+(en?"BACK":"VOLVER")+'</button></div>';
+ }
+}
+window.renderLashTest=function(index){renderDatabaseLashAssessment(index,false);};
+window.renderLashFinalExam=function(){renderDatabaseLashAssessment(12,true);};
+
 })();
