@@ -3,6 +3,7 @@
    No realiza escrituras en Supabase ni altera expedientes. */
 (function(){
 "use strict";
+const originalStage = typeof window.renderLashStage === "function" ? window.renderLashStage.bind(window) : null;
 const lesson=(tEs,tEn,oEs,oEn,cEs,cEn,sEs,sEn,aEs,aEn,qEs,qEn,rEs,rEn)=>({
  es:{title:tEs,objective:oEs,content:cEs,steps:sEs,avoid:aEs,check:qEs,answer:rEs},
  en:{title:tEn,objective:oEn,content:cEn,steps:sEn,avoid:aEn,check:qEn,answer:rEn}
@@ -745,24 +746,26 @@ window.renderLashLesson=function(index,lessonIndex){
  if(lessonIndex>3){window.renderLashTest(index);return;}
  let title="",intro="",level="",lessonHtml="",videoHtml="",visualHtml="",sheetHtml="";
  if(legacy){
-  const curriculum=lashCurriculum[index];
-  const item=curriculum&&Array.isArray(curriculum.lessons)?curriculum.lessons[lessonIndex]:null;
-  if(!item){
+  if(typeof originalStage==="function") originalStage(index);
+  const temp=document.createElement("div");
+  temp.innerHTML=panel.innerHTML;
+  const items=[...temp.querySelectorAll(".expanded-course .expanded-lesson")];
+  const heading=temp.querySelector(".lash-stage-heading h1");
+  const introNode=temp.querySelector(".lash-stage-heading>p");
+  const levelNode=temp.querySelector(".lash-stage-heading .pill");
+  if(!items[lessonIndex]){
    panel.hidden=false;
    panel.innerHTML='<section class="lash-locked-screen"><h2>'+(en?"Lesson content unavailable":"Contenido de la lección no disponible")+'</h2><p>'+(en?"The original lesson could not be read. Return to the course map.":"No se pudo leer la lección original. Vuelve al itinerario.")+'</p><button class="primary" onclick="closeLashPanel()">'+(en?"BACK TO COURSE MAP":"VOLVER AL ITINERARIO")+'</button></section>';
    return;
   }
-  title=curriculum.title;
-  intro=curriculum.intro;
-  level=curriculum.level||"";
-  lessonHtml='<article class="expanded-lesson"><span class="tech-kicker">'+(en?"LESSON ":"LECCIÓN ")+(lessonIndex+1)+' / 4</span><h2>'+escapeHTML(item[0])+'</h2><p>'+escapeHTML(item[1])+'</p></article>';
-  const visualBox=document.createElement("div");
-  visualBox.innerHTML=window.buildVisuals?window.buildVisuals(index):"";
-  const visual=visualBox.querySelectorAll(".atlas-card")[lessonIndex];
+  title=heading?heading.textContent.trim():(en?"Stage "+(index+1):"Etapa "+(index+1));
+  intro=introNode?introNode.textContent.trim():"";
+  level=levelNode?levelNode.textContent.trim():"";
+  lessonHtml=items[lessonIndex].outerHTML;
+  if(index===0&&lessonIndex===3){const v=temp.querySelector(".lash-intro-video");if(v)videoHtml=v.outerHTML;}
+  const visual=temp.querySelectorAll(".study-visual")[lessonIndex];
   if(visual)visualHtml='<section class="lash-one-support"><h3>'+(en?"Visual guide":"Guía visual")+'</h3>'+visual.outerHTML+'</section>';
-  const sheetBox=document.createElement("div");
-  sheetBox.innerHTML=window.buildTechnicalSheets?window.buildTechnicalSheets(index):"";
-  const sheet=sheetBox.querySelectorAll(".tech-sheet")[lessonIndex];
+  const sheet=temp.querySelectorAll(".tech-sheet")[lessonIndex];
   if(sheet)sheetHtml='<section class="lash-one-support"><h3>'+(en?"Technical reference":"Ficha técnica")+'</h3>'+sheet.outerHTML+'</section>';
 
  }else{
