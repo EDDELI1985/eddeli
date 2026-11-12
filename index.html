@@ -627,5 +627,67 @@ async function checkSystem(){const el=document.getElementById("system-status");t
 <script src="./lash-visual-library.js"></script>
 <script src="./language.js"></script>
 <script src="./lash-course-content.js"></script>
+
+<script>
+/* EDDELI navigation repair: the interface referenced go(), but no navigation
+   function was defined. Keep all existing authentication checks in place. */
+(function(){
+  const adminPages = new Set(["admin","admin-alumnos","admin-cursos","admin-examenes","admin-certificados","admin-config"]);
+  const studentPages = new Set(["estudiante","cursos"]);
+  window.go = function(page){
+    const target = document.getElementById(page);
+    if(!target || !target.classList.contains("view")){
+      console.warn("EDDELI: pantalla no encontrada:", page);
+      return false;
+    }
+    if(adminPages.has(page) && (!window.currentProfile || window.currentProfile.role !== "admin" || window.currentProfile.approval_status !== "approved")){
+      page = "login-admin";
+    } else if(studentPages.has(page) && (!window.currentProfile || window.currentProfile.role !== "student" || window.currentProfile.approval_status !== "approved")){
+      page = "login-alumno";
+    } else if(page === "perfil" && !window.currentUser){
+      page = "acceso";
+    }
+    document.querySelectorAll("main.content > .view").forEach(section => {
+      section.classList.toggle("active", section.id === page);
+    });
+    document.querySelectorAll(".navbtn").forEach(button => {
+      button.classList.toggle("active", button.dataset.page === page ||
+        (page.startsWith("admin-") && button.dataset.page === "login-admin") ||
+        (page === "estudiante" && button.dataset.page === "login-alumno"));
+    });
+    if(page === "admin-alumnos" && typeof window.loadStudents === "function") window.loadStudents();
+    if(page === "admin-cursos" && typeof window.loadAdminAcademy === "function") window.loadAdminAcademy();
+    if(page === "admin-examenes" && typeof window.loadAdminAcademy === "function") window.loadAdminAcademy();
+    if(page === "admin-certificados" && typeof window.loadCertificates === "function") window.loadCertificates(true);
+    if(page === "cursos" && typeof window.loadStudentCourses === "function") window.loadStudentCourses();
+    if(page === "perfil" && typeof window.fillProfile === "function") window.fillProfile();
+    window.scrollTo({top:0,behavior:"auto"});
+    return true;
+  };
+  window.openLearningArea = function(key){
+    if(key === "beauty"){
+      window.go("academia");
+      return;
+    }
+    const areas = {
+      professional:["Academia y cursos","Formación profesional y programas de aprendizaje."],
+      health:["Salud y bienestar","Contenidos educativos para el bienestar y el autocuidado."],
+      food:["Cocina y gastronomía","Técnicas, recetas y formación gastronómica."],
+      technology:["Tecnología e innovación","Herramientas digitales y nuevas tecnologías."],
+      art:["Arte y creatividad","Expresión artística, diseño y creatividad."],
+      languages:["Idiomas","Aprendizaje y práctica de idiomas."],
+      business:["Desarrollo y negocios","Emprendimiento, productividad y gestión."],
+      more:["Nuevas áreas","EDDELI seguirá incorporando nuevas especialidades."]
+    };
+    const item = areas[key];
+    const box = document.getElementById("area-detail");
+    if(!item || !box) return;
+    box.hidden = false;
+    box.innerHTML = "<span class='pill'>PRÓXIMAMENTE</span><h2>"+item[0]+"</h2><p>"+item[1]+"</p><p>Esta área se incorporará al catálogo de EDDELI.</p>";
+    box.scrollIntoView({behavior:"smooth",block:"nearest"});
+  };
+})();
+</script>
+
 </body>
 </html>
