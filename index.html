@@ -226,6 +226,9 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
 @media(max-width:850px){.platform-hero{min-height:0;padding:27px 22px}.hero-art{flex-basis:140px;height:170px}.hero-globe{width:95px;height:95px;font-size:48px}.float-tag{font-size:8px;padding:6px 8px}.learning-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.learning-card{min-height:132px;padding:15px}.home-heading{align-items:start}.platform-promise{align-items:flex-start;flex-wrap:wrap}.platform-promise .primary{margin-left:62px}}
 @media(max-width:520px){.hero-art{display:none}.platform-hero h1{font-size:34px}.home-heading{display:block}.learning-name{font-size:14px}.learning-desc{font-size:10px}.platform-promise .primary{margin-left:0;width:100%}}
 
+
+/* FICHAS TÉCNICAS DE ESTUDIO */
+.tech-library{margin:18px 0}.tech-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.tech-sheet{background:#fff;border:1px solid #dfe6ef;border-radius:13px;padding:15px}.tech-sheet h4{margin:5px 0 9px;color:#1c3559;font-size:15px}.tech-sheet p{font-size:12px;line-height:1.6;color:#657287;margin:7px 0}.tech-sheet strong{color:#344b6d}.tech-kicker{font-size:9px;letter-spacing:1.5px;color:#98743d;font-weight:800}.tech-warning{background:#fff7e8;border:1px solid #ead8b5;border-radius:11px;padding:13px;color:#665338;font-size:12px;line-height:1.6;margin-top:13px}@media(max-width:650px){.tech-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -516,11 +519,33 @@ function buildVisuals(index){
  return '<h3>Biblioteca visual de la etapa</h3><div class="study-visuals">'+drawings.map((svg,i)=>'<article class="study-visual"><div class="study-visual-art"><svg viewBox="0 0 120 100" fill="none" stroke="#8b7048" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Esquema didáctico">'+svg+'</svg></div><div class="study-visual-copy"><strong>'+labels[i]+'</strong><p>'+esc(details[i])+'</p></div></article>').join("")+'</div><p class="study-note">Estos esquemas son ilustraciones didácticas simplificadas para acompañar el texto. No representan medidas clínicas ni sustituyen las fichas técnicas del fabricante, fotografías demostrativas o práctica presencial supervisada.</p>';
 }
 
+function buildTechnicalSheets(index){
+ const m=lashCurriculum[index];if(!m)return "";
+ const criteria=[
+ "Observar la anatomía y el estado de las pestañas naturales. La ficha de cliente registra antecedentes y expectativas; no sirve para diagnosticar.",
+ "Comparar etiqueta, longitud, diámetro, curvatura, acabado, lote y fabricante. Las letras y medidas pueden variar entre marcas.",
+ "Consultar siempre ficha técnica y ficha de datos de seguridad (SDS). Registrar lote, apertura, caducidad y condiciones ambientales indicadas.",
+ "Comprobar alineación, integridad, ergonomía y compatibilidad de cada herramienta con el uso periocular previsto.",
+ "Verificar instrucciones eléctricas, estabilidad, limpieza, ventilación y que el equipo no genere calor, aire o vapor sobre los ojos.",
+ "Separar limpieza, desinfección y esterilización. Aplicar el proceso que corresponda al material y a la normativa local.",
+ "Elegir el diseño tras valorar simetría, dirección, párpado, pestaña natural y preferencias realistas de la persona.",
+ "Confirmar consentimiento, higiene, comodidad y aislamiento seguro antes de iniciar. Detenerse si aparece irritación o molestia.",
+ "Aislar una pestaña natural cada vez y evitar contacto del adhesivo con piel o mucosa. La técnica se aprende primero en maniquí.",
+ "El peso total del abanico debe ser compatible con la pestaña natural. No asumir que un diámetro o número de fibras es seguro para todos.",
+ "Revisar crecimiento, retención y limpieza. Retirar con producto profesional siguiendo instrucciones, sin tirar ni arrancar fibras.",
+ "Ante dolor, inflamación, secreción, lesión o sospecha de reacción, detener el servicio y derivar a valoración sanitaria.",
+ "Documentar prácticas, consentimiento, trazabilidad y límites de competencia. La evaluación interna no sustituye requisitos legales."
+ ];
+ const names=["Identificación","Función y aplicación","Variantes y lectura de etiqueta","Selección, cuidado y seguridad"];
+ const cards=m.lessons.map((lesson,i)=>'<article class="tech-sheet"><span class="tech-kicker">FICHA '+(i+1)+' · '+esc(m.level)+'</span><h4>'+esc(lesson[0])+'</h4><p><strong>Descripción:</strong> '+esc(lesson[1])+'</p><p><strong>Criterio profesional:</strong> '+esc(criteria[index]||criteria[0])+'</p><p><strong>Comprobación:</strong> '+esc(names[i]||"Revisión")+' antes, durante y después del servicio; anota fabricante, lote o incidencias cuando corresponda.</p></article>').join("");
+ return '<section class="tech-library"><h3>Biblioteca de fichas técnicas</h3><p class="study-note">Consulta cada ficha como una hoja de referencia. Completa tus apuntes con los datos del producto o instrumento real que tengas delante.</p><div class="tech-grid">'+cards+'</div><div class="tech-warning"><strong>Importante:</strong> las medidas, composiciones, tiempos, temperaturas, humedad, almacenamiento y compatibilidades no son universales. Para adhesivos, removedores, equipos y desinfectantes prevalecen la etiqueta, la ficha técnica y la SDS del fabricante, además de la normativa sanitaria local. No se deben improvisar mezclas ni parámetros.</div></section>';
+}
+
 function openModule(index){
  const m=lashCurriculum[index];if(!m)return;
  const panel=document.getElementById("lash-lesson-panel");if(!panel)return;
  panel.hidden=false;
- panel.innerHTML='<span class="pill">ETAPA '+(index+1)+' · '+esc(m.level)+'</span><h2>'+esc(m.title)+'</h2><p>'+esc(m.intro)+'</p><h3>Lecciones de esta etapa</h3>'+m.lessons.map((l,i)=>'<div class="notice"><strong>Lección '+(i+1)+'. '+esc(l[0])+'</strong><p>'+esc(l[1])+'</p></div>').join("")+buildVisuals(index)+'<div class="notice"><strong>Guía de referencia</strong><p>'+esc(m.visual)+'</p></div><div class="notice"><strong>Práctica propuesta</strong><p>'+esc(m.practice)+'</p></div><div class="notice"><strong>Seguridad profesional</strong><p>'+esc(m.safety)+'</p></div><button class="secondary" onclick="openModule('+(Math.max(0,index-1))+')">← ETAPA ANTERIOR</button> <button class="primary" onclick="openModule('+(Math.min(lashCurriculum.length-1,index+1))+')">SIGUIENTE ETAPA →</button> <button class="secondary" onclick="document.getElementById(\\'lash-lesson-panel\\').hidden=true">CERRAR</button>';
+ panel.innerHTML='<span class="pill">ETAPA '+(index+1)+' · '+esc(m.level)+'</span><h2>'+esc(m.title)+'</h2><p>'+esc(m.intro)+'</p><h3>Lecciones de esta etapa</h3>'+m.lessons.map((l,i)=>'<div class="notice"><strong>Lección '+(i+1)+'. '+esc(l[0])+'</strong><p>'+esc(l[1])+'</p></div>').join("")+buildVisuals(index)+buildTechnicalSheets(index)+'<div class="notice"><strong>Guía de referencia</strong><p>'+esc(m.visual)+'</p></div><div class="notice"><strong>Práctica propuesta</strong><p>'+esc(m.practice)+'</p></div><div class="notice"><strong>Seguridad profesional</strong><p>'+esc(m.safety)+'</p></div><button class="secondary" onclick="openModule('+(Math.max(0,index-1))+')">← ETAPA ANTERIOR</button> <button class="primary" onclick="openModule('+(Math.min(lashCurriculum.length-1,index+1))+')">SIGUIENTE ETAPA →</button> <button class="secondary" onclick="document.getElementById(\\'lash-lesson-panel\\').hidden=true">CERRAR</button>';
  panel.scrollIntoView({behavior:"smooth",block:"start"});
 }
 renderLashCurriculum();
