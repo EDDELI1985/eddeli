@@ -1,7 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-<rect width="512" height="512" rx="112" fill="#171613"/>
-<path d="M92 120h328v34H92z" fill="#c9a66b"/>
-<text x="256" y="295" text-anchor="middle" font-family="Georgia,serif" font-size="112" font-weight="bold" letter-spacing="9" fill="#dfbd80">EDDELI</text>
-<path d="M150 350h212" stroke="#c9a66b" stroke-width="8" stroke-linecap="round"/>
-<text x="256" y="397" text-anchor="middle" font-family="Arial,sans-serif" font-size="22" letter-spacing="5" fill="#f5f2ec">ACADEMY</text>
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff1b8"/>
+      <stop offset=".48" stop-color="#e0bd72"/>
+      <stop offset="1" stop-color="#b78332"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="#101827"/>
+  <path d="M365 112H147V400H365M147 256H326"
+        fill="none" stroke="url(#gold)" stroke-width="43"
+        stroke-linecap="square" stroke-linejoin="round"/>
 </svg>
