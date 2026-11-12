@@ -158,6 +158,8 @@ font-size:10px;min-width:48px
 button:disabled{opacity:.55;cursor:not-allowed}
 .status{font-size:12px;color:#77684f;margin:8px 0}
 .module-content{white-space:pre-wrap;line-height:1.8;color:#514b42}
+.study-visuals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}.study-visual{border:1px solid #e7e0d4;border-radius:13px;overflow:hidden;background:#fff}.study-visual-art{min-height:105px;display:grid;place-items:center;background:linear-gradient(135deg,#f4eee3,#e8edf2);padding:10px}.study-visual-art svg{width:100%;max-width:230px;height:95px}.study-visual-copy{padding:11px}.study-visual-copy strong{display:block;color:#725a35;font-size:13px;margin-bottom:4px}.study-visual-copy p{font-size:12px;line-height:1.5;margin:0;color:#69635a}.study-note{font-size:12px;color:#777064;background:#f7f4ee;padding:11px;border-radius:9px;margin:10px 0}@media(max-width:650px){.study-visuals{grid-template-columns:1fr}}
+
 
 
 /* EDDELI APP SHELL */
@@ -500,11 +502,25 @@ function renderLashCurriculum(){
  const box=document.getElementById("modules");if(!box)return;
  box.innerHTML=lashCurriculum.map((m,i)=>'<article class="card module-card"><span class="pill">ETAPA '+(i+1)+' · '+esc(m.level)+'</span><div class="card-icon">'+(i+1)+'</div><h3>'+esc(m.title)+'</h3><p>'+esc(m.intro)+'</p><p><strong>'+m.lessons.length+' lecciones</strong> · Ficha visual · Práctica · Seguridad</p><button class="primary" onclick="openModule('+i+')">ENTRAR A LA ETAPA →</button></article>').join("");
 }
+
+function buildVisuals(index){
+ const m=lashCurriculum[index];const title=esc(m.title);
+ const drawings=[
+ '<path d="M10 50Q60 5 110 50Q60 95 10 50Z"/><circle cx="60" cy="50" r="14" fill="#c9a66b"/>',
+ '<path d="M60 10Q30 35 60 90Q90 35 60 10Z"/><path d="M60 18V84"/>',
+ '<circle cx="60" cy="50" r="28"/><path d="M60 10V30M60 70v20M20 50h20m40 0h20"/>',
+ '<rect x="28" y="10" width="64" height="80" rx="7"/><path d="m42 35 8 8 18-20m-26 38 8 8 18-20"/>'
+ ];
+ const labels=["Vista general","Partes y componentes","Identificación y uso","Control de seguridad"];
+ const details=[m.visual,m.lessons[0][1],m.lessons[1][1],m.safety];
+ return '<h3>Biblioteca visual de la etapa</h3><div class="study-visuals">'+drawings.map((svg,i)=>'<article class="study-visual"><div class="study-visual-art"><svg viewBox="0 0 120 100" fill="none" stroke="#8b7048" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Esquema didáctico">'+svg+'</svg></div><div class="study-visual-copy"><strong>'+labels[i]+'</strong><p>'+esc(details[i])+'</p></div></article>').join("")+'</div><p class="study-note">Estos esquemas son ilustraciones didácticas simplificadas para acompañar el texto. No representan medidas clínicas ni sustituyen las fichas técnicas del fabricante, fotografías demostrativas o práctica presencial supervisada.</p>';
+}
+
 function openModule(index){
  const m=lashCurriculum[index];if(!m)return;
  const panel=document.getElementById("lash-lesson-panel");if(!panel)return;
  panel.hidden=false;
- panel.innerHTML='<span class="pill">ETAPA '+(index+1)+' · '+esc(m.level)+'</span><h2>'+esc(m.title)+'</h2><p>'+esc(m.intro)+'</p><h3>Lecciones de esta etapa</h3>'+m.lessons.map((l,i)=>'<div class="notice"><strong>Lección '+(i+1)+'. '+esc(l[0])+'</strong><p>'+esc(l[1])+'</p></div>').join("")+'<div class="notice"><strong>Material visual de estudio</strong><p>'+esc(m.visual)+'</p><p>En la edición visual del material se incorporarán fotografías propias, láminas anatómicas y esquemas etiquetados para esta unidad.</p></div><div class="notice"><strong>Práctica propuesta</strong><p>'+esc(m.practice)+'</p></div><div class="notice"><strong>Seguridad profesional</strong><p>'+esc(m.safety)+'</p></div><button class="secondary" onclick="openModule('+(Math.max(0,index-1))+')">← ETAPA ANTERIOR</button> <button class="primary" onclick="openModule('+(Math.min(lashCurriculum.length-1,index+1))+')">SIGUIENTE ETAPA →</button> <button class="secondary" onclick="document.getElementById(\\'lash-lesson-panel\\').hidden=true">CERRAR</button>';
+ panel.innerHTML='<span class="pill">ETAPA '+(index+1)+' · '+esc(m.level)+'</span><h2>'+esc(m.title)+'</h2><p>'+esc(m.intro)+'</p><h3>Lecciones de esta etapa</h3>'+m.lessons.map((l,i)=>'<div class="notice"><strong>Lección '+(i+1)+'. '+esc(l[0])+'</strong><p>'+esc(l[1])+'</p></div>').join("")+buildVisuals(index)+'<div class="notice"><strong>Guía de referencia</strong><p>'+esc(m.visual)+'</p></div><div class="notice"><strong>Práctica propuesta</strong><p>'+esc(m.practice)+'</p></div><div class="notice"><strong>Seguridad profesional</strong><p>'+esc(m.safety)+'</p></div><button class="secondary" onclick="openModule('+(Math.max(0,index-1))+')">← ETAPA ANTERIOR</button> <button class="primary" onclick="openModule('+(Math.min(lashCurriculum.length-1,index+1))+')">SIGUIENTE ETAPA →</button> <button class="secondary" onclick="document.getElementById(\\'lash-lesson-panel\\').hidden=true">CERRAR</button>';
  panel.scrollIntoView({behavior:"smooth",block:"start"});
 }
 renderLashCurriculum();
