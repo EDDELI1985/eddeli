@@ -374,7 +374,7 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
   <div class="welcome"><div><span class="eyebrow">TU ESPACIO DE APRENDIZAJE</span><h1>Hola, estudiante</h1><p>Continúa tu formación y descubre tus próximos retos.</p></div><div style="font-size:55px">🎓</div></div>
   <h2 class="section-title">Mi espacio académico</h2>
   <div class="grid">
-    <div class="card"><div class="card-icon">✿</div><h3>Mi formación</h3><p>Accede directamente al programa de Especialista en Extensiones de Pestañas de ELI BEAUTY ACADEMY.</p><button class="primary" onclick="go('academia')">CONTINUAR MI FORMACIÓN</button></div><div class="card"><h3>Mis cursos</h3><p>Consulta tus formaciones disponibles.</p><button class="secondary" onclick="go('cursos')">VER CURSOS</button></div>
+    <div class="card"><div class="card-icon">✿</div><h3>Mi formación</h3><p>Accede directamente al programa de Especialista en Extensiones de Pestañas de ELI BEAUTY ACADEMY.</p><button class="primary" onclick="openStudentAcademy()">CONTINUAR MI FORMACIÓN</button></div><div class="card"><h3>Mis cursos</h3><p>Consulta tus formaciones disponibles.</p><button class="secondary" onclick="go('cursos')">VER CURSOS</button></div>
     <div class="card"><h3>Mi progreso</h3><p>Seguimiento de tu aprendizaje.</p><span class="pill">Se activará con las cuentas reales</span></div>
     <div class="card"><h3>Mis exámenes</h3><p>Consulta tus evaluaciones.</p></div>
     <div class="card"><h3>Mis certificados</h3><p>Consulta tus acreditaciones.</p></div>
@@ -661,6 +661,19 @@ async function checkSystem(){const el=document.getElementById("system-status");t
     if(page === "admin-certificados" && typeof window.loadCertificates === "function") window.loadCertificates(true);
     if(page === "cursos" && typeof window.loadStudentCourses === "function") window.loadStudentCourses();
     if(page === "perfil" && typeof window.fillProfile === "function") window.fillProfile();
+    window.scrollTo({top:0,behavior:"auto"});
+    return true;
+  };
+  window.openStudentAcademy = function(){
+    const target = document.getElementById("academia");
+    if(!target){
+      alert("No se encontró el área de ELI BEAUTY ACADEMY. Recarga EDDELI e inténtalo de nuevo.");
+      return false;
+    }
+    document.querySelectorAll(".view").forEach(section => section.classList.remove("active"));
+    target.classList.add("active");
+    document.querySelectorAll(".navbtn").forEach(button => button.classList.remove("active"));
+    if(typeof window.renderLashCurriculum === "function") window.renderLashCurriculum();
     window.scrollTo({top:0,behavior:"auto"});
     return true;
   };
