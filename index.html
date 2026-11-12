@@ -224,6 +224,7 @@ font-size:10px;min-width:48px
       <label>Correo electrónico</label><input type="email" required placeholder="Correo electrónico">
       <label>Contraseña</label><input type="password" required placeholder="Contraseña">
       <button class="primary">ENTRAR</button>
+      <button type="button" class="secondary" onclick="recoverPassword(this.form)">OLVIDÉ MI CONTRASEÑA</button>
     </form>
     <button class="secondary" onclick="go('acceso')">VOLVER</button>
   </div>
@@ -247,8 +248,8 @@ font-size:10px;min-width:48px
   <div class="card form-card">
     <h2>Registro de estudiante</h2>
     <form onsubmit="registroDemo(event)">
-      <label>Nombre completo</label><input required placeholder="Nombre y apellidos">
-      <label>Correo electrónico</label><input type="email" required placeholder="Correo electrónico">
+      <label>Nombre completo</label><input id="reg-name" required maxlength="120" placeholder="Nombre y apellidos">
+      <label>Correo electrónico</label><input id="reg-email" type="email" required autocomplete="email" placeholder="Correo electrónico">
       <label>Contraseña (mínimo 8 caracteres)</label><input id="reg-password" type="password" minlength="8" required autocomplete="new-password" placeholder="Crea una contraseña">
 <label>Teléfono</label><input id="reg-phone" type="tel" maxlength="30" placeholder="Teléfono">
       <label>País</label><input id="reg-country" maxlength="80" placeholder="País">
@@ -361,6 +362,8 @@ const modules=[
 ];
 
 function go(id){
+ if(id==="admin"||id.startsWith("admin-")){if(!currentProfile||currentProfile.role!=="admin"||currentProfile.approval_status!=="approved")id="acceso";}
+ if(id==="estudiante"){if(!currentProfile||currentProfile.role!=="student"||currentProfile.approval_status!=="approved")id="acceso";}
  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
  const page=document.getElementById(id);
  if(page) page.classList.add('active');
@@ -422,12 +425,13 @@ async function demoLogin(event,type){
 }
 async function registroDemo(event){
  event.preventDefault();const form=event.currentTarget,inputs=form.querySelectorAll("input"),name=inputs[0].value.trim(),email=inputs[1].value.trim(),password=document.getElementById("reg-password").value,phone=document.getElementById("reg-phone").value.trim(),country=document.getElementById("reg-country").value.trim();
- try{const r=await supabaseClient.auth.signUp({email,password,options:{data:{full_name:name},emailRedirectTo:window.location.origin+window.location.pathname}});if(r.error)throw r.error;
- if(r.data.user){const p=await supabaseClient.from("profiles").update({full_name:name,phone:phone||null,country:country||null}).eq("id",r.data.user.id);if(p.error)console.warn(p.error.message);}
+ try{const r=await supabaseClient.auth.signUp({email,password,options:{data:{full_name:name,phone:phone,country:country},emailRedirectTo:window.location.origin+window.location.pathname}});if(r.error)throw r.error;
+ 
  form.reset();alert("Registro enviado. Revisa tu correo y confirma tu dirección. Después, tu cuenta quedará pendiente de aprobación.");go("acceso");
  }catch(err){alert("No se pudo completar el registro: "+(err.message||"Inténtalo de nuevo."));}
 }
 async function signOut(){await supabaseClient.auth.signOut();currentUser=null;currentProfile=null;go("inicio");}
+async function recoverPassword(form){const email=form.querySelector('input[type="email"]').value.trim();if(!email){alert("Escribe primero tu correo electrónico.");return;}try{const r=await supabaseClient.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname});if(r.error)throw r.error;alert("Si el correo existe, recibirás un mensaje para restablecer tu contraseña.");}catch(err){alert("No se pudo solicitar el cambio: "+err.message);}}
 async function loadStudents(){
  const box=document.getElementById("students-list");if(!box)return;box.textContent="Cargando...";
  try{const r=await supabaseClient.from("profiles").select("id,full_name,role,approval_status,created_at").order("created_at",{ascending:false});if(r.error)throw r.error;box.replaceChildren();
@@ -437,7 +441,7 @@ async function loadStudents(){
  }catch(err){box.textContent="No se pudo cargar la lista: "+err.message;}
 }
 async function setApproval(id,status){try{const r=await supabaseClient.from("profiles").update({approval_status:status,approval_updated_at:new Date().toISOString()}).eq("id",id).eq("role","student");if(r.error)throw r.error;loadStudents();}catch(err){alert("No se pudo actualizar: "+err.message);}}
-async function restoreSession(){const r=await supabaseClient.auth.getSession();if(r.data.session){currentUser=r.data.session.user;const p=await supabaseClient.from("profiles").select("id,full_name,role,approval_status").eq("id",currentUser.id).maybeSingle();currentProfile=p.data;if(currentProfile&&currentProfile.approval_status==="approved")go(currentProfile.role==="admin"?"admin":"estudiante");}}
+async function restoreSession(){const r=await supabaseClient.auth.getSession();if(r.data.session){currentUser=r.data.session.user;const p=await supabaseClient.from("profiles").select("id,full_name,role,approval_status").eq("id",currentUser.id).maybeSingle();currentProfile=p.data;if(currentProfile&&currentProfile.approval_status==="approved")go(currentProfile.role==="admin"?"admin":"estudiante");else{await supabaseClient.auth.signOut();currentUser=null;currentProfile=null;}}}
 restoreSession();
 supabaseClient.auth.onAuthStateChange(function(event,session){currentUser=session?session.user:null;});
 </script>
