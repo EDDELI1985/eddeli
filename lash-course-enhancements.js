@@ -9,6 +9,25 @@ function addParagraphVectorSchemes(panel){
  if(!root||root.dataset.vectorSchemes==="1")return;
  root.dataset.vectorSchemes="1";
  const en=(typeof getLang==="function"?getLang():"es")==="en";
+ // Revisión individual: lección 1, anatomía básica del ojo y sus anexos.
+ const lessonHeading=root.querySelector("h2");
+ if(lessonHeading&&/anatom[ií]a b[aá]sica del ojo/i.test(lessonHeading.textContent)){
+  const ps=[...root.querySelectorAll("p")].filter(p=>p.textContent.trim()&&!p.closest(".paragraph-vector"));
+  const diagrams=[
+   {name:["Mapa de estructuras oculares","Eye structures map"],svg:'<path d="M7 48Q50 7 93 48Q50 89 7 48Z" fill="#e8f1fa" stroke="#315d83" stroke-width="3"/><path d="M7 48Q50 18 93 48" fill="none" stroke="#b87956" stroke-width="5"/><circle cx="50" cy="48" r="17" fill="#fff" stroke="#39856b" stroke-width="3"/><circle cx="50" cy="48" r="8" fill="#315d83"/><path d="M50 8V23 M50 73V89 M3 48H18 M82 48H97" stroke="#d39b45" stroke-width="2" stroke-dasharray="3 3"/>'},
+   {name:["Pestañas y borde palpebral","Lashes and eyelid margin"],svg:'<path d="M8 58Q50 16 92 58" fill="none" stroke="#315d83" stroke-width="5" stroke-linecap="round"/><path d="M17 49L12 28 M29 39L27 17 M42 33L42 10 M56 33L59 11 M70 40L78 20 M82 49L91 31" stroke="#39856b" stroke-width="3.5" stroke-linecap="round"/><path d="M12 64Q50 84 88 64" fill="none" stroke="#b87956" stroke-width="4"/><path d="M20 76H80" stroke="#d39b45" stroke-width="2" stroke-dasharray="4 3"/>'},
+   {name:["Observación externa y señales de alerta","External observation and warning signs"],svg:'<rect x="14" y="15" width="72" height="70" rx="9" fill="#f4f7fb" stroke="#315d83" stroke-width="3"/><circle cx="34" cy="36" r="8" fill="#e8f4ed" stroke="#39856b" stroke-width="2"/><path d="M30 36L33 39L39 32" fill="none" stroke="#39856b" stroke-width="2.5"/><path d="M49 36H74 M49 43H68" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/><path d="M34 57L42 72H26Z" fill="#fff3df" stroke="#b87935" stroke-width="2"/><path d="M34 62V66 M34 69V70" stroke="#b87935" stroke-width="2.5" stroke-linecap="round"/><path d="M49 61H74 M49 68H68" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>'}
+  ];
+  ps.forEach((p,i)=>{
+   if(p.nextElementSibling?.classList.contains("paragraph-vector"))return;
+   const d=diagrams[Math.min(i,2)];
+   const figure=document.createElement("figure");figure.className="paragraph-vector";figure.setAttribute("role","img");
+   figure.setAttribute("aria-label",(en?d.name[1]:d.name[0])+" — "+p.textContent.slice(0,160));
+   figure.innerHTML='<svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">'+d.svg+'</svg><figcaption>'+(en?"Illustration for this paragraph: ":"Ilustración de este párrafo: ")+(en?d.name[1]:d.name[0])+'</figcaption>';
+   p.insertAdjacentElement("afterend",figure);
+  });
+  return;
+ }
  const rules=[
   {k:/desinfecci[oó]n|esterilizaci[oó]n|limpieza|descontamin|disinfect|steriliz|decontamin/i,n:["Secuencia de higiene","Hygiene sequence"],s:'<rect x="13" y="18" width="20" height="25" rx="4" fill="#e8f1fa" stroke="#315d83" stroke-width="2"/><rect x="40" y="18" width="20" height="25" rx="4" fill="#e8f4ed" stroke="#39856b" stroke-width="2"/><rect x="67" y="18" width="20" height="25" rx="4" fill="#fff3df" stroke="#b87935" stroke-width="2"/><path d="M33 30H40 M60 30H67 M36 26L40 30L36 34 M63 26L67 30L63 34" fill="none" stroke="#64748b" stroke-width="2"/><path d="M22 55H78 M22 64H66 M22 73H72" stroke="#39856b" stroke-width="3" stroke-linecap="round"/>'},
   {k:/contaminaci[oó]n cruzada|desechable|residuo|guantes|cross.contamin|disposable|waste|glove/i,n:["Prevención de contaminación","Contamination prevention"],s:'<path d="M18 20H42V78H18Z M58 20H82V78H58Z" fill="#eef3f8" stroke="#315d83" stroke-width="3"/><path d="M42 49H58 M48 43L42 49L48 55 M52 43L58 49L52 55" stroke="#b87935" stroke-width="3" fill="none"/><path d="M24 30H36 M64 30H76" stroke="#39856b" stroke-width="4" stroke-linecap="round"/>'},
