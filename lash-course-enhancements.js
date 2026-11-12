@@ -9,21 +9,53 @@ function addParagraphVectorSchemes(panel){
  if(!root||root.dataset.vectorSchemes==="1")return;
  root.dataset.vectorSchemes="1";
  const en=(typeof getLang==="function"?getLang():"es")==="en";
- // Revisión individual: lección 1, anatomía básica del ojo y sus anexos.
- const lessonHeading=root.querySelector("h2");
- if(lessonHeading&&/anatom[ií]a b[aá]sica del ojo/i.test(lessonHeading.textContent)){
+ // Ilustraciones específicas para las primeras lecciones: cada párrafo se clasifica por su contenido.
+ const heading=(root.querySelector("h1,h2,h3")?.textContent||"").trim().toLocaleLowerCase();
+ const lessonDiagrams = [
+  {
+   title:/anatom[ií]a b[aá]sica del ojo|basic anatomy of the eye/,
+   items:[
+    {k:/p[aá]rpados|conjuntiva|c[oó]rnea|superficie ocular|eyelids|conjunctiva|cornea|ocular surface/i,n:["Mapa de estructuras oculares","Eye structures map"],s:'<path d="M7 48Q50 7 93 48Q50 89 7 48Z" fill="#e8f1fa" stroke="#315d83" stroke-width="3"/><circle cx="50" cy="48" r="17" fill="#fff" stroke="#39856b" stroke-width="3"/><circle cx="50" cy="48" r="8" fill="#315d83"/><path d="M7 48Q50 18 93 48" fill="none" stroke="#b87956" stroke-width="5"/>'},
+    {k:/pesta[nñ]as|l[ií]nea de pesta[nñ]as|borde palpebral|lash line|eyelashes|eyelid margin/i,n:["Pestañas y borde palpebral","Lashes and eyelid margin"],s:'<path d="M8 58Q50 16 92 58" fill="none" stroke="#315d83" stroke-width="5" stroke-linecap="round"/><path d="M17 49L12 28 M29 39L27 17 M42 33L42 10 M56 33L59 11 M70 40L78 20 M82 49L91 31" stroke="#39856b" stroke-width="3.5" stroke-linecap="round"/><path d="M12 64Q50 84 88 64" fill="none" stroke="#b87956" stroke-width="4"/>'},
+    {k:/consulta|enrojecimiento|hinchaz[oó]n|secreci[oó]n|heridas|costras|dolor|lagrimeo|redness|swelling|discharge|wounds|pain|tearing/i,n:["Observación externa y señales de alerta","External observation and warning signs"],s:'<rect x="14" y="15" width="72" height="70" rx="9" fill="#f4f7fb" stroke="#315d83" stroke-width="3"/><circle cx="34" cy="36" r="8" fill="#e8f4ed" stroke="#39856b" stroke-width="2"/><path d="M30 36L33 39L39 32" fill="none" stroke="#39856b" stroke-width="2.5"/><path d="M49 36H74 M49 43H68" stroke="#64748b" stroke-width="2.5"/><path d="M34 57L42 72H26Z" fill="#fff3df" stroke="#b87935" stroke-width="2"/><path d="M34 62V66 M34 69V70" stroke="#b87935" stroke-width="2.5"/>'}
+   ]
+  },
+  {
+   title:/estructura de la pesta[nñ]a natural|natural eyelash structure/,
+   items:[
+    {k:/fol[ií]culo|ra[ií]z|tallo|queratina|follicle|root|shaft|keratin/i,n:["Tallo y raíz de la pestaña","Lash shaft and root"],s:'<path d="M50 84Q48 55 50 20" stroke="#315d83" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M50 55Q30 48 28 31" stroke="#39856b" stroke-width="3" fill="none"/><path d="M36 78Q50 66 64 78Q50 92 36 78Z" fill="#f3dfc9" stroke="#b87956" stroke-width="3"/><path d="M50 22V9" stroke="#d39b45" stroke-width="3"/>'},
+    {k:/soportar|carga|palanca|pesada|fina|fr[aá]gil|di[aá]metro|peso|load|leverage|heavy|fine|fragile|diameter/i,n:["Capacidad de carga de la pestaña","Natural lash load"],s:'<path d="M22 76Q40 53 50 18" stroke="#315d83" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M50 18L78 42" stroke="#b87935" stroke-width="4" stroke-linecap="round"/><path d="M69 42H87 M78 33V51" stroke="#b87935" stroke-width="2"/><path d="M15 82H85" stroke="#64748b" stroke-width="2"/>'},
+    {k:/direcci[oó]n|alineada|una sola|varias|uniones|tirones|crecimiento|direction|aligned|one natural|multiple bonds|pulling|growth/i,n:["Unión individual y alineación","Single-lash attachment and alignment"],s:'<path d="M50 82Q48 50 50 16" stroke="#315d83" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M50 28Q38 18 30 10 M50 28Q62 18 70 10" stroke="#b87935" stroke-width="3" fill="none"/><path d="M50 28L50 8" stroke="#39856b" stroke-width="3"/><path d="M22 86H78" stroke="#64748b" stroke-width="2"/>'}
+   ]
+  },
+  {
+   title:/ciclo de crecimiento de la pesta[nñ]a|eyelash growth cycle/,
+   items:[
+    {k:/fol[ií]culo|ciclo biol[oó]gico|an[aá]gena|cat[aá]gena|tel[oó]gena|fases|biological cycle|anagen|catagen|telogen|phases/i,n:["Fases del ciclo de crecimiento","Growth cycle phases"],s:'<circle cx="50" cy="50" r="34" fill="none" stroke="#d8e1ea" stroke-width="9"/><path d="M50 16A34 34 0 0 1 82 55" fill="none" stroke="#39856b" stroke-width="9"/><path d="M82 55A34 34 0 0 1 28 77" fill="none" stroke="#d39b45" stroke-width="9"/><path d="M28 77A34 34 0 0 1 50 16" fill="none" stroke="#6689b0" stroke-width="9"/>'},
+    {k:/sincron|mismo párpado|desprend|reemplaz|ca[ií]da natural|shed|synchron|same eyelid|replace|natural lash/i,n:["Renovación asincrónica de pestañas","Asynchronous lash renewal"],s:'<path d="M12 67Q28 40 43 67 M38 67Q54 40 69 67 M64 67Q78 46 90 67" fill="none" stroke="#315d83" stroke-width="4"/><path d="M28 35V16 M54 35V16 M79 35V16" stroke="#39856b" stroke-width="3"/><path d="M24 12L28 17L32 12 M50 12L54 17L58 12 M75 12L79 17L83 12" fill="none" stroke="#39856b" stroke-width="2"/><path d="M54 72L64 82L74 72" fill="none" stroke="#d39b45" stroke-width="3"/>'},
+    {k:/relleno|extensiones crecidas|torcidas|sueltas|estabilidad|retirarse|infill|grown.out|twisted|loose|stability|remove/i,n:["Evaluación antes del relleno","Infill assessment"],s:'<path d="M15 68Q30 42 45 62 M48 68Q61 34 78 57" fill="none" stroke="#315d83" stroke-width="4" stroke-linecap="round"/><path d="M45 62L50 42 M78 57L88 34" stroke="#b87956" stroke-width="4" stroke-linecap="round"/><path d="M22 20H78" stroke="#39856b" stroke-width="3" stroke-dasharray="4 3"/><path d="M22 14V26 M78 14V26" stroke="#39856b" stroke-width="2"/>'}
+   ]
+  },
+  {
+   title:/evaluaci[oó]n inicial y ficha de cliente|initial consultation and client record/,
+   items:[
+    {k:/consulta previa|expectativas|experiencias anteriores|reacciones|sensibilidad|lentes de contacto|consultation|expectations|previous experience|reactions|sensitivity|contact lenses/i,n:["Entrevista de consulta inicial","Initial consultation interview"],s:'<circle cx="35" cy="30" r="10" fill="#e8f1fa" stroke="#315d83" stroke-width="3"/><path d="M17 72Q18 48 35 48Q52 48 53 72" fill="#e8f4ed" stroke="#39856b" stroke-width="3"/><path d="M62 24H85 M62 39H82 M62 54H85 M62 69H77" stroke="#b87935" stroke-width="3" stroke-linecap="round"/>'},
+    {k:/ficha|datos|confidencial|fecha|lotes|registro|privacidad|client record|data|confidential|date|batch|record|privacy/i,n:["Ficha y registro confidencial","Confidential client record"],s:'<rect x="24" y="11" width="52" height="78" rx="5" fill="#eef3f8" stroke="#315d83" stroke-width="3"/><path d="M35 30H65 M35 43H65 M35 56H65" stroke="#39856b" stroke-width="3" stroke-linecap="round"/><path d="M35 70H54" stroke="#b87935" stroke-width="3" stroke-linecap="round"/><path d="M50 11V5H66V11" fill="none" stroke="#315d83" stroke-width="3"/>'},
+    {k:/consentimiento|riesgos|cuidados posteriores|dolor|ojo rojo|secreci[oó]n|no se realiza|consent|risks|aftercare|pain|red eye|discharge|do not perform/i,n:["Consentimiento informado y decisión segura","Informed consent and safe decision"],s:'<path d="M50 10L88 27V48Q80 73 50 88Q20 73 12 48V27Z" fill="#eef3f8" stroke="#315d83" stroke-width="3"/><path d="M32 49L45 62L70 34" fill="none" stroke="#39856b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>'}
+   ]
+  }
+ ];
+ const selected=lessonDiagrams.find(x=>x.title.test(heading));
+ if(selected){
   const ps=[...root.querySelectorAll("p")].filter(p=>p.textContent.trim()&&!p.closest(".paragraph-vector"));
-  const diagrams=[
-   {name:["Mapa de estructuras oculares","Eye structures map"],svg:'<path d="M7 48Q50 7 93 48Q50 89 7 48Z" fill="#e8f1fa" stroke="#315d83" stroke-width="3"/><path d="M7 48Q50 18 93 48" fill="none" stroke="#b87956" stroke-width="5"/><circle cx="50" cy="48" r="17" fill="#fff" stroke="#39856b" stroke-width="3"/><circle cx="50" cy="48" r="8" fill="#315d83"/><path d="M50 8V23 M50 73V89 M3 48H18 M82 48H97" stroke="#d39b45" stroke-width="2" stroke-dasharray="3 3"/>'},
-   {name:["Pestañas y borde palpebral","Lashes and eyelid margin"],svg:'<path d="M8 58Q50 16 92 58" fill="none" stroke="#315d83" stroke-width="5" stroke-linecap="round"/><path d="M17 49L12 28 M29 39L27 17 M42 33L42 10 M56 33L59 11 M70 40L78 20 M82 49L91 31" stroke="#39856b" stroke-width="3.5" stroke-linecap="round"/><path d="M12 64Q50 84 88 64" fill="none" stroke="#b87956" stroke-width="4"/><path d="M20 76H80" stroke="#d39b45" stroke-width="2" stroke-dasharray="4 3"/>'},
-   {name:["Observación externa y señales de alerta","External observation and warning signs"],svg:'<rect x="14" y="15" width="72" height="70" rx="9" fill="#f4f7fb" stroke="#315d83" stroke-width="3"/><circle cx="34" cy="36" r="8" fill="#e8f4ed" stroke="#39856b" stroke-width="2"/><path d="M30 36L33 39L39 32" fill="none" stroke="#39856b" stroke-width="2.5"/><path d="M49 36H74 M49 43H68" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/><path d="M34 57L42 72H26Z" fill="#fff3df" stroke="#b87935" stroke-width="2"/><path d="M34 62V66 M34 69V70" stroke="#b87935" stroke-width="2.5" stroke-linecap="round"/><path d="M49 61H74 M49 68H68" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>'}
-  ];
-  ps.forEach((p,i)=>{
+  ps.forEach(p=>{
    if(p.nextElementSibling?.classList.contains("paragraph-vector"))return;
-   const d=diagrams[Math.min(i,2)];
+   const item=selected.items.find(x=>x.k.test(p.textContent));
+   if(!item)return;
    const figure=document.createElement("figure");figure.className="paragraph-vector";figure.setAttribute("role","img");
-   figure.setAttribute("aria-label",(en?d.name[1]:d.name[0])+" — "+p.textContent.slice(0,160));
-   figure.innerHTML='<svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">'+d.svg+'</svg><figcaption>'+(en?"Illustration for this paragraph: ":"Ilustración de este párrafo: ")+(en?d.name[1]:d.name[0])+'</figcaption>';
+   const caption=en?item.n[1]:item.n[0];
+   figure.setAttribute("aria-label",caption+" — "+p.textContent.slice(0,160));
+   figure.innerHTML='<svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">'+item.s+'</svg><figcaption>'+(en?"Illustration for this paragraph: ":"Ilustración de este párrafo: ")+caption+'</figcaption>';
    p.insertAdjacentElement("afterend",figure);
   });
   return;
