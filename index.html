@@ -328,7 +328,7 @@ font-size:10px;min-width:48px
 
 <section id="perfil" class="view">
   <h1 class="section-title">Mi perfil</h1>
-  <div class="profile-head"><div class="avatar big-avatar">E</div><div><h2>Mi espacio personal</h2><p>Tu perfil estará disponible al activar las cuentas.</p><span class="pill">Vista de demostración</span></div></div>
+  <div class="profile-head"><div class="avatar big-avatar">E</div><div><h2>Mi espacio personal</h2><p id="profile-summary">Tus datos personales y académicos aparecerán aquí al iniciar sesión.</p><span class="pill">Perfil EDDELI</span></div></div>
   <div class="card" style="margin-top:17px"><h3>Información personal</h3><p>Nombre, correo, país y datos académicos.</p><button class="secondary" onclick="go('acceso')">ACCEDER</button></div>
 </section>
 
@@ -444,7 +444,7 @@ async function loadStudents(){
 async function setApproval(id,status){try{const r=await supabaseClient.from("profiles").update({approval_status:status,approval_updated_at:new Date().toISOString()}).eq("id",id).eq("role","student");if(r.error)throw r.error;loadStudents();}catch(err){alert("No se pudo actualizar: "+err.message);}}
 async function restoreSession(){const r=await supabaseClient.auth.getSession();if(r.data.session){currentUser=r.data.session.user;const p=await supabaseClient.from("profiles").select("id,full_name,role,approval_status").eq("id",currentUser.id).maybeSingle();currentProfile=p.data;if(currentProfile&&currentProfile.approval_status==="approved")go(currentProfile.role==="admin"?"admin":"estudiante");else{await supabaseClient.auth.signOut();currentUser=null;currentProfile=null;}}}
 restoreSession();
-supabaseClient.auth.onAuthStateChange(function(event,session){currentUser=session?session.user:null;});
+supabaseClient.auth.onAuthStateChange(function(event,session){currentUser=session?session.user:null;if(event==="PASSWORD_RECOVERY"){setTimeout(async function(){const password=prompt("Escribe tu nueva contraseña (mínimo 8 caracteres):");if(!password||password.length<8){alert("La contraseña debe tener al menos 8 caracteres.");return;}const result=await supabaseClient.auth.updateUser({password:password});if(result.error)alert("No se pudo cambiar la contraseña: "+result.error.message);else alert("Contraseña actualizada correctamente.");},0);}});
 </script>
 </body>
 </html>
