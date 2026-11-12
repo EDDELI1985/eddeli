@@ -43,6 +43,38 @@ function addParagraphVectorSchemes(panel){
     {k:/ficha|datos|confidencial|fecha|lotes|registro|privacidad|client record|data|confidential|date|batch|record|privacy/i,n:["Ficha y registro confidencial","Confidential client record"],s:'<rect x="24" y="11" width="52" height="78" rx="5" fill="#eef3f8" stroke="#315d83" stroke-width="3"/><path d="M35 30H65 M35 43H65 M35 56H65" stroke="#39856b" stroke-width="3" stroke-linecap="round"/><path d="M35 70H54" stroke="#b87935" stroke-width="3" stroke-linecap="round"/><path d="M50 11V5H66V11" fill="none" stroke="#315d83" stroke-width="3"/>'},
     {k:/consentimiento|riesgos|cuidados posteriores|dolor|ojo rojo|secreci[oó]n|no se realiza|consent|risks|aftercare|pain|red eye|discharge|do not perform/i,n:["Consentimiento informado y decisión segura","Informed consent and safe decision"],s:'<path d="M50 10L88 27V48Q80 73 50 88Q20 73 12 48V27Z" fill="#eef3f8" stroke="#315d83" stroke-width="3"/><path d="M32 49L45 62L70 34" fill="none" stroke="#39856b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>'}
    ]
+  },
+  {
+   title:/materiales y fibras comerciales|commercial extension materials and fibres/,
+   items:[
+    {k:/fibras sint[eé]ticas|seda|cashmere|mink|composici[oó]n|fabrican|synthetic fibres|silk|composition|manufactur/i,n:["Fibras y composición declarada","Fibres and declared composition"],s:'<path d="M18 78Q30 52 42 25 M38 78Q50 52 62 25 M58 78Q70 52 82 25" stroke="#315d83" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M12 82H88" stroke="#39856b" stroke-width="3"/>'},
+    {k:/uniformidad|acabado|flexibilidad|memoria de curvatura|separaci[oó]n|residuos|trazabilidad|uniformity|finish|flexibility|curl memory|separation|residue|traceability/i,n:["Comparación de calidad de fibras","Fibre quality comparison"],s:'<path d="M18 75Q18 40 40 20 M42 75Q42 40 64 20 M66 75Q66 40 88 20" stroke="#315d83" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="40" cy="20" r="4" fill="#39856b"/><circle cx="64" cy="20" r="4" fill="#d39b45"/><path d="M14 82H88" stroke="#64748b" stroke-width="2"/>'},
+    {k:/marca|referencia|lote|fabricante|registro|reponer|incidencia|brand|batch|manufacturer|record|traceability/i,n:["Trazabilidad del material","Material traceability"],s:'<rect x="20" y="13" width="60" height="74" rx="5" fill="#eef3f8" stroke="#315d83" stroke-width="3"/><path d="M32 31H68 M32 44H68 M32 57H58" stroke="#39856b" stroke-width="3" stroke-linecap="round"/><rect x="32" y="67" width="36" height="10" rx="2" fill="#fff3df" stroke="#b87935" stroke-width="2"/>'}
+   ]
+  },
+  {
+   title:/longitudes, di[aá]metros y grosores|extension lengths, diameters and thicknesses/,
+   items:[
+    {k:/longitud|mil[ií]metros|di[aá]metro|grosor|base hasta la punta|length|millimetres|millimeters|diameter|thickness/i,n:["Medición de longitud y diámetro","Length and diameter measurement"],s:'<path d="M20 72V24 M14 30L20 22L26 30 M14 66L20 74L26 66" stroke="#39856b" stroke-width="2.5" fill="none"/><path d="M20 48H82" stroke="#315d83" stroke-width="5" stroke-linecap="round"/><path d="M82 39V57" stroke="#d39b45" stroke-width="3"/><path d="M36 34V62" stroke="#b87956" stroke-width="3"/>'},
+    {k:/peso|palanca|resistencia|carga|selecci[oó]n|weight|leverage|strength|load|selection/i,n:["Relación entre peso y resistencia","Weight and lash strength"],s:'<path d="M18 76L50 28L82 76" fill="none" stroke="#315d83" stroke-width="4"/><path d="M50 28V13 M40 13H60" stroke="#d39b45" stroke-width="3"/><path d="M26 76H74" stroke="#39856b" stroke-width="4"/><circle cx="50" cy="28" r="5" fill="#b87956"/>'},
+    {k:/bandejas|filas|escala impresa|medidas|tarjeta|maniqu[ií]|tray|rows|printed scale|measurements|training card|mannequin/i,n:["Lectura de bandeja y escala","Tray and scale reading"],s:'<rect x="12" y="20" width="76" height="60" rx="5" fill="#eef3f8" stroke="#315d83" stroke-width="3"/><path d="M22 33H78 M22 48H78 M22 63H78" stroke="#b87956" stroke-width="2"/><path d="M28 27V39 M40 27V39 M52 27V39 M64 27V39 M76 27V39" stroke="#39856b" stroke-width="3"/>'}
+   ]
+  },
+  {
+   title:/curvaturas y perfiles|curl types and profiles/,
+   items:[
+    {k:/curvatura|perfil|J, B, C|elevaci[oó]n|arco|curl|profile|lift|arc/i,n:["Perfiles de curvatura","Curl profiles"],s:'<path d="M15 78Q18 30 48 22 M40 78Q45 34 68 22 M66 78Q70 45 86 18" fill="none" stroke="#315d83" stroke-width="5" stroke-linecap="round"/><path d="M12 82H88" stroke="#d39b45" stroke-width="2" stroke-dasharray="4 3"/>'},
+    {k:/forma del ojo|direcci[oó]n de crecimiento|longitud disponible|comodidad|an[aá]lisis individual|eye shape|growth direction|available length|comfort|individual assessment/i,n:["Selección según ojo y pestaña natural","Selection for eye and natural lash"],s:'<path d="M8 48Q50 9 92 48Q50 87 8 48Z" fill="#e8f1fa" stroke="#315d83" stroke-width="3"/><path d="M20 50Q36 29 51 29Q68 29 82 50" fill="none" stroke="#39856b" stroke-width="4"/><path d="M50 14V82" stroke="#d39b45" stroke-width="2" stroke-dasharray="4 4"/>'},
+    {k:/muestras|marcas|tarjeta de perfil|mapping|por zona|transici[oó]n|cambios bruscos|samples|brands|profile card|by zone|transition/i,n:["Comparación de perfiles y mapping","Profile comparison and mapping"],s:'<path d="M15 70Q20 26 43 20 M43 70Q48 35 68 18 M68 70Q73 42 88 14" fill="none" stroke="#315d83" stroke-width="4"/><path d="M15 78H88" stroke="#64748b" stroke-width="2"/><path d="M43 20V78 M68 18V78" stroke="#d39b45" stroke-width="2" stroke-dasharray="3 3"/>'}
+   ]
+  },
+  {
+   title:/tipos de bandejas y presentaci[oó]n|tray types and presentation/,
+   items:[
+    {k:/longitudes individuales|mezclas de longitudes|tiras completas|fibras de color|fibras planas|abanicos prefabricados|individual lengths|mixed lengths|full strips|coloured fibres|flat fibres|prefanned/i,n:["Formatos de bandejas","Tray formats"],s:'<rect x="10" y="18" width="24" height="64" rx="4" fill="#eef3f8" stroke="#315d83" stroke-width="2"/><rect x="38" y="18" width="24" height="64" rx="4" fill="#e8f4ed" stroke="#39856b" stroke-width="2"/><rect x="66" y="18" width="24" height="64" rx="4" fill="#fff3df" stroke="#b87935" stroke-width="2"/><path d="M16 29H28 M16 42H28 M44 29H56 M44 42H56 M72 29H84 M72 42H84" stroke="#64748b" stroke-width="2"/>'},
+    {k:/fibras planas|perfil especial|abanicos prefabricados|base|peso total|flat fibres|special profile|prefanned fans|base|total weight/i,n:["Fibras especiales y abanicos","Special fibres and fans"],s:'<path d="M50 82L20 18 M50 82L35 12 M50 82L50 8 M50 82L65 12 M50 82L80 18" stroke="#315d83" stroke-width="4" stroke-linecap="round"/><path d="M43 72H57" stroke="#d39b45" stroke-width="6" stroke-linecap="round"/><path d="M15 86H85" stroke="#39856b" stroke-width="2"/>'},
+    {k:/polvo|humedad|contaminaci[oó]n|fecha de apertura|lote|entrenamiento|no devuelvas|dust|humidity|contamination|opening date|batch|training|do not return/i,n:["Almacenamiento y protección de bandejas","Tray storage and protection"],s:'<path d="M18 35H82V78H18Z" fill="#eef3f8" stroke="#315d83" stroke-width="3"/><path d="M14 35L50 14L86 35" fill="#e8f4ed" stroke="#39856b" stroke-width="3" stroke-linejoin="round"/><path d="M32 51H68 M32 62H68" stroke="#b87935" stroke-width="3" stroke-linecap="round"/>'}
+   ]
   }
  ];
  const selected=lessonDiagrams.find(x=>x.title.test(heading));
