@@ -5,10 +5,10 @@
 "use strict";
 
 function addParagraphVectorSchemes(panel){
- const root=panel.querySelector(".lash-single-lesson .expanded-lesson");
+ const lessonView=panel.querySelector(".lash-single-lesson");
+ const root=lessonView&&(lessonView.querySelector(".expanded-lesson")||lessonView);
  if(!root||root.dataset.vectorSchemes==="1")return;
- root.dataset.vectorSchemes="1";
- const en=getLang()==="en";
+ const en=(typeof getLang==="function"?getLang():"es")==="en";
  const rules=[
   {k:/ojo|p[aá]rpado|c[oó]rnea|conjuntiva|anatom|eyelid|cornea|conjunctiva/i,n:["Anatomía ocular","Ocular anatomy"],s:'<path d="M8 45 Q50 4 92 45 Q50 86 8 45Z" fill="#e8f1fa" stroke="#315d83" stroke-width="3"/><circle cx="50" cy="45" r="17" fill="#fff" stroke="#315d83" stroke-width="3"/><circle cx="50" cy="45" r="8" fill="#315d83"/><path d="M14 45 Q50 13 86 45" fill="none" stroke="#b87956" stroke-width="4"/>'},
   {k:/crecimiento|an[aá]gen|cat[aá]gen|tel[oó]gen|growth|cycle|fol[ií]cul/i,n:["Ciclo de crecimiento","Growth cycle"],s:'<circle cx="50" cy="45" r="31" fill="none" stroke="#b9c9d8" stroke-width="8"/><path d="M50 14 A31 31 0 0 1 80 52" fill="none" stroke="#39856b" stroke-width="8"/><path d="M80 52 A31 31 0 0 1 30 70" fill="none" stroke="#d39b45" stroke-width="8"/><path d="M30 70 A31 31 0 0 1 50 14" fill="none" stroke="#6689b0" stroke-width="8"/>'},
