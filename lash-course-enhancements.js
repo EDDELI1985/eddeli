@@ -15,7 +15,7 @@ function addParagraphVectorSchemes(panel){
   {
    title:/anatom[ií]a b[aá]sica del ojo|basic anatomy of the eye/,
    items:[
-    {k:/p[aá]rpados|conjuntiva|c[oó]rnea|superficie ocular|eyelids|conjunctiva|cornea|ocular surface/i,n:["Mapa de estructuras oculares","Eye structures map"],s:'<path d="M7 48Q50 7 93 48Q50 89 7 48Z" fill="#e8f1fa" stroke="#315d83" stroke-width="3"/><circle cx="50" cy="48" r="17" fill="#fff" stroke="#39856b" stroke-width="3"/><circle cx="50" cy="48" r="8" fill="#315d83"/><path d="M7 48Q50 18 93 48" fill="none" stroke="#b87956" stroke-width="5"/>'},
+    {k:/conjuntiva|c[oó]rnea|superficie ocular|conjunctiva|cornea|ocular surface/i,n:["Mapa de estructuras oculares","Eye structures map"],s:'<path d="M7 48Q50 7 93 48Q50 89 7 48Z" fill="#e8f1fa" stroke="#315d83" stroke-width="3"/><circle cx="50" cy="48" r="17" fill="#fff" stroke="#39856b" stroke-width="3"/><circle cx="50" cy="48" r="8" fill="#315d83"/><path d="M7 48Q50 18 93 48" fill="none" stroke="#b87956" stroke-width="5"/>'},
     {k:/pesta[nñ]as|l[ií]nea de pesta[nñ]as|borde palpebral|lash line|eyelashes|eyelid margin/i,n:["Pestañas y borde palpebral","Lashes and eyelid margin"],s:'<path d="M8 58Q50 16 92 58" fill="none" stroke="#315d83" stroke-width="5" stroke-linecap="round"/><path d="M17 49L12 28 M29 39L27 17 M42 33L42 10 M56 33L59 11 M70 40L78 20 M82 49L91 31" stroke="#39856b" stroke-width="3.5" stroke-linecap="round"/><path d="M12 64Q50 84 88 64" fill="none" stroke="#b87956" stroke-width="4"/>'},
     {k:/consulta|enrojecimiento|hinchaz[oó]n|secreci[oó]n|heridas|costras|dolor|lagrimeo|redness|swelling|discharge|wounds|pain|tearing/i,n:["Observación externa y señales de alerta","External observation and warning signs"],s:'<rect x="14" y="15" width="72" height="70" rx="9" fill="#f4f7fb" stroke="#315d83" stroke-width="3"/><circle cx="34" cy="36" r="8" fill="#e8f4ed" stroke="#39856b" stroke-width="2"/><path d="M30 36L33 39L39 32" fill="none" stroke="#39856b" stroke-width="2.5"/><path d="M49 36H74 M49 43H68" stroke="#64748b" stroke-width="2.5"/><path d="M34 57L42 72H26Z" fill="#fff3df" stroke="#b87935" stroke-width="2"/><path d="M34 62V66 M34 69V70" stroke="#b87935" stroke-width="2.5"/>'}
    ]
@@ -79,7 +79,17 @@ function addParagraphVectorSchemes(panel){
  ];
  const selected=lessonDiagrams.find(x=>x.title.test(heading));
  if(selected){
-  const ps=[...root.querySelectorAll("p")].filter(p=>p.textContent.trim()&&!p.closest(".paragraph-vector"));
+  const development=[...root.querySelectorAll("h3")].find(h=>/desarrollo de la lecci[oó]n|lesson development/i.test(h.textContent));
+  const ps=[];
+  if(development){
+   let node=development.nextElementSibling;
+   while(node&&node.tagName!=="H3"){
+    if(node.tagName==="P"&&node.textContent.trim()&&!node.closest(".paragraph-vector"))ps.push(node);
+    node=node.nextElementSibling;
+   }
+  }else{
+   root.querySelectorAll(".expanded-lesson > p").forEach(p=>{if(p.textContent.trim()&&!p.closest(".paragraph-vector"))ps.push(p);});
+  }
   ps.forEach(p=>{
    if(p.nextElementSibling?.classList.contains("paragraph-vector"))return;
    const item=selected.items.find(x=>x.k.test(p.textContent));
