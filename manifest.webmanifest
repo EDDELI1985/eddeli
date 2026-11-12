@@ -1,0 +1,15 @@
+{
+  "id": "./",
+  "name": "EDDELI | ELI BEAUTY ACADEMY",
+  "short_name": "EDDELI",
+  "description": "Plataforma digital de formación profesional EDDELI.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f2ec",
+  "theme_color": "#171613",
+  "icons": [
+    {"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}
