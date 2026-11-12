@@ -679,6 +679,11 @@ async function renderDatabaseLashAssessment(stageIndex,isFinal){
   html+='<button class="primary" type="submit">'+(en?"SUBMIT ASSESSMENT":"ENVIAR EVALUACIÓN")+'</button></form><div id="lash-db-assessment-result" aria-live="polite"></div><nav class="lash-course-nav"><button type="button" class="secondary" id="lash-db-back">'+(en?"BACK TO LESSONS":"VOLVER A LAS LECCIONES")+'</button></nav>';
   panel.innerHTML=html;
   document.getElementById("lash-db-back").onclick=()=>isFinal?window.renderLashStage(12):window.renderLashStage(stageIndex);
+  const nextButton=document.createElement("button");
+  nextButton.type="button";nextButton.className="primary";
+  nextButton.textContent=isFinal?(en?"COURSE MAP":"VOLVER AL ITINERARIO"):(stageIndex<12?(en?"NEXT STAGE →":"SIGUIENTE ETAPA →"):(en?"FINAL EXAM →":"PRUEBA FINAL →"));
+  nextButton.onclick=()=>isFinal?closeLashPanel():(stageIndex<12?window.renderLashStage(stageIndex+1):window.renderLashFinalExam());
+  document.querySelector("#lash-lesson-panel .lash-course-nav").append(nextButton);
   const form=document.getElementById("lash-db-assessment-form");
   form.onsubmit=async ev=>{
    ev.preventDefault();
@@ -697,12 +702,7 @@ async function renderDatabaseLashAssessment(stageIndex,isFinal){
      const cert=await supabaseClient.from("certificates").select("certificate_code,issued_at").eq("student_id",currentUser.id).eq("course_id","8b097e3a-4a76-4896-a79f-e4097c1b68dc").maybeSingle();
      if(!cert.error&&cert.data)box.insertAdjacentHTML("beforeend",'<div class="lash-result"><h2>'+(en?"Certificate issued":"Certificado emitido")+'</h2><p>'+escapeHTML(cert.data.certificate_code)+'</p></div>');
     }
-    const fixedNav=panel.querySelector(".lash-course-nav");
-    if(!isFinal&&outcome.passed){
-     const next=document.createElement("button");next.className="primary";next.textContent=stageIndex<12?(en?"CONTINUE TO NEXT STAGE →":"CONTINUAR A LA SIGUIENTE ETAPA →"):(en?"OPEN FINAL EXAM →":"ABRIR EXAMEN FINAL →");
-     next.onclick=()=>stageIndex<12?window.renderLashStage(stageIndex+1):window.renderLashFinalExam();
-     if(fixedNav)fixedNav.append(next);else box.append(next);
-    }else if(!isFinal&&!outcome.passed){
+    if(!isFinal&&!outcome.passed){
      const retry=document.createElement("button");retry.className="primary";retry.textContent=en?"RETRY STAGE TEST":"REPETIR TEST DE ETAPA";
      retry.onclick=()=>window.renderLashTest(stageIndex);
      if(fixedNav)fixedNav.append(retry);else box.append(retry);
@@ -724,8 +724,7 @@ window.renderLashFinalExam=function(){renderDatabaseLashAssessment(12,true);};
 
 /* Navegación secuencial de estudio: una lección visible por pantalla. */
 function lashPanelTop(){
- const p=document.getElementById("lash-lesson-panel");
- if(p)p.scrollIntoView({behavior:"auto",block:"start"});
+ // Intentionally do not move the document when the student changes lesson.
 }
 function lashShowLocked(index,reason){
  const panel=document.getElementById("lash-lesson-panel");if(!panel)return;
@@ -733,20 +732,6 @@ function lashShowLocked(index,reason){
  panel.hidden=false;
  panel.innerHTML='<section class="lash-locked-screen"><h2>'+(en?"This stage is locked":"Esta etapa está bloqueada")+'</h2><p>'+escapeHTML(reason||(en?"Pass the previous stage assessment to continue.":"Aprueba la evaluación de la etapa anterior para continuar."))+'</p><button class="primary" onclick="window.renderLashStage('+Math.max(0,index-1)+')">'+(en?"RETURN TO PREVIOUS STAGE":"VOLVER A LA ETAPA ANTERIOR")+'</button><button class="secondary" onclick="closeLashPanel()">'+(en?"COURSE MAP":"ITINERARIO")+'</button></section>';
  window.__lashViewState={mode:"locked",index};lashPanelTop();
-}
-async function lashStageUnlocked(index){
- if(index<=0)return true;
- try{
-  if(typeof currentUser==="undefined"||!currentUser)return true;
-  if(typeof currentProfile==="undefined"||!currentProfile||currentProfile.role!=="student")return true;
-  if(currentProfile.approval_status!=="approved")return false;
-  const moduleResult=await supabaseClient.from("academy_modules").select("id").eq("module_number",index).eq("published",true).single();
-  if(moduleResult.error||!moduleResult.data)return false;
-  const assessmentResult=await supabaseClient.from("assessments").select("id").eq("module_id",moduleResult.data.id).eq("is_final",false).single();
-  if(assessmentResult.error||!assessmentResult.data)return false;
-  const attemptResult=await supabaseClient.from("assessment_attempts").select("id").eq("student_id",currentUser.id).eq("assessment_id",assessmentResult.data.id).eq("passed",true).limit(1).maybeSingle();
-  return !attemptResult.error&&!!attemptResult.data;
- }catch(_){return false;}
 }
 window.renderLashLesson=function(index,lessonIndex){
  const panel=document.getElementById("lash-lesson-panel");if(!panel)return;
@@ -786,27 +771,27 @@ window.renderLashLesson=function(index,lessonIndex){
   :'<button class="secondary" onclick="window.renderLashLesson('+index+','+(lessonIndex-1)+')">← '+(en?"PREVIOUS":"ANTERIOR")+'</button>';
  const next=lessonIndex<3
   ?'<button class="primary" onclick="window.renderLashLesson('+index+','+(lessonIndex+1)+')">'+(en?"NEXT LESSON →":"SIGUIENTE LECCIÓN →")+'</button>'
-  :'<button class="primary" onclick="window.renderLashTest('+index+')">'+(en?"TAKE STAGE TEST →":"REALIZAR TEST DE ETAPA →")+'</button>';
+  :index<12
+   ?'<button class="primary" onclick="window.renderLashStage('+(index+1)+')">'+(en?"NEXT STAGE →":"SIGUIENTE ETAPA →")+'</button>'
+   :'<button class="primary" onclick="window.renderLashFinalExam()">'+(en?"FINAL EXAM →":"PRUEBA FINAL →")+'</button>';
  const extras=lessonIndex===3?'<details class="lash-extra-resources"><summary>'+(en?"Optional stage resources":"Material complementario de la etapa")+'</summary>'+addPracticeSection(index,getLang())+addReferences(getLang())+printableForms(getLang())+'</details>':"";
+ const testShortcut=lessonIndex===3?'<button class="secondary" type="button" onclick="window.renderLashTest('+index+')">'+(en?"STAGE TEST":"TEST DE ETAPA")+'</button>':"";
  panel.hidden=false;
- panel.innerHTML='<header class="lash-stage-heading"><span class="pill">'+(en?"STAGE ":"ETAPA ")+(index+1)+' / 13 · '+escapeHTML(level)+'</span><h1>'+escapeHTML(title)+'</h1><p>'+escapeHTML(intro)+'</p><div class="lash-progress"><span style="width:'+Math.round(((index*4+lessonIndex+1)/52)*100)+'%"></span></div><small>'+(en?"LESSON ":"LECCIÓN ")+(lessonIndex+1)+' / 4 · '+(en?"STAGE ":"ETAPA ")+(index+1)+' / 13</small></header><div class="lash-single-lesson">'+videoHtml+lessonHtml+visualHtml+sheetHtml+extras+'</div><nav class="lash-course-nav">'+previous+'<span class="lash-nav-count">'+(index*4+lessonIndex+1)+' / 52</span>'+next+'</nav>';
+ panel.innerHTML='<header class="lash-stage-heading"><span class="pill">'+(en?"STAGE ":"ETAPA ")+(index+1)+' / 13 · '+escapeHTML(level)+'</span><h1>'+escapeHTML(title)+'</h1><p>'+escapeHTML(intro)+'</p><div class="lash-progress"><span style="width:'+Math.round(((index*4+lessonIndex+1)/52)*100)+'%"></span></div><small>'+(en?"LESSON ":"LECCIÓN ")+(lessonIndex+1)+' / 4 · '+(en?"STAGE ":"ETAPA ")+(index+1)+' / 13</small></header><div class="lash-single-lesson">'+videoHtml+lessonHtml+visualHtml+sheetHtml+extras+'</div><nav class="lash-course-nav">'+previous+'<span class="lash-nav-count">'+(index*4+lessonIndex+1)+' / 52</span>'+testShortcut+next+'</nav>';
  window.__lashViewState={mode:"lesson",index,lesson:lessonIndex};
  lashPanelTop();
 };
-window.renderLashStage=async function(index){
+window.renderLashStage=function(index){
  const panel=document.getElementById("lash-lesson-panel");if(!panel)return;
  if(index<0||index>12)return;
  if(typeof currentUser!=="undefined"&&currentUser&&typeof currentProfile!=="undefined"&&currentProfile?.role==="student"&&currentProfile.approval_status!=="approved"){
   lashShowLocked(index,getLang()==="en"?"Your student account is awaiting approval.":"Tu cuenta de estudiante está pendiente de aprobación.");return;
  }
  panel.hidden=false;
- panel.innerHTML='<p class="study-note">'+(getLang()==="en"?"Checking your learning progress…":"Comprobando tu progreso de aprendizaje…")+'</p>';
- const allowed=await lashStageUnlocked(index);
- if(!allowed){lashShowLocked(index);return;}
  window.renderLashLesson(index,0);
 };
 const sequentialStyle=document.createElement("style");
-sequentialStyle.textContent=`#academia.lash-studying{padding-bottom:105px}#academia.lash-studying #lash-lesson-panel{scroll-margin-top:12px;padding-bottom:100px}.lash-single-lesson{max-width:940px;margin:18px auto}.lash-single-lesson>.expanded-lesson{margin:0 0 16px}.lash-single-lesson .atlas-card,.lash-single-lesson .tech-sheet{max-width:760px;margin:12px auto}.lash-one-support{margin:16px 0}.lash-one-support>h3{color:#80643b}.lash-single-lesson .lash-intro-video{display:flex;justify-content:center;margin:18px 0}.lash-single-lesson .lash-intro-video>div{position:relative;width:100%;max-width:760px;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#111}.lash-single-lesson .lash-intro-video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}.lash-extra-resources{margin:18px 0;padding:14px;border:1px solid #e3e8ef;border-radius:12px;background:#fff}.lash-extra-resources summary{cursor:pointer;font-weight:700;color:#72572f}.lash-course-nav{position:fixed!important;left:50%!important;right:auto!important;bottom:10px!important;transform:translateX(-50%);width:min(980px,calc(100% - 24px));z-index:9999;background:#111b2b!important;color:#fff!important;border:1px solid #34435a!important;border-radius:15px;padding:10px 14px!important;box-shadow:0 8px 28px #0003}.lash-course-nav button{min-height:44px;min-width:140px}.lash-nav-count{align-self:center;color:#fff;font-size:13px;font-weight:700;white-space:nowrap}.lash-locked-screen{text-align:center;padding:35px 15px}.lash-locked-screen button{margin:8px}@media(max-width:600px){.lash-course-nav{gap:7px!important;padding:8px!important}.lash-course-nav button{min-width:0;flex:1;font-size:11px;padding:9px 5px}.lash-nav-count{font-size:10px}.lash-single-lesson>.expanded-lesson{padding:16px}}`;
+sequentialStyle.textContent=`#academia.lash-studying{padding-bottom:0}#academia.lash-studying #lash-lesson-panel{position:fixed;top:88px;left:270px;right:18px;bottom:18px;z-index:1000;display:block!important;width:auto;max-width:none;margin:0!important;overflow-y:auto;overscroll-behavior:contain;padding:clamp(18px,3vw,34px) 20px 100px;border-radius:18px;background:#fff;box-shadow:0 14px 40px #101a3233}.lash-single-lesson{max-width:940px;margin:18px auto}.lash-single-lesson>.expanded-lesson{margin:0 0 16px}.lash-single-lesson .atlas-card,.lash-single-lesson .tech-sheet{max-width:760px;margin:12px auto}.lash-one-support{margin:16px 0}.lash-one-support>h3{color:#80643b}.lash-single-lesson .lash-intro-video{display:flex;justify-content:center;margin:18px 0}.lash-single-lesson .lash-intro-video>div{position:relative;width:100%;max-width:760px;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#111}.lash-single-lesson .lash-intro-video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}.lash-extra-resources{margin:18px 0;padding:14px;border:1px solid #e3e8ef;border-radius:12px;background:#fff}.lash-extra-resources summary{cursor:pointer;font-weight:700;color:#72572f}.lash-course-nav{position:fixed!important;left:50%!important;right:auto!important;bottom:10px!important;transform:translateX(-50%);width:min(980px,calc(100% - 24px));z-index:9999;background:#111b2b!important;color:#fff!important;border:1px solid #34435a!important;border-radius:15px;padding:10px 14px!important;box-shadow:0 8px 28px #0003}.lash-course-nav button{min-height:44px;min-width:140px}.lash-nav-count{align-self:center;color:#fff;font-size:13px;font-weight:700;white-space:nowrap}.lash-locked-screen{text-align:center;padding:35px 15px}.lash-locked-screen button{margin:8px}@media(max-width:850px){#academia.lash-studying #lash-lesson-panel{top:70px;left:10px;right:10px;bottom:82px;padding:16px 14px 90px}}@media(max-width:600px){.lash-course-nav{gap:7px!important;padding:8px!important}.lash-course-nav button{min-width:0;flex:1;font-size:11px;padding:9px 5px}.lash-nav-count{font-size:10px}.lash-single-lesson>.expanded-lesson{padding:16px}}`;
 document.head.appendChild(sequentialStyle);
 
 })();
