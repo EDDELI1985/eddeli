@@ -625,5 +625,6 @@ async function loadCertificates(admin=false){const box=document.getElementById(a
 async function checkSystem(){const el=document.getElementById("system-status");try{await requireAdmin();const r=await supabaseClient.from("profiles").select("id").limit(1);if(r.error)throw r.error;el.textContent="Conexión con Supabase correcta. Sesión administrativa verificada. Cuenta: "+currentUser.email;}catch(e){el.textContent="No se pudo verificar: "+e.message;}}
 </script>
 <script src="./lash-visual-library.js"></script>
+<script src="./language.js"></script>
 </body>
 </html>
