@@ -715,4 +715,92 @@ async function renderDatabaseLashAssessment(stageIndex,isFinal){
 window.renderLashTest=function(index){renderDatabaseLashAssessment(index,false);};
 window.renderLashFinalExam=function(){renderDatabaseLashAssessment(12,true);};
 
+
+/* Navegación secuencial de estudio: una lección visible por pantalla. */
+function lashPanelTop(){
+ const p=document.getElementById("lash-lesson-panel");
+ if(p)p.scrollIntoView({behavior:"auto",block:"start"});
+}
+function lashShowLocked(index,reason){
+ const panel=document.getElementById("lash-lesson-panel");if(!panel)return;
+ const en=getLang()==="en";
+ panel.hidden=false;
+ panel.innerHTML='<section class="lash-locked-screen"><h2>'+(en?"This stage is locked":"Esta etapa está bloqueada")+'</h2><p>'+escapeHTML(reason||(en?"Pass the previous stage assessment to continue.":"Aprueba la evaluación de la etapa anterior para continuar."))+'</p><button class="primary" onclick="window.renderLashStage('+Math.max(0,index-1)+')">'+(en?"RETURN TO PREVIOUS STAGE":"VOLVER A LA ETAPA ANTERIOR")+'</button><button class="secondary" onclick="closeLashPanel()">'+(en?"COURSE MAP":"ITINERARIO")+'</button></section>';
+ window.__lashViewState={mode:"locked",index};lashPanelTop();
+}
+async function lashStageUnlocked(index){
+ if(index<=0)return true;
+ try{
+  if(typeof currentUser==="undefined"||!currentUser)return true;
+  if(typeof currentProfile==="undefined"||!currentProfile||currentProfile.role!=="student")return true;
+  if(currentProfile.approval_status!=="approved")return false;
+  const moduleResult=await supabaseClient.from("academy_modules").select("id").eq("module_number",index).eq("published",true).single();
+  if(moduleResult.error||!moduleResult.data)return false;
+  const assessmentResult=await supabaseClient.from("assessments").select("id").eq("module_id",moduleResult.data.id).eq("is_final",false).single();
+  if(assessmentResult.error||!assessmentResult.data)return false;
+  const attemptResult=await supabaseClient.from("assessment_attempts").select("id").eq("student_id",currentUser.id).eq("assessment_id",assessmentResult.data.id).eq("passed",true).limit(1).maybeSingle();
+  return !attemptResult.error&&!!attemptResult.data;
+ }catch(_){return false;}
+}
+window.renderLashLesson=function(index,lessonIndex){
+ const panel=document.getElementById("lash-lesson-panel");if(!panel)return;
+ const en=getLang()==="en",legacy=index<2?lashCurriculum[index]:null,advanced=index>=2?stages[index-2]:null;
+ if(!legacy&&!advanced)return;
+ if(lessonIndex<0){if(index>0)window.renderLashLesson(index-1,3);else closeLashPanel();return;}
+ if(lessonIndex>3){window.renderLashTest(index);return;}
+ let title="",intro="",level="",lessonHtml="",videoHtml="",visualHtml="",sheetHtml="";
+ if(legacy){
+  if(originalStage)originalStage(index);
+  const temp=document.createElement("div");temp.innerHTML=panel.innerHTML;
+  const items=[...temp.querySelectorAll(".expanded-course .expanded-lesson")];
+  if(!items[lessonIndex])return;
+  title=legacy.title;intro=legacy.intro;level=legacy.level||"";
+  lessonHtml=items[lessonIndex].outerHTML;
+  if(index===0&&lessonIndex===3){const v=temp.querySelector(".lash-intro-video");if(v)videoHtml=v.outerHTML;}
+  const visual=temp.querySelectorAll(".atlas-card")[lessonIndex];
+  if(visual)visualHtml='<section class="lash-one-support"><h3>'+(en?"Visual guide":"Guía visual")+'</h3>'+visual.outerHTML+'</section>';
+  const sheet=temp.querySelectorAll(".tech-sheet")[lessonIndex];
+  if(sheet)sheetHtml='<section class="lash-one-support"><h3>'+(en?"Technical reference":"Ficha técnica")+'</h3>'+sheet.outerHTML+'</section>';
+ }else{
+  title=en?(stageNamesEn[index-2]||advanced.title):advanced.title;
+  intro=en?(stageIntrosEn[index-2]||advanced.intro):advanced.intro;
+  level=en?"Professional training":"Formación profesional";
+  const x=advanced.lessons[lessonIndex][getLang()]||advanced.lessons[lessonIndex].es||advanced.lessons[lessonIndex].en;
+  lessonHtml='<article class="expanded-lesson"><span class="tech-kicker">'+(en?"LESSON ":"LECCIÓN ")+(lessonIndex+1)+' / 4</span><h2>'+escapeHTML(x.title)+'</h2><p><strong>'+(en?"Learning objective: ":"Objetivo de aprendizaje: ")+'</strong>'+escapeHTML(x.objective)+'</p><h3>'+(en?"Lesson development":"Desarrollo de la lección")+'</h3>'+x.content.map(v=>'<p>'+escapeHTML(v)+'</p>').join("")+'<h3>'+(en?"Guided learning steps":"Pasos de aprendizaje guiado")+'</h3><ol>'+x.steps.map(v=>'<li>'+escapeHTML(v)+'</li>').join("")+'</ol><h3>'+(en?"Errors and unsafe actions to avoid":"Errores y acciones inseguras que debes evitar")+'</h3><ul>'+x.avoid.map(v=>'<li>'+escapeHTML(v)+'</li>').join("")+'</ul></article>';
+  const visualBox=document.createElement("div");visualBox.innerHTML=window.buildVisuals?window.buildVisuals(index):"";
+  const visual=visualBox.querySelectorAll(".atlas-card")[lessonIndex];
+  if(visual)visualHtml='<section class="lash-one-support"><h3>'+(en?"Visual guide":"Guía visual")+'</h3>'+visual.outerHTML+'</section>';
+  const sheetBox=document.createElement("div");sheetBox.innerHTML=window.buildTechnicalSheets?window.buildTechnicalSheets(index):"";
+  const sheet=sheetBox.querySelectorAll(".tech-sheet")[lessonIndex];
+  if(sheet)sheetHtml='<section class="lash-one-support"><h3>'+(en?"Technical reference":"Ficha técnica")+'</h3>'+sheet.outerHTML+'</section>';
+  if(index===5&&lessonIndex===0)videoHtml='<div class="lash-intro-video"><div><iframe src="https://www.youtube.com/embed/qafmxW0imKw?rel=0&modestbranding=1" title="Etapa 6: Higiene, desinfección y bioseguridad" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>';
+ }
+ const previous=index===0&&lessonIndex===0
+  ?'<button class="secondary" onclick="closeLashPanel()">'+(en?"COURSE MAP":"ITINERARIO")+'</button>'
+  :'<button class="secondary" onclick="window.renderLashLesson('+index+','+(lessonIndex-1)+')">← '+(en?"PREVIOUS":"ANTERIOR")+'</button>';
+ const next=lessonIndex<3
+  ?'<button class="primary" onclick="window.renderLashLesson('+index+','+(lessonIndex+1)+')">'+(en?"NEXT LESSON →":"SIGUIENTE LECCIÓN →")+'</button>'
+  :'<button class="primary" onclick="window.renderLashTest('+index+')">'+(en?"TAKE STAGE TEST →":"REALIZAR TEST DE ETAPA →")+'</button>';
+ const extras=lessonIndex===3?'<details class="lash-extra-resources"><summary>'+(en?"Optional stage resources":"Material complementario de la etapa")+'</summary>'+addPracticeSection(index,getLang())+addReferences(getLang())+printableForms(getLang())+'</details>':"";
+ panel.hidden=false;
+ panel.innerHTML='<header class="lash-stage-heading"><span class="pill">'+(en?"STAGE ":"ETAPA ")+(index+1)+' / 13 · '+escapeHTML(level)+'</span><h1>'+escapeHTML(title)+'</h1><p>'+escapeHTML(intro)+'</p><div class="lash-progress"><span style="width:'+Math.round(((index*4+lessonIndex+1)/52)*100)+'%"></span></div><small>'+(en?"LESSON ":"LECCIÓN ")+(lessonIndex+1)+' / 4 · '+(en?"STAGE ":"ETAPA ")+(index+1)+' / 13</small></header><div class="lash-single-lesson">'+videoHtml+lessonHtml+visualHtml+sheetHtml+extras+'</div><nav class="lash-course-nav">'+previous+'<span class="lash-nav-count">'+(index*4+lessonIndex+1)+' / 52</span>'+next+'</nav>';
+ window.__lashViewState={mode:"lesson",index,lesson:lessonIndex};
+ lashPanelTop();
+};
+window.renderLashStage=async function(index){
+ const panel=document.getElementById("lash-lesson-panel");if(!panel)return;
+ if(index<0||index>12)return;
+ if(typeof currentUser!=="undefined"&&currentUser&&typeof currentProfile!=="undefined"&&currentProfile?.role==="student"&&currentProfile.approval_status!=="approved"){
+  lashShowLocked(index,getLang()==="en"?"Your student account is awaiting approval.":"Tu cuenta de estudiante está pendiente de aprobación.");return;
+ }
+ panel.hidden=false;
+ panel.innerHTML='<p class="study-note">'+(getLang()==="en"?"Checking your learning progress…":"Comprobando tu progreso de aprendizaje…")+'</p>';
+ const allowed=await lashStageUnlocked(index);
+ if(!allowed){lashShowLocked(index);return;}
+ window.renderLashLesson(index,0);
+};
+const sequentialStyle=document.createElement("style");
+sequentialStyle.textContent=`#academia.lash-studying{padding-bottom:105px}#academia.lash-studying #lash-lesson-panel{scroll-margin-top:12px;padding-bottom:100px}.lash-single-lesson{max-width:940px;margin:18px auto}.lash-single-lesson>.expanded-lesson{margin:0 0 16px}.lash-single-lesson .atlas-card,.lash-single-lesson .tech-sheet{max-width:760px;margin:12px auto}.lash-one-support{margin:16px 0}.lash-one-support>h3{color:#80643b}.lash-single-lesson .lash-intro-video{display:flex;justify-content:center;margin:18px 0}.lash-single-lesson .lash-intro-video>div{position:relative;width:100%;max-width:760px;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#111}.lash-single-lesson .lash-intro-video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}.lash-extra-resources{margin:18px 0;padding:14px;border:1px solid #e3e8ef;border-radius:12px;background:#fff}.lash-extra-resources summary{cursor:pointer;font-weight:700;color:#72572f}.lash-course-nav{position:fixed!important;left:50%!important;right:auto!important;bottom:10px!important;transform:translateX(-50%);width:min(980px,calc(100% - 24px));z-index:9999;background:#111b2b!important;color:#fff!important;border:1px solid #34435a!important;border-radius:15px;padding:10px 14px!important;box-shadow:0 8px 28px #0003}.lash-course-nav button{min-height:44px;min-width:140px}.lash-nav-count{align-self:center;color:#fff;font-size:13px;font-weight:700;white-space:nowrap}.lash-locked-screen{text-align:center;padding:35px 15px}.lash-locked-screen button{margin:8px}@media(max-width:600px){.lash-course-nav{gap:7px!important;padding:8px!important}.lash-course-nav button{min-width:0;flex:1;font-size:11px;padding:9px 5px}.lash-nav-count{font-size:10px}.lash-single-lesson>.expanded-lesson{padding:16px}}`;
+document.head.appendChild(sequentialStyle);
+
 })();
