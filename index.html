@@ -640,11 +640,11 @@ async function checkSystem(){const el=document.getElementById("system-status");t
       console.warn("EDDELI: pantalla no encontrada:", page);
       return false;
     }
-    if(adminPages.has(page) && (!window.currentProfile || window.currentProfile.role !== "admin" || window.currentProfile.approval_status !== "approved")){
+    if(adminPages.has(page) && (typeof currentProfile === "undefined" || !currentProfile || currentProfile.role !== "admin" || currentProfile.approval_status !== "approved")){
       page = "login-admin";
-    } else if(studentPages.has(page) && (!window.currentProfile || window.currentProfile.role !== "student" || window.currentProfile.approval_status !== "approved")){
+    } else if(studentPages.has(page) && (typeof currentProfile === "undefined" || !currentProfile || currentProfile.role !== "student" || currentProfile.approval_status !== "approved")){
       page = "login-alumno";
-    } else if(page === "perfil" && !window.currentUser){
+    } else if(page === "perfil" && (typeof currentUser === "undefined" || !currentUser)){
       page = "acceso";
     }
     document.querySelectorAll("main.content > .view").forEach(section => {
