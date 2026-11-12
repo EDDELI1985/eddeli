@@ -378,9 +378,11 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
 </section>
 
 <section id="academia" class="view">
-  <div class="welcome"><div><span class="eyebrow">FORMACIÓN PROFESIONAL</span><h1>ELI BEAUTY ACADEMY</h1><p>Conocimiento, práctica y desarrollo profesional en el mundo de la belleza.</p></div><div style="font-size:65px">✦</div></div>
-  <h2 class="section-title">Programa de formación</h2>
+  <div class="welcome"><div><span class="eyebrow">ELI BEAUTY ACADEMY · FORMACIÓN PROFESIONAL</span><h1>Especialista en Extensiones de Pestañas</h1><p>Un recorrido formativo desde los fundamentos hasta la práctica profesional, con 12 etapas, lecciones, fichas técnicas, ejercicios y evaluaciones de aprendizaje.</p><span class="pill">PROGRAMA COMPLETO · NIVEL INICIAL A PROFESIONAL</span></div><div style="font-size:65px">✧</div></div>
+  <div class="card" style="margin-top:18px"><h2>Tu zona de estudio</h2><p>Avanza en orden. Estudia cada lección, revisa las fichas y realiza la práctica propuesta antes de pasar a la siguiente etapa. Este material es formativo: la práctica sobre personas requiere supervisión presencial y cumplimiento de las normas sanitarias locales.</p><div class="quick"><span class="pill">12 etapas</span><span class="pill">48 unidades de estudio</span><span class="pill">Prácticas guiadas</span><span class="pill">Seguridad ocular</span></div></div>
+  <h2 class="section-title">Itinerario de aprendizaje</h2>
   <div id="modules" class="grid"></div>
+  <div id="lash-lesson-panel" class="card" hidden style="margin-top:20px"></div>
 </section>
 
 <section id="modulo" class="view"><div class="card"><span class="pill">ELI BEAUTY ACADEMY</span><h1 id="module-title" class="section-title">Módulo</h1><div id="module-description" class="module-content"></div><div id="module-assessments"></div><button class="secondary" onclick="go('academia')">VOLVER A LA ACADEMIA</button></div></section>
@@ -413,65 +415,99 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
 <footer>EDDELI · PLATAFORMA DIGITAL · ELI BEAUTY ACADEMY</footer>
 
 <script>
-const modules=[
-"Introducción a la belleza y la estética",
-"Higiene, desinfección y bioseguridad",
-"Anatomía y cuidado de la piel",
-"Extensiones de pestañas",
-"Tipos de pestañas y diseños",
-"Instrumentos y herramientas profesionales",
-"Lámparas y equipos de trabajo",
-"Adhesivos y productos profesionales",
-"Preparación y aplicación",
-"Mantenimiento y retirada",
-"Contraindicaciones y seguridad",
-"Evaluación y práctica profesional"
+const lashCurriculum = [
+{title:"Fundamentos, anatomía y ciclo de la pestaña natural",level:"Bases esenciales",intro:"Conocer la estructura natural es el punto de partida para elegir una extensión adecuada y evitar daños. La extensión nunca debe comprometer la salud del ojo ni sobrecargar la pestaña natural.",lessons:[
+["Anatomía básica del ojo y sus anexos","Identifica párpados, borde palpebral, línea de pestañas, conjuntiva y superficie ocular. La aplicación estética se realiza sobre pestañas, sin tocar piel, mucosa ni globo ocular."],
+["Estructura de la pestaña natural","La pestaña es un pelo con raíz y tallo. Su grosor, longitud, dirección y resistencia varían entre personas y también entre zonas del mismo párpado."],
+["Ciclo de crecimiento","La pestaña pasa por fases de crecimiento, transición y reposo. Cada pestaña se encuentra en una fase distinta; por eso la caída natural es continua y los rellenos requieren valoración individual."],
+["Evaluación inicial y ficha de cliente","Registra expectativas, antecedentes de reacciones, sensibilidad, uso de lentes de contacto, condiciones oculares conocidas y cuidados habituales. No diagnostiques enfermedades."]
+],visual:"Esquema didáctico del párpado, línea de pestañas y ciclo de crecimiento.",practice:"Dibuja un ojo de frente y de perfil. Señala el borde palpebral, la línea de pestañas y las zonas donde nunca debe entrar adhesivo.",safety:"No trabajar sobre ojos rojos, doloridos, con secreción, inflamación, lesión o infección sospechada. Recomendar valoración sanitaria cuando corresponda."},
+{title:"Tipos de extensiones, fibras y características",level:"Materiales",intro:"Aprenderás a reconocer las fibras disponibles y a interpretar las etiquetas de las bandejas antes de seleccionar un diseño.",lessons:[
+["Materiales y fibras comerciales","Las extensiones suelen ser fibras sintéticas diseñadas para imitar distintos acabados. Los nombres comerciales como seda o mink sintético no garantizan por sí solos una composición uniforme: revisa la ficha del fabricante."],
+["Longitudes, diámetros y grosores","La longitud se expresa normalmente en milímetros y el diámetro en milímetros. Un diámetro mayor suele añadir peso. La selección debe respetar la capacidad de la pestaña natural."],
+["Curvaturas y perfiles","Las letras J, B, C, CC, D, L y otras designaciones describen perfiles de curvatura que pueden variar entre fabricantes. Compara siempre muestras y especificaciones reales."],
+["Tipos de bandejas y presentación","Reconoce bandejas individuales, tiras, longitudes mixtas, fibras de color, planas y abanicos prefabricados. Comprueba lote, trazabilidad y condiciones de almacenamiento."]
+],visual:"Lámina comparativa de curvaturas, longitudes, diámetros y acabados de fibras.",practice:"Prepara una tabla de tres bandejas reales: anota fabricante, curvatura, longitud, diámetro, acabado y recomendaciones del proveedor.",safety:"No elijas una fibra solo por moda o apariencia. Evita pesos y longitudes que generen tracción excesiva sobre la pestaña natural."},
+{title:"Adhesivos, pegamentos y productos auxiliares",level:"Química y control del adhesivo",intro:"El adhesivo profesional es un producto químico que requiere formación, lectura de su ficha de seguridad y control de las condiciones ambientales.",lessons:[
+["Familias de adhesivos y composición","Muchos adhesivos profesionales contienen cianoacrilatos; la formulación exacta depende del fabricante. Consulta ingredientes, ficha técnica y ficha de datos de seguridad. No mezcles productos."],
+["Viscosidad, velocidad y retención","La viscosidad y el tiempo de polimerización influyen en el manejo. La velocidad declarada depende de la humedad, temperatura, cantidad aplicada y técnica. No existe un pegamento universal."],
+["Humedad, temperatura y almacenamiento","Usa un higrómetro y termómetro para registrar el ambiente. Respeta el rango indicado por el fabricante, fecha de apertura, caducidad, cierre y almacenamiento. No refrigeres salvo que el fabricante lo indique."],
+["Primer, limpiador, bonder y removedor","Distingue la función de cada producto y verifica si es compatible con el adhesivo. Los removedores requieren especial precaución para que no entren en contacto con ojos o piel."]
+],visual:"Ficha visual de una botella de adhesivo con sus datos: lote, ingredientes, fecha, rango ambiental y advertencias.",practice:"Crea una ficha de control para el adhesivo que utilizarías: marca, lote, fecha de apertura, rango ambiental y protocolo de almacenamiento.",safety:"Los vapores pueden irritar y los cianoacrilatos pueden causar sensibilización o alergia. No aplicar pegamento sobre piel ni dentro del ojo. Ante exposición ocular, seguir la ficha de seguridad y buscar atención médica urgente; no forzar la apertura de párpados pegados."},
+{title:"Instrumental manual y accesorios no eléctricos",level:"Herramientas",intro:"Cada herramienta tiene una función concreta. La calidad, limpieza, integridad y ergonomía son parte del trabajo profesional.",lessons:[
+["Pinzas de aislamiento y aplicación","Reconoce pinzas rectas, curvas, tipo boot, volumen y puntas finas. Comprueba cierre, alineación, agarre y ausencia de rebabas."],
+["Accesorios de preparación","Parches, cintas adecuadas, cepillos desechables, microbrushes, aplicadores y paletas ayudan a organizar el servicio. Elige materiales compatibles con el área periocular."],
+["Soportes y superficies de trabajo","Piedras, placas, anillos y soportes para adhesivo deben mantenerse limpios y utilizarse según instrucciones. Evita materiales porosos difíciles de descontaminar."],
+["Ergonomía y mantenimiento","Organiza las herramientas al alcance, evita posturas forzadas y revisa puntas dañadas. Los instrumentos reutilizables requieren el reprocesamiento indicado por normativa y fabricante."]
+],visual:"Inventario ilustrado de pinzas, cepillos, parches, cintas, paletas y soportes.",practice:"Identifica diez herramientas de un kit real y escribe su nombre, función, si es desechable o reutilizable y cómo se procesa.",safety:"No reutilices aplicadores desechables. No compartas herramientas sin el reprocesamiento adecuado. Protege las puntas y evita apoyarlas sobre superficies contaminadas."},
+{title:"Equipos eléctricos, mobiliario e iluminación",level:"Equipamiento del puesto",intro:"Un puesto bien equipado facilita precisión, postura y control ambiental. Los equipos no sustituyen la técnica ni las medidas de higiene.",lessons:[
+["Iluminación y lámparas","Compara lámparas de trabajo, luz regulable y lupas. La iluminación debe permitir observar sin deslumbrar ni calentar excesivamente al cliente."],
+["Camilla, silla y ergonomía","Ajusta altura, soporte de cabeza, silla y posición del profesional para mantener cuello, espalda y muñecas en postura neutra."],
+["Control ambiental y ventilación","Termómetro e higrómetro ayudan a medir temperatura y humedad. La ventilación adecuada reduce acumulación de vapores; sigue requisitos locales y del fabricante."],
+["Equipos auxiliares y seguridad eléctrica","Evalúa humidificadores u otros equipos solo si son adecuados al espacio y compatibles con las instrucciones del adhesivo. Revisa cables, enchufes, limpieza y mantenimiento."]
+],visual:"Plano de un puesto de trabajo con lámpara, camilla, taburete, ventilación y medidores ambientales.",practice:"Dibuja la distribución de tu puesto y señala iluminación, ventilación, enchufes, superficies limpias y zona de residuos.",safety:"No uses dispositivos eléctricos con cables dañados ni líquidos cerca de conexiones. No dirijas vapor, aire o aerosoles hacia los ojos. Los nano mister y dispositivos similares no son imprescindibles y solo deben usarse si el fabricante del adhesivo lo autoriza."},
+{title:"Higiene, desinfección y bioseguridad",level:"Seguridad profesional",intro:"La prevención de infecciones es una obligación. Distingue limpieza, desinfección y esterilización: no son procesos equivalentes.",lessons:[
+["Preparación de manos y puesto","Realiza higiene de manos antes y después del servicio. Limpia superficies primero y prepara material limpio en una zona protegida."],
+["Limpieza, desinfección y esterilización","La limpieza retira suciedad; la desinfección reduce microorganismos; la esterilización destruye todas las formas microbianas. Aplica el proceso exigido por la normativa para cada instrumento."],
+["Desechables y prevención de contaminación cruzada","Usa consumibles de un solo cliente y no introduzcas aplicadores usados en envases originales. Separa material limpio, usado y residuos."],
+["Protocolo ante incidentes","Detén el servicio ante dolor, quemazón, lagrimeo intenso o reacción. Sigue el protocolo de emergencia, registra el incidente y deriva a atención sanitaria cuando sea necesario."]
+],visual:"Diagrama de flujo: manos limpias → superficie preparada → material procesado → servicio → residuos y limpieza final.",practice:"Elabora una lista de apertura y cierre del puesto con pasos verificables y responsables.",safety:"Nunca continúes un procedimiento si hay síntomas o contaminación. Usa productos desinfectantes autorizados y respeta concentración y tiempo de contacto de la etiqueta."},
+{title:"Diseño, visagismo y mapping",level:"Diseño personalizado",intro:"El mapping es una guía de distribución de longitudes y estilos. Debe adaptarse a la anatomía, pestaña natural, preferencias y límites seguros.",lessons:[
+["Análisis visual del ojo","Observa forma, simetría, dirección natural, densidad y espacio disponible sin emitir diagnósticos ni prometer cambios anatómicos."],
+["Mapas y transiciones","Aprende a dividir el diseño en zonas y registrar longitudes graduales. Los mapas son referencias, no recetas universales."],
+["Efectos habituales","Natural, muñeca, gato, ardilla y combinaciones describen distribuciones visuales. Explica al cliente el resultado probable y sus límites."],
+["Personalización y simetría","Compara ambos ojos, adapta el mapa a diferencias naturales y confirma el diseño antes de comenzar."]
+],visual:"Plantillas de mapping con zonas internas, centrales y externas y ejemplos de transiciones.",practice:"Diseña tres mapas sobre plantillas: natural, muñeca y gato. Explica por qué cambiarías el patrón según la dirección y resistencia de las pestañas.",safety:"No fuerces longitudes extremas ni estilos que comprometan comodidad, visión o salud de la pestaña natural."},
+{title:"Consulta, preparación y aislamiento",level:"Preparación técnica",intro:"Antes de aplicar, confirma que el servicio es apropiado, explica el procedimiento y prepara el área sin causar molestias.",lessons:[
+["Consulta y consentimiento informado","Explica duración, mantenimiento, riesgos conocidos, posibles reacciones y alternativas. Obtén consentimiento según las reglas aplicables."],
+["Limpieza y preparación de pestañas","Utiliza productos diseñados para el área y compatibles con el sistema. Asegura que las pestañas estén limpias y completamente preparadas según fabricante."],
+["Protección del párpado inferior","Coloca parches o cintas apropiados sin tocar la superficie ocular ni tirar de la piel. Comprueba comodidad y cierre suave de los ojos."],
+["Aislamiento de pestaña natural","Aprende el principio de separar una pestaña natural para evitar adhesiones entre varias pestañas. Practica primero en maniquí o material de entrenamiento."]
+],visual:"Secuencia fotográfica de consulta, limpieza, colocación de parches y aislamiento en maniquí.",practice:"Realiza una simulación completa en maniquí: consulta ficticia, ficha, preparación y aislamiento sin adhesivo.",safety:"No aplicar si el cliente no puede mantener los ojos cerrados o si los parches provocan irritación. No trabajar sobre piel lesionada ni pestañas con adhesiones previas sin retirarlas de forma segura."},
+{title:"Aplicación clásica pelo a pelo",level:"Técnica inicial",intro:"La técnica clásica coloca una extensión individual sobre una pestaña natural aislada. La precisión y la distancia segura son más importantes que la velocidad.",lessons:[
+["Selección de extensión y carga de adhesivo","Selecciona una extensión compatible con la pestaña natural. La cantidad de adhesivo y la zona de unión siguen las instrucciones del sistema utilizado."],
+["Dirección y colocación","Coloca la extensión alineada con el crecimiento natural, manteniendo separación de piel y párpado. Evita contacto con el ojo y con pestañas vecinas."],
+["Control de adhesiones y simetría","Revisa cada zona y separa cualquier unión accidental antes de que el adhesivo cure, sin tirar de la pestaña natural."],
+["Finalización y revisión","Comprueba comodidad, simetría, limpieza y ausencia de fibras sueltas. Explica cuidados posteriores y cuándo solicitar ayuda."]
+],visual:"Secuencia didáctica de aislamiento, toma de extensión, unión y revisión sobre cabeza de práctica.",practice:"Practica en maniquí la colocación de extensiones y registra dirección, separación y consistencia. No practiques la primera aplicación con adhesivo sobre personas.",safety:"La distancia a la piel y la ausencia de contacto ocular son esenciales. Si hay dolor, quemazón o exposición accidental, detén el servicio y aplica el protocolo correspondiente."},
+{title:"Volumen, híbridas y abanicos",level:"Técnicas avanzadas",intro:"Las técnicas de volumen requieren control de peso, simetría y separación. El tamaño del abanico debe ser compatible con la pestaña natural.",lessons:[
+["Volumen y abanicos","Comprende la diferencia entre una extensión individual y un abanico de fibras finas. Estudia abanicos hechos a mano y prefabricados, atendiendo a su peso total."],
+["Técnica híbrida","Combina elementos clásicos y de volumen para lograr textura. El patrón debe planificarse y adaptarse al estado de las pestañas naturales."],
+["Control de base y simetría","Practica bases limpias, abanicos estables y distribución uniforme sobre tiras de práctica o maniquí."],
+["Selección responsable de densidad","No existe un número de fibras adecuado para todos los casos. Considera diámetro, longitud, material y resistencia individual."]
+],visual:"Comparación ilustrada de clásico, híbrido y abanicos de volumen con ejemplos esquemáticos.",practice:"Construye abanicos en una tira de práctica. Clasifica cada uno por número de fibras, diámetro y apertura; compara su peso estimado según especificaciones.",safety:"No sobrecargues pestañas finas o debilitadas. No uses abanicos cerrados, bases voluminosas o adhesiones múltiples que generen tracción."},
+{title:"Mantenimiento, rellenos y retirada",level:"Continuidad del servicio",intro:"El mantenimiento empieza con educación al cliente y revisión del estado natural. No se debe rellenar encima de material deteriorado o de una infección sospechada.",lessons:[
+["Cuidados posteriores","Explica limpieza regular con productos compatibles, evitar manipulación y no arrancar extensiones. Sigue las indicaciones específicas del fabricante."],
+["Valoración para relleno","Revisa crecimiento, retención, adhesiones y salud de pestañas. Retira extensiones crecidas o inestables según técnica segura y normativa."],
+["Retirada profesional","Utiliza únicamente removedores adecuados y el protocolo del fabricante. Protege el ojo y evita tracción o raspado."],
+["Registro y planificación","Documenta productos, lote, fecha, diseño, incidencias y recomendaciones. Programa el siguiente control según retención y crecimiento individual."]
+],visual:"Guía visual de cuidado en casa, revisión de crecimiento y proceso profesional de retirada.",practice:"Crea una ficha de mantenimiento con preguntas, observaciones, productos utilizados y recomendaciones escritas.",safety:"Nunca arranques ni tires de las extensiones. No intentes despegar párpados adheridos. Ante exposición ocular a removedor, sigue la ficha de seguridad y busca atención médica urgente."},
+{title:"Reacciones, contraindicaciones y solución de problemas",level:"Criterio profesional",intro:"Una profesional responsable reconoce límites de su competencia. No diagnostica ni trata enfermedades oculares; identifica señales de alarma y deriva.",lessons:[
+["Irritación frente a posible alergia","Picor, enrojecimiento, hinchazón o lagrimeo pueden tener distintas causas. No intentes diagnosticar ni repetir la exposición para comprobar una reacción."],
+["Retención deficiente","Analiza posibles factores: preparación, adhesivo, condiciones ambientales, técnica, cuidados, ciclo natural y compatibilidad de productos. Registra datos antes de cambiar variables."],
+["Adhesiones, dirección y molestias","Las adhesiones entre pestañas pueden causar tirones y daño. La revisión debe ser cuidadosa y la corrección no debe implicar arrancar fibras."],
+["Cuándo detener y derivar","Dolor ocular, visión borrosa, secreción, hinchazón importante, lesión o reacción intensa requieren detener el servicio y recomendar atención sanitaria."]
+],visual:"Árbol de decisión de seguridad: síntoma → detener servicio → proteger al cliente → derivación y registro.",practice:"Resuelve cuatro casos simulados y explica cuándo continuar, cuándo detener y cuándo derivar. La respuesta correcta puede ser no realizar el servicio.",safety:"La seguridad del cliente prevalece sobre completar o cobrar el servicio. No recomendar medicamentos ni aplicar tratamientos oculares."},
+{title:"Práctica integral, evaluación y desarrollo profesional",level:"Cierre del programa",intro:"La competencia se demuestra con conocimientos, criterio, higiene, comunicación y práctica supervisada. Completar las lecturas no sustituye una evaluación práctica presencial.",lessons:[
+["Montaje completo del puesto","Prepara herramientas, consumibles, iluminación, ergonomía, ventilación y control ambiental. Verifica fechas y estado de productos."],
+["Caso práctico integral","Realiza una simulación desde la consulta hasta las recomendaciones finales, documentando cada decisión."],
+["Evaluación teórica y portafolio","Revisa anatomía, materiales, adhesivos, seguridad, diseño, técnica y mantenimiento. Reúne fichas, mapas y ejercicios."],
+["Ética, atención al cliente y negocio","Aprende comunicación honesta, consentimiento, protección de datos, registro de lotes, precios transparentes y cumplimiento de normas locales."]
+],visual:"Rúbrica de evaluación y ejemplo de portafolio de prácticas con fichas, mapas y fotografías autorizadas.",practice:"Entrega un portafolio con ficha de cliente ficticia, mapa, inventario, protocolo de higiene, ejercicios en maniquí y reflexión de seguridad.",safety:"La certificación interna de finalización del curso no equivale automáticamente a una licencia profesional ni sustituye requisitos legales, sanitarios o formación presencial exigida en cada país."}
 ];
-
-function go(id){
- if(id==="admin"||id.startsWith("admin-")){if(!currentProfile||currentProfile.role!=="admin"||currentProfile.approval_status!=="approved")id="acceso";}
- if(id==="estudiante"){if(!currentProfile||currentProfile.role!=="student"||currentProfile.approval_status!=="approved")id="acceso";}
- document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
- const page=document.getElementById(id);
- if(page) page.classList.add('active');
- if(id==="admin-alumnos" && typeof loadStudents==="function") loadStudents();
- if((id==="admin-cursos"||id==="admin-examenes") && typeof loadAdminAcademy==="function") loadAdminAcademy().catch(e=>alert(e.message));
- if(id==="admin-certificados" && typeof loadCertificates==="function") loadCertificates(true);
- if(id==="admin-config" && typeof checkSystem==="function") checkSystem();
- if(id==="academia" && typeof loadAcademy==="function") loadAcademy();
- if(id==="cursos" && typeof loadStudentCourses==="function") loadStudentCourses();
- if(id==="perfil" && typeof fillProfile==="function") fillProfile();
- document.querySelectorAll('[data-page]').forEach(b=>{
-   b.classList.toggle('active',b.dataset.page===id);
- });
- window.scrollTo({top:0,behavior:'smooth'});
-}
-function demoLogin(event,type){
- event.preventDefault();
- alert("Acceso de demostración. La autenticación segura se conectará más adelante.");
- if(type==="admin") go('admin');
- else go('estudiante');
-}
-function registroDemo(event){
- event.preventDefault();
- alert("Formulario de demostración. El registro real se habilitará posteriormente.");
+const modules = lashCurriculum.map(m=>m.title);
+function renderLashCurriculum(){
+ const box=document.getElementById("modules");if(!box)return;
+ box.innerHTML=lashCurriculum.map((m,i)=>'<article class="card module-card"><span class="pill">ETAPA '+(i+1)+' · '+esc(m.level)+'</span><div class="card-icon">'+(i+1)+'</div><h3>'+esc(m.title)+'</h3><p>'+esc(m.intro)+'</p><p><strong>'+m.lessons.length+' lecciones</strong> · Ficha visual · Práctica · Seguridad</p><button class="primary" onclick="openModule('+i+')">ENTRAR A LA ETAPA →</button></article>').join("");
 }
 function openModule(index){
- document.getElementById('module-title').textContent=
- "Módulo "+(index+1)+": "+modules[index];
- document.getElementById('module-description').textContent=
- "Contenido formativo de "+modules[index]+".";
- go('modulo');
+ const m=lashCurriculum[index];if(!m)return;
+ const panel=document.getElementById("lash-lesson-panel");if(!panel)return;
+ panel.hidden=false;
+ panel.innerHTML='<span class="pill">ETAPA '+(index+1)+' · '+esc(m.level)+'</span><h2>'+esc(m.title)+'</h2><p>'+esc(m.intro)+'</p><h3>Lecciones de esta etapa</h3>'+m.lessons.map((l,i)=>'<div class="notice"><strong>Lección '+(i+1)+'. '+esc(l[0])+'</strong><p>'+esc(l[1])+'</p></div>').join("")+'<div class="notice"><strong>Material visual de estudio</strong><p>'+esc(m.visual)+'</p><p>En la edición visual del material se incorporarán fotografías propias, láminas anatómicas y esquemas etiquetados para esta unidad.</p></div><div class="notice"><strong>Práctica propuesta</strong><p>'+esc(m.practice)+'</p></div><div class="notice"><strong>Seguridad profesional</strong><p>'+esc(m.safety)+'</p></div><button class="secondary" onclick="openModule('+(Math.max(0,index-1))+')">← ETAPA ANTERIOR</button> <button class="primary" onclick="openModule('+(Math.min(lashCurriculum.length-1,index+1))+')">SIGUIENTE ETAPA →</button> <button class="secondary" onclick="document.getElementById(\\'lash-lesson-panel\\').hidden=true">CERRAR</button>';
+ panel.scrollIntoView({behavior:"smooth",block:"start"});
 }
-document.getElementById('modules').innerHTML=modules.map((name,i)=>`
- <article class="card module-card">
-  <span class="pill">MÓDULO ${i+1}</span>
-  <div class="card-icon">✦</div>
-  <h3>${name}</h3>
-  <p>Formación profesional · ELI BEAUTY ACADEMY</p>
-  <button class="secondary" onclick="openModule(${i})">VER MÓDULO →</button>
- </article>
-`).join('');
+renderLashCurriculum();
 
 const learningAreas={beauty:{name:"Belleza y estética",description:"ELI BEAUTY ACADEMY es la primera academia de EDDELI. Aquí se reúne la formación profesional relacionada con belleza, cabello, uñas, estética y bienestar.",status:"Disponible"},professional:{name:"Academia y cursos",description:"Un espacio para reunir programas de formación profesional de diferentes especialidades y nuevas academias.",status:"En preparación"},health:{name:"Salud y bienestar",description:"Aprendizaje sobre bienestar, hábitos saludables y cuidado personal.",status:"Próximamente"},food:{name:"Cocina y gastronomía",description:"Técnicas culinarias, cocina y formación gastronómica.",status:"Próximamente"},technology:{name:"Tecnología e innovación",description:"Herramientas digitales, informática e innovación.",status:"Próximamente"},art:{name:"Arte y creatividad",description:"Diseño, fotografía, arte y expresión creativa.",status:"Próximamente"},languages:{name:"Idiomas",description:"Aprende idiomas y desarrolla habilidades para comunicarte con el mundo.",status:"Próximamente"},business:{name:"Desarrollo personal y negocios",description:"Emprendimiento, productividad, liderazgo y habilidades para impulsar proyectos.",status:"Próximamente"},more:{name:"Nuevas áreas",description:"EDDELI está diseñada para incorporar nuevas especialidades, academias, profesores y cursos.",status:"En expansión"}};
 function openLearningArea(key){const area=learningAreas[key];if(!area)return;if(key==="beauty"){go("academia");return;}const box=document.getElementById("area-detail");if(!box)return;box.hidden=false;box.innerHTML="<span class='pill'>"+esc(area.status)+"</span><h2>"+esc(area.name)+"</h2><p>"+esc(area.description)+"</p><p>Esta área formará parte del catálogo de EDDELI. Estamos preparando su contenido.</p>";box.scrollIntoView({behavior:"smooth",block:"nearest"});}
@@ -529,14 +565,7 @@ supabaseClient.auth.onAuthStateChange(function(event,session){currentUser=sessio
 let activeModule=null;
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 async function requireAdmin(){if(!currentUser||!currentProfile||currentProfile.role!=="admin"||currentProfile.approval_status!=="approved")throw new Error("Solo el administrador puede realizar esta acción.");}
-async function loadAcademy(){
- const box=document.getElementById("modules"); if(!box)return;
- const r=await supabaseClient.from("academy_modules").select("id,course_id,module_number,title,content,published,courses!inner(title,published)").eq("published",true).eq("courses.published",true).order("module_number");
- if(r.error){box.textContent="No se pudieron cargar los módulos: "+r.error.message;return;}
- box.replaceChildren();
- if(!r.data.length){box.innerHTML='<div class="card">La formación todavía no está publicada. El administrador puede completar y publicar los módulos desde Gestión.</div>';return;}
- r.data.forEach(m=>{const el=document.createElement("article");el.className="card module-card";const pill=document.createElement("span");pill.className="pill";pill.textContent="MÓDULO "+m.module_number;const h=document.createElement("h3");h.textContent=m.title;const p=document.createElement("p");p.textContent=m.courses.title;const b=document.createElement("button");b.className="secondary";b.textContent="VER MÓDULO →";b.onclick=()=>openDbModule(m);el.append(pill,h,p,b);box.append(el);});
-}
+async function loadAcademy(){renderLashCurriculum();}
 function openDbModule(m){activeModule=m;document.getElementById("module-title").textContent="Módulo "+m.module_number+": "+m.title;document.getElementById("module-description").textContent=m.content||"El contenido de esta lección aún no ha sido añadido.";loadModuleAssessments(m.id);go("modulo");}
 async function loadModuleAssessments(id){const box=document.getElementById("module-assessments");box.textContent="";const r=await supabaseClient.from("assessments").select("id,title,passing_score").eq("module_id",id);if(r.error)return;for(const a of r.data){const b=document.createElement("button");b.className="primary";b.textContent="Realizar: "+a.title;b.onclick=()=>startAssessment(a);box.append(b);}}
 async function startAssessment(a){if(!currentUser||currentProfile?.role!=="student"||currentProfile?.approval_status!=="approved"){alert("Debes iniciar sesión con una cuenta de estudiante aprobada.");return;}const r=await supabaseClient.from("exam_questions").select("id,question_text,options,question_order").eq("assessment_id",a.id).order("question_order");if(r.error){alert(r.error.message);return;}if(!r.data.length){alert("Esta evaluación todavía no tiene preguntas.");return;}const form=document.createElement("form");form.className="card";const heading=document.createElement("h2");heading.textContent=a.title;form.append(heading);r.data.forEach((q,i)=>{const wrap=document.createElement("div");wrap.className="notice";const label=document.createElement("strong");label.textContent=(i+1)+". "+q.question_text;wrap.append(label);(Array.isArray(q.options)?q.options:[]).forEach(opt=>{const l=document.createElement("label");l.style.display="block";const inp=document.createElement("input");inp.type="radio";inp.name=q.id;inp.value=String(opt);inp.required=true;l.append(inp,document.createTextNode(" "+String(opt)));wrap.append(l);});form.append(wrap);});const submit=document.createElement("button");submit.className="primary";submit.textContent="ENVIAR EVALUACIÓN";form.append(submit);form.onsubmit=async e=>{e.preventDefault();const answers={};r.data.forEach(q=>{answers[q.id]=new FormData(form).get(q.id);});try{const out=await supabaseClient.rpc("eddeli_submit_assessment",{p_assessment_id:a.id,p_answers:answers});if(out.error)throw out.error;const result=out.data?.[0];alert("Resultado: "+result.score+"%. "+(result.passed?"¡Aprobado!":"No alcanzaste la nota mínima. Puedes revisar el material y volver a intentarlo."));form.remove();}catch(err){alert("No se pudo corregir el examen: "+err.message);}};document.getElementById("module-assessments").append(form);form.scrollIntoView({behavior:"smooth"});}
