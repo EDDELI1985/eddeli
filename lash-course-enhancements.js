@@ -555,7 +555,7 @@ const questionsForAll=()=>{
 };
 function renderQuestionSet(items,prefix,title,subtitle,gradeFn){
  const lang=getLang();let html='<header class="lash-test-heading"><span class="pill">ELI BEAUTY ACADEMY · '+escapeHTML(title)+'</span><h1>'+escapeHTML(title)+'</h1><p>'+escapeHTML(subtitle)+'</p></header><form class="lash-quiz" id="'+prefix+'-form">';
- items.forEach((q,i)=>{const opts=[...new Set(q.opts)].slice(0,4);while(opts.length<4)opts.push("—");html+='<fieldset class="lash-question"><legend>'+(i+1)+'. '+escapeHTML(q.q)+'</legend>'+opts.map((o,j)=>'<label class="lash-option"><input type="radio" name="'+prefix+'-'+i+'" value="'+j+'"><span>'+escapeHTML(o)+'</span></label>').join("")+'</fieldset>';});
+ items.forEach((q,i)=>{const opts=[...new Set(q.opts)].slice(0,4);const shift=opts.length?(i*3+q.q.length)%opts.length:0;const ordered=opts.slice(shift).concat(opts.slice(0,shift));while(ordered.length<4)ordered.push("—");html+='<fieldset class="lash-question"><legend>'+(i+1)+'. '+escapeHTML(q.q)+'</legend>'+ordered.map((o,j)=>'<label class="lash-option"><input type="radio" name="'+prefix+'-'+i+'" value="'+j+'"><span>'+escapeHTML(o)+'</span></label>').join("")+'</fieldset>';});
  html+='</form><button class="primary" id="'+prefix+'-grade">'+(lang==="en"?"SUBMIT ANSWERS":"CORREGIR EVALUACIÓN")+'</button><div id="'+prefix+'-result" aria-live="polite"></div>';
  return html;
 }
