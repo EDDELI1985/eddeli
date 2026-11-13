@@ -802,7 +802,7 @@ async function loadStudentCourses(){
 }
 async function openDatabaseCourse(courseId){
  try{
-  if(!currentUser||currentProfile?.role!=="student"||currentProfile?.approval_status!=="approved")throw new Error("Necesitas una cuenta de estudiante aprobada.");
+  if(!hasApprovedAcademyAccess()||currentProfile?.role!=="student")throw new Error("Necesitas una cuenta de estudiante aprobada y con el correo confirmado.");
   const [c,m,e]=await Promise.all([
    supabaseClient.from("courses").select("id,title,title_en,description,description_en").eq("id",courseId).eq("published",true).single(),
    supabaseClient.from("academy_modules").select("id,module_number,title,title_en").eq("course_id",courseId).eq("published",true).order("module_number"),
@@ -825,6 +825,7 @@ async function openDatabaseCourse(courseId){
 }
 async function openDatabaseModule(moduleId){
  try{
+  if(!hasApprovedAcademyAccess()||currentProfile?.role!=="student")throw new Error("Necesitas una cuenta de estudiante aprobada y con el correo confirmado.");
   const en=localStorage.getItem("eddeli-language")==="en";
   const r=await supabaseClient.from("academy_modules").select("id,module_number,title,title_en,content,content_en,course_id").eq("id",moduleId).eq("published",true).single();
   if(r.error)throw r.error;const box=document.getElementById("database-course-modules");box.replaceChildren();
