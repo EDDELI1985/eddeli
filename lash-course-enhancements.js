@@ -893,6 +893,7 @@ window.renderLashLesson=function(index,lessonIndex){
   if(typeof originalStage==="function") originalStage(index);
   const temp=document.createElement("div");
   temp.innerHTML=panel.innerHTML;
+  addStageOneLessonDiagrams(temp);
   const items=[...temp.querySelectorAll(".expanded-course .expanded-lesson")];
   const heading=temp.querySelector(".lash-stage-heading h1");
   const introNode=temp.querySelector(".lash-stage-heading>p");
