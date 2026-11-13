@@ -946,4 +946,175 @@ const sequentialStyle=document.createElement("style");
 sequentialStyle.textContent=`#academia.lash-studying{padding-bottom:0}#academia.lash-studying #lash-lesson-panel{position:fixed;top:88px;left:270px;right:18px;bottom:18px;z-index:1000;display:block!important;width:auto;max-width:none;margin:0!important;overflow-y:auto;overscroll-behavior:contain;padding:clamp(18px,3vw,34px) 20px 100px;border-radius:18px;background:#fff;box-shadow:0 14px 40px #101a3233}.lash-single-lesson{max-width:940px;margin:18px auto}.lash-single-lesson>.expanded-lesson{margin:0 0 16px}.lash-single-lesson .atlas-card,.lash-single-lesson .tech-sheet{max-width:760px;margin:12px auto}.lash-one-support{margin:16px 0}.lash-one-support>h3{color:#80643b}.lash-single-lesson .lash-intro-video{display:flex;justify-content:center;margin:18px 0}.lash-single-lesson .lash-intro-video>div{position:relative;width:100%;max-width:760px;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#111}.lash-single-lesson .lash-intro-video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}.lash-extra-resources{margin:18px 0;padding:14px;border:1px solid #e3e8ef;border-radius:12px;background:#fff}.lash-extra-resources summary{cursor:pointer;font-weight:700;color:#72572f}.lash-course-nav{position:fixed!important;left:50%!important;right:auto!important;bottom:10px!important;transform:translateX(-50%);width:min(980px,calc(100% - 24px));z-index:9999;background:#111b2b!important;color:#fff!important;border:1px solid #34435a!important;border-radius:15px;padding:10px 14px!important;box-shadow:0 8px 28px #0003}.lash-course-nav button{min-height:44px;min-width:140px}.lash-nav-count{align-self:center;color:#fff;font-size:13px;font-weight:700;white-space:nowrap}.lash-locked-screen{text-align:center;padding:35px 15px}.lash-locked-screen button{margin:8px}@media(max-width:850px){#academia.lash-studying #lash-lesson-panel{top:70px;left:10px;right:10px;bottom:82px;padding:16px 14px 90px}}@media(max-width:600px){.lash-course-nav{gap:7px!important;padding:8px!important}.lash-course-nav button{min-width:0;flex:1;font-size:11px;padding:9px 5px}.lash-nav-count{font-size:10px}.lash-single-lesson>.expanded-lesson{padding:16px}}.paragraph-vector{display:flex;align-items:center;gap:14px;margin:10px auto 18px;padding:10px 14px;border:1px solid #dbe4ed;border-radius:12px;background:linear-gradient(135deg,#f8fbff,#fff);max-width:520px}.paragraph-vector svg{display:block;width:76px;height:76px;flex:0 0 76px}.paragraph-vector figcaption{font-size:12px;font-weight:700;color:#536579}.paragraph-vector{box-sizing:border-box}@media(max-width:600px){.paragraph-vector{max-width:100%;padding:8px 10px}.paragraph-vector svg{width:64px;height:64px;flex-basis:64px}}`;
 document.head.appendChild(sequentialStyle);
 
+
+/* EDDELI · Recorrido independiente por etapas, con desbloqueo secuencial. */
+const LASH_COURSE_ID="8b097e3a-4a76-4896-a79f-e4097c1b68dc";
+async function getLashProgressState(){
+ const admin=!!(currentUser&&currentProfile&&currentProfile.role==="admin"&&currentProfile.approval_status==="approved");
+ const student=!!(currentUser&&currentProfile&&currentProfile.role==="student"&&currentProfile.approval_status==="approved");
+ if(!admin&&!student)throw new Error("Inicia sesión con una cuenta aprobada para entrar en la academia.");
+ const modulesResult=await supabaseClient.from("academy_modules").select("id,module_number,title").eq("course_id",LASH_COURSE_ID).eq("published",true).order("module_number",{ascending:true});
+ if(modulesResult.error)throw modulesResult.error;
+ const modules=modulesResult.data||[];
+ if(modules.length!==13)throw new Error("La academia debe tener exactamente 13 etapas publicadas. Se encontraron "+modules.length+". No se ha modificado ningún dato.");
+ if(admin)return {admin:true,student:false,modules,completed:new Set(),enrollmentApproved:true,allComplete:true};
+ const [progressResult,enrollmentResult]=await Promise.all([
+  supabaseClient.from("module_progress").select("module_id,completed,grade").eq("student_id",currentUser.id),
+  supabaseClient.from("enrollments").select("status").eq("student_id",currentUser.id).eq("course_id",LASH_COURSE_ID).maybeSingle()
+ ]);
+ if(progressResult.error)throw progressResult.error;
+ if(enrollmentResult.error)throw enrollmentResult.error;
+ const completed=new Set((progressResult.data||[]).filter(x=>x.completed===true).map(x=>x.module_id));
+ const enrollmentApproved=!!(enrollmentResult.data&&enrollmentResult.data.status==="approved");
+ return {admin:false,student:true,modules,completed,enrollmentApproved,allComplete:enrollmentApproved&&modules.every(m=>completed.has(m.id))};
+}
+function lashStageCanOpen(state,index){
+ if(!state||index<0||index>12)return false;
+ if(state.admin)return true;
+ if(!state.student||!state.enrollmentApproved)return false;
+ return state.modules.slice(0,index).every(m=>state.completed.has(m.id));
+}
+window.returnToLashCurriculum=async function(){
+ closeLashPanel();
+ if(typeof window.renderLashCurriculum==="function")await window.renderLashCurriculum();
+};
+window.renderLashCurriculum=async function(){
+ const box=document.getElementById("modules");if(!box)return;
+ box.replaceChildren();box.hidden=false;
+ const safe=value=>String(value==null?"":value).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+ let state;
+ try{state=await getLashProgressState();}
+ catch(err){const note=document.createElement("article");note.className="card";note.innerHTML="<h3>Itinerario no disponible</h3><p>"+safe(err.message||String(err))+"</p>";box.append(note);return;}
+ if(state.student&&!state.enrollmentApproved){
+  const note=document.createElement("article");note.className="card";note.innerHTML="<h3>Matrícula pendiente</h3><p>Tu acceso al curso estará disponible cuando el administrador apruebe tu matrícula.</p>";box.append(note);return;
+ }
+ const progress=document.createElement("article");progress.className="card";
+ const count=state.admin?13:state.completed.size;
+ progress.innerHTML=state.admin
+  ?"<span class='pill'>MODO ADMINISTRADOR</span><h3>Revisión completa de la academia</h3><p>Puedes entrar en cualquiera de las 13 etapas para revisar su contenido y previsualizar sus tests. Las revisiones del administrador no registran notas de alumno.</p>"
+  :"<span class='pill'>TU PROGRESO</span><h3>"+count+" de 13 etapas aprobadas</h3><p>"+(state.allComplete?"Todas las etapas están aprobadas. La prueba final está disponible.":"Aprueba cada test para desbloquear la etapa siguiente. La prueba final se abrirá al aprobar las 13 etapas.")+"</p>";
+ box.append(progress);
+ (window.lashCurriculum||lashCurriculum).forEach((m,i)=>{
+  const dbModule=state.modules[i];const passed=!state.admin&&state.completed.has(dbModule.id);
+  const available=lashStageCanOpen(state,i);
+  const card=document.createElement("article");card.className="card module-card";
+  const tag=document.createElement("span");tag.className="pill";
+  tag.textContent=state.admin?"REVISIÓN ADMINISTRATIVA":passed?"ETAPA APROBADA":available?"ETAPA DISPONIBLE":"ETAPA BLOQUEADA";
+  const icon=document.createElement("div");icon.className="card-icon";icon.textContent=String(i+1);
+  const title=document.createElement("h3");title.textContent=m.title;
+  const desc=document.createElement("p");desc.textContent=m.intro;
+  const meta=document.createElement("p");meta.innerHTML="<strong>4 lecciones</strong> · Estudiar · Test";
+  const action=document.createElement("button");action.className=available?"primary":"secondary";
+  action.textContent=state.admin?"REVISAR ETAPA →":passed?"VOLVER A ESTUDIAR":available?"ENTRAR A LA ETAPA →":"BLOQUEADA · SUPERA LA ANTERIOR";
+  action.disabled=!available;action.onclick=()=>window.openModule(i);
+  card.append(tag,icon,title,desc,meta,action);box.append(card);
+ });
+ const finalCard=document.createElement("article");finalCard.className="card module-card";
+ const finalTag=document.createElement("span");finalTag.className="pill";finalTag.textContent=state.admin?"REVISIÓN ADMINISTRATIVA":state.allComplete?"PRUEBA FINAL DISPONIBLE":"PRUEBA FINAL BLOQUEADA";
+ const finalTitle=document.createElement("h3");finalTitle.textContent="Prueba final del curso";
+ const finalDesc=document.createElement("p");finalDesc.textContent=state.admin?"Puedes revisar la evaluación final sin registrar un intento.":state.allComplete?"Has aprobado las 13 etapas. Ya puedes realizar la prueba final.":"Debes aprobar las 13 etapas, una por una, antes de acceder a la prueba final.";
+ const finalButton=document.createElement("button");finalButton.className=(state.admin||state.allComplete)?"primary":"secondary";finalButton.textContent=(state.admin||state.allComplete)?"ENTRAR A LA PRUEBA FINAL →":"BLOQUEADA";finalButton.disabled=!(state.admin||state.allComplete);finalButton.onclick=()=>window.renderLashFinalExam();
+ finalCard.append(finalTag,finalTitle,finalDesc,finalButton);box.append(finalCard);
+};
+window.openModule=async function(index){
+ try{
+  const state=await getLashProgressState();
+  if(!lashStageCanOpen(state,index)){
+   alert(state.student&&!state.enrollmentApproved?"Tu matrícula todavía no está aprobada.":"Debes aprobar el test de cada etapa anterior antes de continuar.");
+   return false;
+  }
+  const panel=document.getElementById("lash-lesson-panel"),modules=document.getElementById("modules"),academy=document.getElementById("academia");
+  if(!panel||!academy)return false;
+  if(modules)modules.hidden=true;academy.classList.add("lash-studying");panel.hidden=false;
+  await window.renderLashStage(index);return true;
+ }catch(err){alert("No se pudo abrir la etapa: "+(err.message||String(err)));return false;}
+};
+const lashStageRendererBase=window.renderLashStage;
+window.renderLashStage=async function(index){
+ let state;
+ try{state=await getLashProgressState();}
+ catch(err){lashShowLocked(index,err.message||String(err));return;}
+ if(!lashStageCanOpen(state,index)){
+  lashShowLocked(index,state.student&&!state.enrollmentApproved?"Tu matrícula todavía no está aprobada.":"Para entrar en esta etapa debes aprobar todas las etapas anteriores.");
+  return;
+ }
+ if(typeof lashStageRendererBase!=="function")return;
+ lashStageRendererBase(index);
+ const panel=document.getElementById("lash-lesson-panel");if(!panel)return;
+ panel.querySelectorAll(".lash-course-nav").forEach(nav=>nav.remove());
+ const next=panel.querySelector(".lash-test-entry")||panel.querySelector(".lash-stage-actions button");
+ if(next)next.textContent=getLang()==="en"?"NEXT: GO TO STAGE TEST →":"SIGUIENTE: IR AL TEST →";
+ window.__lashViewState={mode:"stage",index};
+};
+async function renderLashAssessmentFlow(stageIndex,isFinal){
+ const panel=document.getElementById("lash-lesson-panel");if(!panel)return;
+ const en=getLang()==="en",admin=!!(currentProfile&&currentProfile.role==="admin"),student=!!(currentProfile&&currentProfile.role==="student");
+ const showMessage=(heading,message)=>{panel.hidden=false;panel.innerHTML="<section class='lash-locked-screen'><h2>"+escapeHTML(heading)+"</h2><p>"+escapeHTML(message)+"</p><button class='primary' onclick='window.returnToLashCurriculum()'>"+(en?"BACK TO ALL STAGES":"VOLVER A TODAS LAS ETAPAS")+"</button></section>";};
+ if(!currentUser||!currentProfile||currentProfile.approval_status!=="approved"||(!admin&&!student)){
+  showMessage(en?"Approved account required":"Cuenta aprobada requerida",en?"Sign in with an approved student or administrator account.":"Inicia sesión con una cuenta aprobada de alumno o administrador.");return;
+ }
+ panel.hidden=false;panel.innerHTML="<p class='study-note'>"+(en?"Loading assessment…":"Cargando evaluación…")+"</p>";
+ try{
+  const state=await getLashProgressState();
+  if(!admin){
+   if(!state.enrollmentApproved){showMessage(en?"Enrollment pending":"Matrícula pendiente","El administrador debe aprobar tu matrícula antes de realizar evaluaciones.");return;}
+   if(isFinal&&!state.allComplete){showMessage(en?"Final exam locked":"Prueba final bloqueada","Debes aprobar las 13 etapas, una por una, antes de realizar la prueba final.");return;}
+   if(!isFinal&&!lashStageCanOpen(state,stageIndex)){showMessage(en?"Stage locked":"Etapa bloqueada","Debes aprobar las etapas anteriores antes de realizar este test.");return;}
+  }
+  let assessment;
+  if(isFinal){
+   const a=await supabaseClient.from("assessments").select("id,title,title_en,passing_score").eq("course_id",LASH_COURSE_ID).eq("is_final",true).single();
+   if(a.error)throw a.error;assessment=a.data;
+  }else{
+   if(stageIndex<0||stageIndex>12)throw new Error("Etapa no válida.");
+   const m=await supabaseClient.from("academy_modules").select("id,module_number,title,title_en").eq("course_id",LASH_COURSE_ID).eq("module_number",stageIndex+1).eq("published",true).single();
+   if(m.error)throw m.error;
+   const a=await supabaseClient.from("assessments").select("id,title,title_en,passing_score").eq("module_id",m.data.id).eq("is_final",false).single();
+   if(a.error)throw a.error;assessment=a.data;
+  }
+  const qr=await supabaseClient.from("exam_questions").select("id,question_text,question_text_en,options,options_en,question_order").eq("assessment_id",assessment.id).order("question_order",{ascending:true});
+  if(qr.error)throw qr.error;if(!qr.data.length)throw new Error("Esta evaluación todavía no tiene preguntas.");
+  const questions=qr.data,title=en?(assessment.title_en||assessment.title):assessment.title;
+  let html='<header class="lash-test-heading"><span class="pill">ELI BEAUTY ACADEMY · '+(isFinal?(en?"FINAL EXAM":"PRUEBA FINAL"):(en?"STAGE "+(stageIndex+1):"ETAPA "+(stageIndex+1)))+'</span><h1>'+escapeHTML(title)+'</h1><p>'+(admin?(en?"Administrator preview. No attempt or grade will be saved.":"Vista de revisión del administrador. No se guardará ningún intento ni nota."):(en?"Complete this test. Your result will be saved in your academic record.":"Completa este test. Tu resultado quedará registrado en tu expediente académico."))+'</p></header>';
+  if(admin){
+   html+='<div class="lash-admin-test-preview">';
+   questions.forEach((q,i)=>{const opts=en&&Array.isArray(q.options_en)&&q.options_en.length?q.options_en:q.options;html+='<article class="lash-question"><h3>'+(i+1)+'. '+escapeHTML(en?(q.question_text_en||q.question_text):q.question_text)+'</h3><ul>'+opts.map(o=>'<li>'+escapeHTML(String(o))+'</li>').join("")+'</ul></article>';});
+   html+='</div><button class="primary" onclick="window.returnToLashCurriculum()">'+(en?"BACK TO ALL STAGES":"VOLVER A TODAS LAS ETAPAS")+'</button>';
+   panel.innerHTML=html;window.__lashViewState={mode:isFinal?"final-db":"test-db",index:stageIndex};return;
+  }
+  html+='<form id="lash-db-assessment-form" class="lash-quiz">';
+  questions.forEach((q,i)=>{const opts=en&&Array.isArray(q.options_en)&&q.options_en.length?q.options_en:q.options;const question=en?(q.question_text_en||q.question_text):q.question_text;html+='<fieldset class="lash-question"><legend>'+(i+1)+'. '+escapeHTML(question)+'</legend>'+opts.map(o=>'<label class="lash-option"><input type="radio" name="'+escapeHTML(q.id)+'" value="'+escapeHTML(String(o))+'" required><span>'+escapeHTML(String(o))+'</span></label>').join("")+'</fieldset>';});
+  html+='<button class="primary" type="submit">'+(en?"SUBMIT TEST":"ENVIAR TEST")+'</button></form><div id="lash-db-assessment-result" aria-live="polite"></div>';
+  panel.innerHTML=html;
+  const form=document.getElementById("lash-db-assessment-form");
+  form.onsubmit=async ev=>{
+   ev.preventDefault();const submit=form.querySelector('button[type="submit"]');submit.disabled=true;submit.textContent=en?"SENDING…":"ENVIANDO…";
+   const answers={};questions.forEach(q=>answers[q.id]=new FormData(form).get(q.id));
+   try{
+    if(Object.values(answers).some(v=>!v))throw new Error(en?"Answer every question before submitting.":"Debes responder todas las preguntas.");
+    const result=await supabaseClient.rpc("eddeli_submit_assessment",{p_assessment_id:assessment.id,p_answers:answers});
+    if(result.error)throw result.error;const outcome=result.data&&result.data[0];if(!outcome)throw new Error("No se recibió el resultado de la evaluación.");
+    form.remove();const box=document.getElementById("lash-db-assessment-result");
+    box.innerHTML='<div class="lash-result"><h2>'+(en?"Score: ":"Resultado: ")+Number(outcome.score).toFixed(2)+'%</h2><p>'+(outcome.passed?(en?"Stage test passed. The next stage is now unlocked.":"¡Test aprobado! La etapa siguiente ya está desbloqueada."):(en?"Not passed. Review the study material and try again.":"Test no aprobado. Repasa el contenido de estudio y vuelve a intentarlo."))+'</p><p>'+(en?"Passing score: ":"Nota mínima: ")+assessment.passing_score+'%</p></div>';
+    if(isFinal&&outcome.passed){
+     const cert=await supabaseClient.from("certificates").select("certificate_code,issued_at").eq("student_id",currentUser.id).eq("course_id",LASH_COURSE_ID).maybeSingle();
+     if(!cert.error&&cert.data)box.insertAdjacentHTML("beforeend",'<div class="lash-result"><h2>'+(en?"Certificate issued":"Certificado emitido")+'</h2><p>'+escapeHTML(cert.data.certificate_code)+'</p></div>');
+    }
+    if(!outcome.passed){
+     const retry=document.createElement("button");retry.className="primary";retry.textContent=en?"RETRY TEST":"REPETIR TEST";retry.onclick=()=>window.renderLashTest(stageIndex);
+     box.append(retry);
+    }
+    const back=document.createElement("button");back.className="secondary";back.textContent=en?"BACK TO ALL STAGES":"VOLVER A TODAS LAS ETAPAS";back.onclick=()=>window.returnToLashCurriculum();box.append(back);
+    if(typeof window.loadStudentCourses==="function")window.loadStudentCourses();
+   }catch(err){
+    const box=document.getElementById("lash-db-assessment-result");box.textContent=(en?"Could not record the test: ":"No se pudo registrar el test: ")+(err.message||String(err));
+    submit.disabled=false;submit.textContent=en?"SUBMIT TEST":"ENVIAR TEST";
+   }
+  };
+  window.__lashViewState={mode:isFinal?"final-db":"test-db",index:stageIndex};
+ }catch(err){showMessage(en?"Assessment unavailable":"Evaluación no disponible",err.message||String(err));}
+}
+window.renderLashTest=function(index){return renderLashAssessmentFlow(index,false);};
+window.renderLashFinalExam=function(){return renderLashAssessmentFlow(12,true);};
+
 })();
