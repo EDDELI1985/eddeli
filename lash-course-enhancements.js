@@ -827,7 +827,7 @@ async function renderDatabaseLashAssessment(stageIndex,isFinal){
   });
   html+='<button class="primary" type="submit">'+(en?"SUBMIT ASSESSMENT":"ENVIAR EVALUACIÓN")+'</button></form><div id="lash-db-assessment-result" aria-live="polite"></div><nav class="lash-course-nav"><button type="button" class="secondary" id="lash-db-back">'+(en?"BACK TO LESSONS":"VOLVER A LAS LECCIONES")+'</button></nav>';
   panel.innerHTML=html;
-  document.getElementById("lash-db-back").onclick=()=>isFinal?window.renderLashStage(12):window.renderLashStage(stageIndex);
+  document.getElementById("lash-db-back").onclick=()=>isFinal?window.renderLashStage(12):window.renderLashLesson(stageIndex,3);
   const nextButton=document.createElement("button");
   nextButton.type="button";nextButton.className="primary";
   nextButton.textContent=isFinal?(en?"COURSE MAP":"VOLVER AL ITINERARIO"):(stageIndex<12?(en?"NEXT STAGE →":"SIGUIENTE ETAPA →"):(en?"FINAL EXAM →":"PRUEBA FINAL →"));
@@ -931,11 +931,10 @@ window.renderLashLesson=function(index,lessonIndex){
   :'<button class="secondary" onclick="window.renderLashLesson('+index+','+(lessonIndex-1)+')">← '+(en?"PREVIOUS":"ANTERIOR")+'</button>';
  const next=lessonIndex<3
   ?'<button class="primary" onclick="window.renderLashLesson('+index+','+(lessonIndex+1)+')">'+(en?"NEXT LESSON →":"SIGUIENTE LECCIÓN →")+'</button>'
-  :index<12
-   ?'<button class="primary" onclick="window.renderLashStage('+(index+1)+')">'+(en?"NEXT STAGE →":"SIGUIENTE ETAPA →")+'</button>'
+  :'<button class="primary" onclick="window.renderLashTest('+index+')">'+(en?"TAKE STAGE TEST →":"REALIZAR TEST →")+'</button>'
    :'<button class="primary" onclick="window.renderLashFinalExam()">'+(en?"FINAL EXAM →":"PRUEBA FINAL →")+'</button>';
  const extras=lessonIndex===3?'<details class="lash-extra-resources"><summary>'+(en?"Optional stage resources":"Material complementario de la etapa")+'</summary>'+addPracticeSection(index,getLang())+addReferences(getLang())+printableForms(getLang())+'</details>':"";
- const testShortcut=lessonIndex===3?'<button class="secondary" type="button" onclick="window.renderLashTest('+index+')">'+(en?"STAGE TEST":"TEST DE ETAPA")+'</button>':"";
+ const testShortcut="";
  panel.hidden=false;
  panel.innerHTML='<header class="lash-stage-heading"><span class="pill">'+(en?"STAGE ":"ETAPA ")+(index+1)+' / 13 · '+escapeHTML(level)+'</span><h1>'+escapeHTML(title)+'</h1><p>'+escapeHTML(intro)+'</p><div class="lash-progress"><span style="width:'+Math.round(((index*4+lessonIndex+1)/52)*100)+'%"></span></div><small>'+(en?"LESSON ":"LECCIÓN ")+(lessonIndex+1)+' / 4 · '+(en?"STAGE ":"ETAPA ")+(index+1)+' / 13</small></header><div class="lash-single-lesson">'+videoHtml+lessonHtml+visualHtml+sheetHtml+extras+'</div><nav class="lash-course-nav">'+previous+'<span class="lash-nav-count">'+(index*4+lessonIndex+1)+' / 52</span>'+testShortcut+next+'</nav>';
  addParagraphVectorSchemes(panel);
