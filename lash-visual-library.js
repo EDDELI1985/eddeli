@@ -99,7 +99,8 @@ professional:[["Puesto preparado","Luz, camilla y herramientas"],["Consulta y pr
 };
 const NS="http://www.w3.org/2000/svg";
 function svg(theme,n){
- const common='fill="none" stroke="#36577f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"';
+ const palette=theme==="fibres"?{ink:"#168A8F",gold:"#D6A84A",panel:"#DDF2EF",panelAlt:"#FFF2D2",border:"#A9D8D3",goldBorder:"#E7D29A",text:"#28565A",muted:"#64888A",canvas:"#F7FCFB"}:{ink:"#36577f",gold:"#c9a66b",panel:"#e8eef7",panelAlt:"#f4eddf",border:"#d8e1ed",goldBorder:"#dfcba7",text:"#273b57",muted:"#6c7f98",canvas:"#fbfcfe"};
+ const common=`fill="none" stroke="${palette.ink}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"`;
  let body="";
  if(theme==="eye"){
   body=['<path d="M12 54 Q90 4 168 54 Q90 104 12 54Z"/><ellipse cx="90" cy="54" rx="24" ry="25"/><circle cx="90" cy="54" r="9" fill="#c9a66b"/>',
@@ -184,9 +185,10 @@ function svg(theme,n){
   }
  };
  if(tailored[theme]?.[n])body=tailored[theme][n];
+ if(theme==="fibres")body=body.replace(/#c9a66b/g,palette.gold);
  const labels=annotations[theme]?.[n]||["Observar el esquema","Contrastar con la explicación"];
- const labelSvg=labels.map((label,i)=>'<rect x="'+(i===0?12:184)+'" y="224" width="164" height="30" rx="8" fill="'+(i===0?'#e8eef7':'#f4eddf')+'" stroke="'+(i===0?'#b9c9df':'#dfcba7')+'"/><circle cx="'+(i===0?25:197)+'" cy="239" r="7" fill="'+(i===0?'#36577f':'#9b7844')+'"/><text x="'+(i===0?25:197)+'" y="242" text-anchor="middle" font-size="8" font-weight="700" fill="#fff">'+(i+1)+'</text><text x="'+(i===0?38:210)+'" y="243" font-size="8.5" font-weight="600" fill="#273b57">'+label.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</text>').join("");
- return '<svg viewBox="0 0 360 266" role="img" aria-label="Diagrama didáctico de '+theme+', con dos referencias identificadas" xmlns="'+NS+'"><rect x="5" y="5" width="350" height="210" rx="13" fill="#fbfcfe" stroke="#d8e1ed"/><g transform="translate(18 24) scale(1.6)" '+common+'>'+body+'</g><text x="15" y="20" font-size="9" font-weight="800" letter-spacing="1" fill="#6c7f98">OBSERVA · IDENTIFICA</text>'+labelSvg+'</svg>';
+ const labelSvg=labels.map((label,i)=>'<rect x="'+(i===0?12:184)+'" y="224" width="164" height="30" rx="8" fill="'+(i===0?palette.panel:palette.panelAlt)+'" stroke="'+(i===0?palette.border:palette.goldBorder)+'"/><circle cx="'+(i===0?25:197)+'" cy="239" r="7" fill="'+(i===0?palette.ink:palette.gold)+'"/><text x="'+(i===0?25:197)+'" y="242" text-anchor="middle" font-size="8" font-weight="700" fill="#fff">'+(i+1)+'</text><text x="'+(i===0?38:210)+'" y="243" font-size="8.5" font-weight="600" fill="'+palette.text+'">'+label.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</text>').join("");
+ return '<svg viewBox="0 0 360 266" role="img" aria-label="Diagrama didáctico de '+theme+', con dos referencias identificadas" xmlns="'+NS+'"><rect x="5" y="5" width="350" height="210" rx="13" fill="'+palette.canvas+'" stroke="'+palette.border+'"/><g transform="translate(18 24) scale(1.6)" '+common+'>'+body+'</g><text x="15" y="20" font-size="9" font-weight="800" letter-spacing="1" fill="'+palette.muted+'">OBSERVA · IDENTIFICA</text>'+labelSvg+'</svg>';
 }
 window.buildVisuals=function(index){
  const stage=atlas[index];if(!stage)return "";
