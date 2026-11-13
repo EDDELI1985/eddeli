@@ -106,7 +106,7 @@ function addParagraphVectorSchemes(panel){
  let key="";
  if(/anatom[ií]a b[aá]sica del ojo|basic anatomy of the eye/.test(title))key="anatomy";
  else if(/estructura de la pesta[nñ]a natural|natural eyelash structure/.test(title))key="natural";
- else if(/ciclo de crecimiento de la pesta[nñ]a|eyelash growth cycle/.test(title))key="growth";
+ else if(/ciclo de crecimiento(?: de la pesta[nñ]a)?|eyelash growth cycle/.test(title))key="growth";
  else if(/evaluaci[oó]n inicial y ficha de cliente|initial consultation and client record/.test(title))key="consultation";
  if(!key)return;
  const headings=[...article.querySelectorAll("h3")];
@@ -135,6 +135,19 @@ function addParagraphVectorSchemes(panel){
  style.textContent='.lash-edu-figure{width:100%;max-width:900px;margin:14px auto 24px;padding:10px;background:#fff;border:1px solid #dfe6ee;border-radius:16px;box-shadow:0 7px 22px #1727470b;overflow:hidden}.lash-edu-svg{display:block;width:100%;height:auto;max-height:390px}.lash-edu-figure figcaption{padding:9px 12px 5px;text-align:center;color:#52647a;font-size:13px;font-weight:700;line-height:1.5}.lash-single-lesson .expanded-lesson>p{line-height:1.85}.lash-single-lesson .lash-edu-figure+ h3{margin-top:24px}@media(max-width:600px){.lash-edu-figure{padding:5px;margin:10px auto 18px;border-radius:12px}.lash-edu-figure figcaption{font-size:12px;padding:8px 7px}.lash-edu-svg{max-height:none}}@media(prefers-reduced-motion:reduce){.lash-edu-figure{scroll-behavior:auto}}';
  if(!document.querySelector('style[data-lash-edu-style="1"]'))document.head.appendChild(style);
 }
+function addStageOneLessonDiagrams(panel){
+ if(!panel)return;
+ const articles=[...panel.querySelectorAll(".expanded-course .expanded-lesson")];
+ articles.forEach(article=>{
+  const holder=document.createElement("div");
+  holder.className="lash-single-lesson";
+  holder.appendChild(article.cloneNode(true));
+  addParagraphVectorSchemes(holder);
+  const updated=holder.querySelector(".expanded-lesson");
+  if(updated)article.replaceWith(updated);
+ });
+}
+
 const lesson=(tEs,tEn,oEs,oEn,cEs,cEn,sEs,sEn,aEs,aEn,qEs,qEn,rEs,rEn)=>({
  es:{title:tEs,objective:oEs,content:cEs,steps:sEs,avoid:aEs,check:qEs,answer:rEs},
  en:{title:tEn,objective:oEn,content:cEn,steps:sEn,avoid:aEn,check:qEn,answer:rEn}
@@ -749,7 +762,7 @@ window.buildTechnicalSheets=function(index){
  return '<section class="tech-library"><h3>'+(en?"Lesson-specific technical sheets":"Fichas técnicas específicas de cada lección")+'</h3><p class="study-note">'+(en?"Use these sheets with the actual product label, technical sheet and safety data sheet.":"Utiliza estas fichas junto con la etiqueta, ficha técnica y ficha de seguridad del producto real.")+'</p><div class="tech-grid">'+d.lessons.map((l,i)=>{const x=l[en?"en":"es"];return '<article class="tech-sheet"><span class="tech-kicker">'+(en?"REFERENCE SHEET ":"FICHA DE REFERENCIA ")+(i+1)+'</span><h4>'+escapeHTML(x.title)+'</h4><p><strong>'+(en?"Purpose: ":"Finalidad: ")+'</strong>'+escapeHTML(x.objective)+'</p><p><strong>'+(en?"Key points: ":"Puntos clave: ")+'</strong>'+escapeHTML(x.content[0])+'</p><p><strong>'+(en?"Operational check: ":"Comprobación operativa: ")+'</strong>'+escapeHTML(x.steps[0])+'</p><p><strong>'+(en?"Safety limit: ":"Límite de seguridad: ")+'</strong>'+escapeHTML(x.avoid[0])+'</p></article>';}).join("")+'</div><div class="tech-warning"><strong>'+(en?"Important: ":"Importante: ")+'</strong>'+(en?"Product-specific values, concentrations, contact times, environmental ranges and compatibility must come from current manufacturer documentation and applicable local rules.":"Los valores, concentraciones, tiempos de contacto, rangos ambientales y compatibilidades deben proceder de la documentación vigente del fabricante y de las normas locales aplicables.")+'</div></section>';
 };
 window.renderLashStage=function(index){
- if(index<2){if(originalStage)originalStage(index);const panel=document.getElementById('lash-lesson-panel');if(panel)panel.insertAdjacentHTML('beforeend',addPracticeSection(index,getLang())+addReferences(getLang())+printableForms(getLang()));return;}
+ if(index<2){const panel=document.getElementById('lash-lesson-panel');if(typeof originalStage==="function")originalStage(index);else if(typeof window.renderLashLesson==="function")window.renderLashLesson(index,0);if(panel){addStageOneLessonDiagrams(panel);panel.insertAdjacentHTML('beforeend',addPracticeSection(index,getLang())+addReferences(getLang())+printableForms(getLang()));}return;}
  const lang=getLang(),d=stages[index-2];if(!d)return;
  const panel=document.getElementById("lash-lesson-panel");if(!panel)return;
  const academy=document.getElementById("academia");
@@ -929,15 +942,7 @@ window.renderLashLesson=function(index,lessonIndex){
  window.__lashViewState={mode:"lesson",index,lesson:lessonIndex};
  lashPanelTop();
 };
-window.renderLashStage=function(index){
- const panel=document.getElementById("lash-lesson-panel");if(!panel)return;
- if(index<0||index>12)return;
- if(typeof currentUser!=="undefined"&&currentUser&&typeof currentProfile!=="undefined"&&currentProfile?.role==="student"&&currentProfile.approval_status!=="approved"){
-  lashShowLocked(index,getLang()==="en"?"Your student account is awaiting approval.":"Tu cuenta de estudiante está pendiente de aprobación.");return;
- }
- panel.hidden=false;
- window.renderLashLesson(index,0);
-};
+/* Se conserva el renderizador completo definido antes: muestra las cuatro lecciones de cada etapa. */
 const sequentialStyle=document.createElement("style");
 sequentialStyle.textContent=`#academia.lash-studying{padding-bottom:0}#academia.lash-studying #lash-lesson-panel{position:fixed;top:88px;left:270px;right:18px;bottom:18px;z-index:1000;display:block!important;width:auto;max-width:none;margin:0!important;overflow-y:auto;overscroll-behavior:contain;padding:clamp(18px,3vw,34px) 20px 100px;border-radius:18px;background:#fff;box-shadow:0 14px 40px #101a3233}.lash-single-lesson{max-width:940px;margin:18px auto}.lash-single-lesson>.expanded-lesson{margin:0 0 16px}.lash-single-lesson .atlas-card,.lash-single-lesson .tech-sheet{max-width:760px;margin:12px auto}.lash-one-support{margin:16px 0}.lash-one-support>h3{color:#80643b}.lash-single-lesson .lash-intro-video{display:flex;justify-content:center;margin:18px 0}.lash-single-lesson .lash-intro-video>div{position:relative;width:100%;max-width:760px;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#111}.lash-single-lesson .lash-intro-video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}.lash-extra-resources{margin:18px 0;padding:14px;border:1px solid #e3e8ef;border-radius:12px;background:#fff}.lash-extra-resources summary{cursor:pointer;font-weight:700;color:#72572f}.lash-course-nav{position:fixed!important;left:50%!important;right:auto!important;bottom:10px!important;transform:translateX(-50%);width:min(980px,calc(100% - 24px));z-index:9999;background:#111b2b!important;color:#fff!important;border:1px solid #34435a!important;border-radius:15px;padding:10px 14px!important;box-shadow:0 8px 28px #0003}.lash-course-nav button{min-height:44px;min-width:140px}.lash-nav-count{align-self:center;color:#fff;font-size:13px;font-weight:700;white-space:nowrap}.lash-locked-screen{text-align:center;padding:35px 15px}.lash-locked-screen button{margin:8px}@media(max-width:850px){#academia.lash-studying #lash-lesson-panel{top:70px;left:10px;right:10px;bottom:82px;padding:16px 14px 90px}}@media(max-width:600px){.lash-course-nav{gap:7px!important;padding:8px!important}.lash-course-nav button{min-width:0;flex:1;font-size:11px;padding:9px 5px}.lash-nav-count{font-size:10px}.lash-single-lesson>.expanded-lesson{padding:16px}}.paragraph-vector{display:flex;align-items:center;gap:14px;margin:10px auto 18px;padding:10px 14px;border:1px solid #dbe4ed;border-radius:12px;background:linear-gradient(135deg,#f8fbff,#fff);max-width:520px}.paragraph-vector svg{display:block;width:76px;height:76px;flex:0 0 76px}.paragraph-vector figcaption{font-size:12px;font-weight:700;color:#536579}.paragraph-vector{box-sizing:border-box}@media(max-width:600px){.paragraph-vector{max-width:100%;padding:8px 10px}.paragraph-vector svg{width:64px;height:64px;flex-basis:64px}}`;
 document.head.appendChild(sequentialStyle);
