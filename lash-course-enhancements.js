@@ -138,13 +138,41 @@ function addParagraphVectorSchemes(panel){
 function addStageOneLessonDiagrams(panel){
  if(!panel)return;
  const articles=[...panel.querySelectorAll(".expanded-course .expanded-lesson")];
+ let stageTwoCards=null;
+ if(typeof window.buildVisuals==="function"){
+  const visualHolder=document.createElement("div");
+  visualHolder.innerHTML=window.buildVisuals(1);
+  stageTwoCards=[...visualHolder.querySelectorAll(".atlas-card")];
+ }
+ const stageTwoVisualIndex=title=>{
+  if(/materiales y fibras comerciales|commercial extension materials and fibres/i.test(title))return 2;
+  if(/longitudes, di[aá]metros y grosores|extension lengths, diameters and thicknesses/i.test(title))return 1;
+  if(/curvaturas y perfiles|curl types and profiles/i.test(title))return 0;
+  if(/tipos de bandejas y presentaci[oó]n|tray types and presentation/i.test(title))return 3;
+  return -1;
+ };
  articles.forEach(article=>{
   const holder=document.createElement("div");
   holder.className="lash-single-lesson";
   holder.appendChild(article.cloneNode(true));
   addParagraphVectorSchemes(holder);
   const updated=holder.querySelector(".expanded-lesson");
-  if(updated)article.replaceWith(updated);
+  if(updated){
+   const title=(updated.querySelector("h2")?.textContent||"").trim();
+   const visualIndex=stageTwoVisualIndex(title);
+   if(visualIndex>=0&&stageTwoCards&&stageTwoCards[visualIndex]){
+    const support=document.createElement("section");
+    support.className="lash-one-support";
+    const heading=document.createElement("h3");
+    heading.textContent=getLang()==="en"?"Visual guide":"Imagen correspondiente";
+    support.appendChild(heading);
+    support.appendChild(stageTwoCards[visualIndex].cloneNode(true));
+    const stepsHeading=[...updated.querySelectorAll("h3")].find(h=>/pasos de aprendizaje guiado|guided learning steps/i.test(h.textContent));
+    if(stepsHeading)updated.insertBefore(support,stepsHeading);
+    else updated.appendChild(support);
+   }
+   article.replaceWith(updated);
+  }
  });
 }
 
