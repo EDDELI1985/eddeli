@@ -950,17 +950,34 @@ document.head.appendChild(sequentialStyle);
 /* EDDELI · Recorrido independiente por etapas, con desbloqueo secuencial. */
 const LASH_COURSE_ID="8b097e3a-4a76-4896-a79f-e4097c1b68dc";
 async function getLashProgressState(){
- const admin=!!(currentUser&&currentProfile&&currentProfile.role==="admin"&&currentProfile.approval_status==="approved");
- const student=!!(currentUser&&currentProfile&&currentProfile.role==="student"&&currentProfile.approval_status==="approved");
- if(!admin&&!student)throw new Error("Inicia sesión con una cuenta aprobada para entrar en la academia.");
+ /* Recuperar sesión y perfil bajo demanda. La pantalla puede solicitar el
+    itinerario antes de que restoreSession() haya terminado su carga asíncrona. */
+ let user=currentUser, profile=currentProfile;
+ if(!user){
+  const sessionResult=await supabaseClient.auth.getSession();
+  if(sessionResult.error)throw sessionResult.error;
+  user=sessionResult.data.session?.user||null;
+  if(user)currentUser=user;
+ }
+ if(!user)throw new Error("Inicia sesión para consultar las etapas de la academia.");
+ if(!user.email_confirmed_at)throw new Error("Debes confirmar tu correo electrónico antes de acceder.");
+ if(!profile||profile.id!==user.id){
+  const profileResult=await supabaseClient.from("profiles").select("id,full_name,role,approval_status,phone,country").eq("id",user.id).maybeSingle();
+  if(profileResult.error)throw profileResult.error;
+  if(!profileResult.data)throw new Error("No se encontró el perfil de esta cuenta. Contacta con el administrador.");
+  profile=profileResult.data;currentProfile=profile;
+ }
+ const admin=profile.role==="admin"&&profile.approval_status==="approved";
+ const student=profile.role==="student"&&profile.approval_status==="approved";
+ if(!admin&&!student)throw new Error("La cuenta no tiene acceso aprobado a la academia. Comprueba el rol y la aprobación con el administrador.");
  const modulesResult=await supabaseClient.from("academy_modules").select("id,module_number,title").eq("course_id",LASH_COURSE_ID).eq("published",true).order("module_number",{ascending:true});
  if(modulesResult.error)throw modulesResult.error;
  const modules=modulesResult.data||[];
  if(modules.length!==13)throw new Error("La academia debe tener exactamente 13 etapas publicadas. Se encontraron "+modules.length+". No se ha modificado ningún dato.");
  if(admin)return {admin:true,student:false,modules,completed:new Set(),enrollmentApproved:true,allComplete:true};
  const [progressResult,enrollmentResult]=await Promise.all([
-  supabaseClient.from("module_progress").select("module_id,completed,grade").eq("student_id",currentUser.id),
-  supabaseClient.from("enrollments").select("status").eq("student_id",currentUser.id).eq("course_id",LASH_COURSE_ID).maybeSingle()
+  supabaseClient.from("module_progress").select("module_id,completed,grade").eq("student_id",user.id),
+  supabaseClient.from("enrollments").select("status").eq("student_id",user.id).eq("course_id",LASH_COURSE_ID).maybeSingle()
  ]);
  if(progressResult.error)throw progressResult.error;
  if(enrollmentResult.error)throw enrollmentResult.error;
