@@ -908,7 +908,7 @@ window.renderLashLesson=function(index,lessonIndex){
   level=levelNode?levelNode.textContent.trim():"";
   lessonHtml=items[lessonIndex].outerHTML;
   if(index===0&&lessonIndex===3){const v=temp.querySelector(".lash-intro-video");if(v)videoHtml=v.outerHTML;}
-  const visual=temp.querySelectorAll(".study-visual")[lessonIndex];
+  const visual=temp.querySelectorAll(".atlas-card")[lessonIndex]||temp.querySelectorAll(".study-visual")[lessonIndex];
   if(visual)visualHtml='<section class="lash-one-support"><h3>'+(en?"Visual guide":"Guía visual")+'</h3>'+visual.outerHTML+'</section>';
   const sheet=temp.querySelectorAll(".tech-sheet")[lessonIndex];
   if(sheet)sheetHtml='<section class="lash-one-support"><h3>'+(en?"Technical reference":"Ficha técnica")+'</h3>'+sheet.outerHTML+'</section>';
@@ -932,8 +932,7 @@ window.renderLashLesson=function(index,lessonIndex){
   :'<button class="secondary" onclick="window.renderLashLesson('+index+','+(lessonIndex-1)+')">← '+(en?"PREVIOUS":"ANTERIOR")+'</button>';
  const next=lessonIndex<3
   ?'<button class="primary" onclick="window.renderLashLesson('+index+','+(lessonIndex+1)+')">'+(en?"NEXT LESSON →":"SIGUIENTE LECCIÓN →")+'</button>'
-  :'<button class="primary" onclick="window.renderLashTest('+index+')">'+(en?"TAKE STAGE TEST →":"REALIZAR TEST →")+'</button>'
-   :'<button class="primary" onclick="window.renderLashFinalExam()">'+(en?"FINAL EXAM →":"PRUEBA FINAL →")+'</button>';
+  :'<button class="primary" onclick="window.renderLashTest('+index+')">'+(en?"TAKE STAGE TEST →":"REALIZAR TEST →")+'</button>';
  const extras=lessonIndex===3?'<details class="lash-extra-resources"><summary>'+(en?"Optional stage resources":"Material complementario de la etapa")+'</summary>'+addPracticeSection(index,getLang())+addReferences(getLang())+printableForms(getLang())+'</details>':"";
  const testShortcut="";
  panel.hidden=false;
