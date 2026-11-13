@@ -909,6 +909,11 @@ async function checkSystem(){const el=document.getElementById("system-status");t
         (page.startsWith("admin-") && button.dataset.page === "login-admin") ||
         (page === "estudiante" && button.dataset.page === "login-alumno"));
     });
+    /* Cargar las etapas solo después de que go() haya validado la sesión.
+       La llamada inicial al cargar la página ocurre antes de restaurar la sesión. */
+    if(page === "academia" && typeof window.renderLashCurriculum === "function") {
+      window.renderLashCurriculum();
+    }
     if(page === "admin-alumnos" && typeof window.loadStudents === "function") window.loadStudents();
     if(page === "admin-cursos" && typeof window.loadAdminAcademy === "function") window.loadAdminAcademy();
     if(page === "admin-examenes" && typeof window.loadAdminAcademy === "function") window.loadAdminAcademy();
