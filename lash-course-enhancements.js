@@ -1,3 +1,4 @@
+
 /* EDDELI · Ampliación académica del curso de extensiones de pestañas.
    Contenido original bilingüe, evaluaciones, rúbrica y plantillas imprimibles.
    No realiza escrituras en Supabase ni altera expedientes. */
@@ -5,162 +6,135 @@
 "use strict";
 
 function addParagraphVectorSchemes(panel){
- const root=panel.querySelector(".expanded-course")||panel.querySelector(".lash-single-lesson .expanded-lesson")||panel.querySelector(".lash-single-lesson");
- if(!root||root.dataset.vectorSchemes==="1")return;
- root.dataset.vectorSchemes="1";
+ const article=panel.querySelector(".lash-single-lesson .expanded-lesson");
+ if(!article||article.dataset.stageOneVisuals==="1")return;
+ const title=(article.querySelector("h2")?.textContent||"").trim().toLocaleLowerCase();
  const en=(typeof getLang==="function"?getLang():"es")==="en";
- // Ilustraciones específicas para las primeras lecciones: cada párrafo se clasifica por su contenido.
- const heading=(root.querySelector("h1,h2,h3")?.textContent||"").trim().toLocaleLowerCase();
- const lessonDiagrams = [
-  {
-   title:/anatom[ií]a b[aá]sica del ojo|basic anatomy of the eye/,
-   items:[
-    {k:/conjuntiva|c[oó]rnea|superficie ocular|conjunctiva|cornea|ocular surface/i,n:["Mapa de estructuras oculares","Eye structures map"],s:'<path d="M7 48Q50 7 93 48Q50 89 7 48Z" fill="#e8f1fa" stroke="#315d83" stroke-width="3"/><circle cx="50" cy="48" r="17" fill="#fff" stroke="#39856b" stroke-width="3"/><circle cx="50" cy="48" r="8" fill="#315d83"/><path d="M7 48Q50 18 93 48" fill="none" stroke="#b87956" stroke-width="5"/>'},
-    {k:/pesta[nñ]as|l[ií]nea de pesta[nñ]as|borde palpebral|lash line|eyelashes|eyelid margin/i,n:["Pestañas y borde palpebral","Lashes and eyelid margin"],s:'<path d="M8 58Q50 16 92 58" fill="none" stroke="#315d83" stroke-width="5" stroke-linecap="round"/><path d="M17 49L12 28 M29 39L27 17 M42 33L42 10 M56 33L59 11 M70 40L78 20 M82 49L91 31" stroke="#39856b" stroke-width="3.5" stroke-linecap="round"/><path d="M12 64Q50 84 88 64" fill="none" stroke="#b87956" stroke-width="4"/>'},
-    {k:/consulta|enrojecimiento|hinchaz[oó]n|secreci[oó]n|heridas|costras|dolor|lagrimeo|redness|swelling|discharge|wounds|pain|tearing/i,n:["Observación externa y señales de alerta","External observation and warning signs"],s:'<rect x="14" y="15" width="72" height="70" rx="9" fill="#f4f7fb" stroke="#315d83" stroke-width="3"/><circle cx="34" cy="36" r="8" fill="#e8f4ed" stroke="#39856b" stroke-width="2"/><path d="M30 36L33 39L39 32" fill="none" stroke="#39856b" stroke-width="2.5"/><path d="M49 36H74 M49 43H68" stroke="#64748b" stroke-width="2.5"/><path d="M34 57L42 72H26Z" fill="#fff3df" stroke="#b87935" stroke-width="2"/><path d="M34 62V66 M34 69V70" stroke="#b87935" stroke-width="2.5"/>'}
-   ]
-  },
-  {
-   title:/estructura de la pesta[nñ]a natural|natural eyelash structure/,
-   items:[
-    {k:/fol[ií]culo|ra[ií]z|tallo|queratina|follicle|root|shaft|keratin/i,n:["Tallo y raíz de la pestaña","Lash shaft and root"],s:'<path d="M50 84Q48 55 50 20" stroke="#315d83" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M50 55Q30 48 28 31" stroke="#39856b" stroke-width="3" fill="none"/><path d="M36 78Q50 66 64 78Q50 92 36 78Z" fill="#f3dfc9" stroke="#b87956" stroke-width="3"/><path d="M50 22V9" stroke="#d39b45" stroke-width="3"/>'},
-    {k:/soportar|carga|palanca|pesada|fina|fr[aá]gil|di[aá]metro|peso|load|leverage|heavy|fine|fragile|diameter/i,n:["Capacidad de carga de la pestaña","Natural lash load"],s:'<path d="M22 76Q40 53 50 18" stroke="#315d83" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M50 18L78 42" stroke="#b87935" stroke-width="4" stroke-linecap="round"/><path d="M69 42H87 M78 33V51" stroke="#b87935" stroke-width="2"/><path d="M15 82H85" stroke="#64748b" stroke-width="2"/>'},
-    {k:/direcci[oó]n|alineada|una sola|varias|uniones|tirones|crecimiento|direction|aligned|one natural|multiple bonds|pulling|growth/i,n:["Unión individual y alineación","Single-lash attachment and alignment"],s:'<path d="M50 82Q48 50 50 16" stroke="#315d83" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M50 28Q38 18 30 10 M50 28Q62 18 70 10" stroke="#b87935" stroke-width="3" fill="none"/><path d="M50 28L50 8" stroke="#39856b" stroke-width="3"/><path d="M22 86H78" stroke="#64748b" stroke-width="2"/>'}
-   ]
-  },
-  {
-   title:/ciclo de crecimiento de la pesta[nñ]a|eyelash growth cycle/,
-   items:[
-    {k:/fol[ií]culo|ciclo biol[oó]gico|an[aá]gena|cat[aá]gena|tel[oó]gena|fases|biological cycle|anagen|catagen|telogen|phases/i,n:["Fases del ciclo de crecimiento","Growth cycle phases"],s:'<circle cx="50" cy="50" r="34" fill="none" stroke="#d8e1ea" stroke-width="9"/><path d="M50 16A34 34 0 0 1 82 55" fill="none" stroke="#39856b" stroke-width="9"/><path d="M82 55A34 34 0 0 1 28 77" fill="none" stroke="#d39b45" stroke-width="9"/><path d="M28 77A34 34 0 0 1 50 16" fill="none" stroke="#6689b0" stroke-width="9"/>'},
-    {k:/sincron|mismo párpado|desprend|reemplaz|ca[ií]da natural|shed|synchron|same eyelid|replace|natural lash/i,n:["Renovación asincrónica de pestañas","Asynchronous lash renewal"],s:'<path d="M12 67Q28 40 43 67 M38 67Q54 40 69 67 M64 67Q78 46 90 67" fill="none" stroke="#315d83" stroke-width="4"/><path d="M28 35V16 M54 35V16 M79 35V16" stroke="#39856b" stroke-width="3"/><path d="M24 12L28 17L32 12 M50 12L54 17L58 12 M75 12L79 17L83 12" fill="none" stroke="#39856b" stroke-width="2"/><path d="M54 72L64 82L74 72" fill="none" stroke="#d39b45" stroke-width="3"/>'},
-    {k:/relleno|extensiones crecidas|torcidas|sueltas|estabilidad|retirarse|infill|grown.out|twisted|loose|stability|remove/i,n:["Evaluación antes del relleno","Infill assessment"],s:'<path d="M15 68Q30 42 45 62 M48 68Q61 34 78 57" fill="none" stroke="#315d83" stroke-width="4" stroke-linecap="round"/><path d="M45 62L50 42 M78 57L88 34" stroke="#b87956" stroke-width="4" stroke-linecap="round"/><path d="M22 20H78" stroke="#39856b" stroke-width="3" stroke-dasharray="4 3"/><path d="M22 14V26 M78 14V26" stroke="#39856b" stroke-width="2"/>'}
-   ]
-  },
-  {
-   title:/evaluaci[oó]n inicial y ficha de cliente|initial consultation and client record/,
-   items:[
-    {k:/consulta previa|expectativas|experiencias anteriores|reacciones|sensibilidad|lentes de contacto|consultation|expectations|previous experience|reactions|sensitivity|contact lenses/i,n:["Entrevista de consulta inicial","Initial consultation interview"],s:'<circle cx="35" cy="30" r="10" fill="#e8f1fa" stroke="#315d83" stroke-width="3"/><path d="M17 72Q18 48 35 48Q52 48 53 72" fill="#e8f4ed" stroke="#39856b" stroke-width="3"/><path d="M62 24H85 M62 39H82 M62 54H85 M62 69H77" stroke="#b87935" stroke-width="3" stroke-linecap="round"/>'},
-    {k:/ficha|datos|confidencial|fecha|lotes|registro|privacidad|client record|data|confidential|date|batch|record|privacy/i,n:["Ficha y registro confidencial","Confidential client record"],s:'<rect x="24" y="11" width="52" height="78" rx="5" fill="#eef3f8" stroke="#315d83" stroke-width="3"/><path d="M35 30H65 M35 43H65 M35 56H65" stroke="#39856b" stroke-width="3" stroke-linecap="round"/><path d="M35 70H54" stroke="#b87935" stroke-width="3" stroke-linecap="round"/><path d="M50 11V5H66V11" fill="none" stroke="#315d83" stroke-width="3"/>'},
-    {k:/consentimiento|riesgos|cuidados posteriores|dolor|ojo rojo|secreci[oó]n|no se realiza|consent|risks|aftercare|pain|red eye|discharge|do not perform/i,n:["Consentimiento informado y decisión segura","Informed consent and safe decision"],s:'<path d="M50 10L88 27V48Q80 73 50 88Q20 73 12 48V27Z" fill="#eef3f8" stroke="#315d83" stroke-width="3"/><path d="M32 49L45 62L70 34" fill="none" stroke="#39856b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>'}
-   ]
-  },
-  {
-   title:/materiales y fibras comerciales|commercial extension materials and fibres/,
-   items:[
-    {k:/fibras sint[eé]ticas|seda|cashmere|mink|composici[oó]n|fabrican|synthetic fibres|silk|composition|manufactur/i,n:["Fibras y composición declarada","Fibres and declared composition"],s:'<path d="M18 78Q30 52 42 25 M38 78Q50 52 62 25 M58 78Q70 52 82 25" stroke="#315d83" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M12 82H88" stroke="#39856b" stroke-width="3"/>'},
-    {k:/uniformidad|acabado|flexibilidad|memoria de curvatura|separaci[oó]n|residuos|trazabilidad|uniformity|finish|flexibility|curl memory|separation|residue|traceability/i,n:["Comparación de calidad de fibras","Fibre quality comparison"],s:'<path d="M18 75Q18 40 40 20 M42 75Q42 40 64 20 M66 75Q66 40 88 20" stroke="#315d83" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="40" cy="20" r="4" fill="#39856b"/><circle cx="64" cy="20" r="4" fill="#d39b45"/><path d="M14 82H88" stroke="#64748b" stroke-width="2"/>'},
-    {k:/marca|referencia|lote|fabricante|registro|reponer|incidencia|brand|batch|manufacturer|record|traceability/i,n:["Trazabilidad del material","Material traceability"],s:'<rect x="20" y="13" width="60" height="74" rx="5" fill="#eef3f8" stroke="#315d83" stroke-width="3"/><path d="M32 31H68 M32 44H68 M32 57H58" stroke="#39856b" stroke-width="3" stroke-linecap="round"/><rect x="32" y="67" width="36" height="10" rx="2" fill="#fff3df" stroke="#b87935" stroke-width="2"/>'}
-   ]
-  },
-  {
-   title:/longitudes, di[aá]metros y grosores|extension lengths, diameters and thicknesses/,
-   items:[
-    {k:/longitud|mil[ií]metros|di[aá]metro|grosor|base hasta la punta|length|millimetres|millimeters|diameter|thickness/i,n:["Medición de longitud y diámetro","Length and diameter measurement"],s:'<path d="M20 72V24 M14 30L20 22L26 30 M14 66L20 74L26 66" stroke="#39856b" stroke-width="2.5" fill="none"/><path d="M20 48H82" stroke="#315d83" stroke-width="5" stroke-linecap="round"/><path d="M82 39V57" stroke="#d39b45" stroke-width="3"/><path d="M36 34V62" stroke="#b87956" stroke-width="3"/>'},
-    {k:/peso|palanca|resistencia|carga|selecci[oó]n|weight|leverage|strength|load|selection/i,n:["Relación entre peso y resistencia","Weight and lash strength"],s:'<path d="M18 76L50 28L82 76" fill="none" stroke="#315d83" stroke-width="4"/><path d="M50 28V13 M40 13H60" stroke="#d39b45" stroke-width="3"/><path d="M26 76H74" stroke="#39856b" stroke-width="4"/><circle cx="50" cy="28" r="5" fill="#b87956"/>'},
-    {k:/bandejas|filas|escala impresa|medidas|tarjeta|maniqu[ií]|tray|rows|printed scale|measurements|training card|mannequin/i,n:["Lectura de bandeja y escala","Tray and scale reading"],s:'<rect x="12" y="20" width="76" height="60" rx="5" fill="#eef3f8" stroke="#315d83" stroke-width="3"/><path d="M22 33H78 M22 48H78 M22 63H78" stroke="#b87956" stroke-width="2"/><path d="M28 27V39 M40 27V39 M52 27V39 M64 27V39 M76 27V39" stroke="#39856b" stroke-width="3"/>'}
-   ]
-  },
-  {
-   title:/curvaturas y perfiles|curl types and profiles/,
-   items:[
-    {k:/curvatura|perfil|J, B, C|elevaci[oó]n|arco|curl|profile|lift|arc/i,n:["Perfiles de curvatura","Curl profiles"],s:'<path d="M15 78Q18 30 48 22 M40 78Q45 34 68 22 M66 78Q70 45 86 18" fill="none" stroke="#315d83" stroke-width="5" stroke-linecap="round"/><path d="M12 82H88" stroke="#d39b45" stroke-width="2" stroke-dasharray="4 3"/>'},
-    {k:/forma del ojo|direcci[oó]n de crecimiento|longitud disponible|comodidad|an[aá]lisis individual|eye shape|growth direction|available length|comfort|individual assessment/i,n:["Selección según ojo y pestaña natural","Selection for eye and natural lash"],s:'<path d="M8 48Q50 9 92 48Q50 87 8 48Z" fill="#e8f1fa" stroke="#315d83" stroke-width="3"/><path d="M20 50Q36 29 51 29Q68 29 82 50" fill="none" stroke="#39856b" stroke-width="4"/><path d="M50 14V82" stroke="#d39b45" stroke-width="2" stroke-dasharray="4 4"/>'},
-    {k:/muestras|marcas|tarjeta de perfil|mapping|por zona|transici[oó]n|cambios bruscos|samples|brands|profile card|by zone|transition/i,n:["Comparación de perfiles y mapping","Profile comparison and mapping"],s:'<path d="M15 70Q20 26 43 20 M43 70Q48 35 68 18 M68 70Q73 42 88 14" fill="none" stroke="#315d83" stroke-width="4"/><path d="M15 78H88" stroke="#64748b" stroke-width="2"/><path d="M43 20V78 M68 18V78" stroke="#d39b45" stroke-width="2" stroke-dasharray="3 3"/>'}
-   ]
-  },
-  {
-   title:/tipos de bandejas y presentaci[oó]n|tray types and presentation/,
-   items:[
-    {k:/longitudes individuales|mezclas de longitudes|tiras completas|fibras de color|fibras planas|abanicos prefabricados|individual lengths|mixed lengths|full strips|coloured fibres|flat fibres|prefanned/i,n:["Formatos de bandejas","Tray formats"],s:'<rect x="10" y="18" width="24" height="64" rx="4" fill="#eef3f8" stroke="#315d83" stroke-width="2"/><rect x="38" y="18" width="24" height="64" rx="4" fill="#e8f4ed" stroke="#39856b" stroke-width="2"/><rect x="66" y="18" width="24" height="64" rx="4" fill="#fff3df" stroke="#b87935" stroke-width="2"/><path d="M16 29H28 M16 42H28 M44 29H56 M44 42H56 M72 29H84 M72 42H84" stroke="#64748b" stroke-width="2"/>'},
-    {k:/fibras planas|perfil especial|abanicos prefabricados|base|peso total|flat fibres|special profile|prefanned fans|base|total weight/i,n:["Fibras especiales y abanicos","Special fibres and fans"],s:'<path d="M50 82L20 18 M50 82L35 12 M50 82L50 8 M50 82L65 12 M50 82L80 18" stroke="#315d83" stroke-width="4" stroke-linecap="round"/><path d="M43 72H57" stroke="#d39b45" stroke-width="6" stroke-linecap="round"/><path d="M15 86H85" stroke="#39856b" stroke-width="2"/>'},
-    {k:/polvo|humedad|contaminaci[oó]n|fecha de apertura|lote|entrenamiento|no devuelvas|dust|humidity|contamination|opening date|batch|training|do not return/i,n:["Almacenamiento y protección de bandejas","Tray storage and protection"],s:'<path d="M18 35H82V78H18Z" fill="#eef3f8" stroke="#315d83" stroke-width="3"/><path d="M14 35L50 14L86 35" fill="#e8f4ed" stroke="#39856b" stroke-width="3" stroke-linejoin="round"/><path d="M32 51H68 M32 62H68" stroke="#b87935" stroke-width="3" stroke-linecap="round"/>'}
-   ]
-  }
- ];
- const selected=lessonDiagrams.find(x=>x.title.test(heading));
- if(selected){
-  const development=[...root.querySelectorAll("h3")].find(h=>/desarrollo de la lecci[oó]n|lesson development/i.test(h.textContent));
-  const ps=[];
-  if(development){
-   let node=development.nextElementSibling;
-   while(node&&node.tagName!=="H3"){
-    if(node.tagName==="P"&&node.textContent.trim()&&!node.closest(".paragraph-vector"))ps.push(node);
-    node=node.nextElementSibling;
+ const palette={navy:"#203b5b",blue:"#4f83a8",teal:"#4b927f",gold:"#c79a50",rose:"#bd806f",ink:"#35465b",pale:"#eef3f8",cream:"#fbf7ef",line:"#d9e2eb"};
+ const frame=(inner)=>'<svg class="lash-edu-svg" viewBox="0 0 760 330" role="img" aria-hidden="true" focusable="false"><rect x="1" y="1" width="758" height="328" rx="18" fill="#ffffff" stroke="#dfe6ee"/>'+inner+'</svg>';
+ const txt=(x,y,value,size=19,weight=600,color=palette.ink,anchor="start")=>`<text x="${x}" y="${y}" font-family="Arial,sans-serif" font-size="${size}" font-weight="${weight}" fill="${color}" text-anchor="${anchor}">${value}</text>`;
+ const line=(x1,y1,x2,y2,color=palette.ink,width=3)=>`<path d="M${x1} ${y1}L${x2} ${y2}" stroke="${color}" stroke-width="${width}" stroke-linecap="round" fill="none"/>`;
+ const dot=(x,y,color=palette.gold)=>`<circle cx="${x}" cy="${y}" r="6" fill="${color}"/>`;
+ const diagrams={
+  anatomy:[
+   {caption:["Corte esquemático del ojo: párpados, córnea y conjuntiva","Schematic eye cross-section: eyelids, cornea and conjunctiva"],svg:()=>frame(
+    `<path d="M65 164Q180 64 365 103Q510 130 570 164Q510 198 365 225Q180 264 65 164Z" fill="#eef3f8" stroke="${palette.navy}" stroke-width="5"/><path d="M65 164Q180 64 365 103Q510 130 570 164" fill="none" stroke="${palette.rose}" stroke-width="15" stroke-linecap="round"/><path d="M65 164Q180 264 365 225Q510 198 570 164" fill="none" stroke="${palette.rose}" stroke-width="13" stroke-linecap="round"/><ellipse cx="355" cy="164" rx="83" ry="74" fill="#d8eaf2" stroke="${palette.blue}" stroke-width="4"/><path d="M272 111Q240 164 272 217" fill="none" stroke="${palette.teal}" stroke-width="10"/><circle cx="355" cy="164" r="28" fill="#547fa0"/><circle cx="355" cy="164" r="12" fill="#172c45"/>`+
+    line(120,91,100,48,palette.rose,2)+txt(72,38,en?"Upper eyelid":"Párpado superior",17,700,palette.rose)+
+    line(132,238,105,286,palette.rose,2)+txt(72,310,en?"Lower eyelid":"Párpado inferior",17,700,palette.rose)+
+    line(276,121,220,52,palette.teal,2)+txt(165,39,en?"Conjunctiva":"Conjuntiva",17,700,palette.teal)+
+    line(420,116,470,54,palette.blue,2)+txt(478,48,en?"Cornea":"Córnea",17,700,palette.blue)+
+    txt(625,153,en?"Ocular":"Superficie",16,700,palette.navy,"middle")+txt(625,176,en?"surface":"ocular",16,700,palette.navy,"middle")
+   )},
+   {caption:["Pestañas y borde palpebral: zona de trabajo externa","Lashes and eyelid margin: external working area"],svg:()=>frame(
+    `<path d="M82 182Q380 18 678 182Q380 294 82 182Z" fill="#f7f9fb" stroke="${palette.navy}" stroke-width="5"/><path d="M92 183Q380 42 668 183" fill="none" stroke="${palette.rose}" stroke-width="13" stroke-linecap="round"/><path d="M105 173L78 111M145 151L128 83M190 132L184 67M240 115L242 54M292 101L300 45M345 92L359 39M400 92L419 39M455 101L480 45M510 115L540 54M560 132L596 67M610 151L650 83" stroke="${palette.navy}" stroke-width="6" stroke-linecap="round"/>`+
+    line(180,75,150,30,palette.gold,2)+txt(72,27,en?"Natural lashes":"Pestañas naturales",17,700,palette.gold)+
+    line(540,205,590,270,palette.rose,2)+txt(600,294,en?"Eyelid margin":"Borde palpebral",17,700,palette.rose)+
+    `<rect x="248" y="230" width="264" height="48" rx="12" fill="#edf5f2" stroke="${palette.teal}" stroke-width="2"/>`+txt(380,260,en?"Work on one isolated natural lash":"Trabajar sobre una pestaña aislada",16,700,palette.teal,"middle")
+   )},
+   {caption:["Observación externa: señales que obligan a posponer o derivar","External screening: signs that require postponing or referral"],svg:()=>frame(
+    `<rect x="54" y="48" width="300" height="232" rx="16" fill="#f4f8fb" stroke="${palette.line}" stroke-width="3"/><rect x="406" y="48" width="300" height="232" rx="16" fill="#fff8ef" stroke="#ead9bd" stroke-width="3"/>`+
+    txt(204,82,en?"Observe externally":"Observar externamente",20,700,palette.navy,"middle")+txt(556,82,en?"Stop and refer":"Detener y derivar",20,700,palette.rose,"middle")+
+    ["Clean appearance","No visible swelling","No unusual tearing"].map((v,i)=>`<circle cx="91" cy="125" r="11" fill="#e6f3ed" stroke="${palette.teal}" stroke-width="2"/>${txt(116,132,en?["Clean appearance","No visible swelling","No unusual tearing"][i]:["Aspecto limpio","Sin hinchazón visible","Sin lagrimeo inusual"][i],16,600)}`).join("")+
+    ["Pain or marked redness","Discharge or injury","Active irritation"].map((v,i)=>`<path d="M447 ${114+i*52}l20 20m0 -20l-20 20" stroke="${palette.rose}" stroke-width="4" stroke-linecap="round"/>${txt(482,132+i*52,en?["Pain or marked redness","Discharge or injury","Active irritation"][i]:["Dolor o enrojecimiento","Secreción o lesión","Irritación activa"][i],16,600)}`).join("")+
+    txt(380,310,en?"Observation is not a medical diagnosis":"La observación no es un diagnóstico médico",16,700,palette.ink,"middle")
+   )}
+  ],
+  natural:[
+   {caption:["Estructura simplificada: tallo, raíz y folículo","Simplified structure: shaft, root and follicle"],svg:()=>frame(
+    `<rect x="60" y="196" width="640" height="86" rx="12" fill="#f3e8dc"/><path d="M380 205Q375 148 380 72Q384 42 399 22" fill="none" stroke="${palette.navy}" stroke-width="12" stroke-linecap="round"/><path d="M380 186Q322 184 322 235Q322 272 380 272Q438 272 438 235Q438 184 380 186Z" fill="#f8d9c4" stroke="${palette.rose}" stroke-width="4"/><path d="M380 188Q350 206 350 235Q350 257 380 264Q410 257 410 235Q410 206 380 188Z" fill="#d6a78d" stroke="${palette.rose}" stroke-width="3"/>`+
+    line(400,50,505,50,palette.navy,2)+txt(520,56,en?"Shaft":"Tallo",19,700,palette.navy)+
+    line(408,215,520,170,palette.rose,2)+txt(530,172,en?"Root":"Raíz",19,700,palette.rose)+
+    line(437,250,535,265,palette.gold,2)+txt(545,272,en?"Follicle":"Folículo",19,700,palette.gold)+
+    txt(90,245,en?"Eyelid skin":"Piel del párpado",17,700,palette.ink)
+   )},
+   {caption:["Longitud y diámetro influyen en el peso y la palanca","Length and diameter affect weight and leverage"],svg:()=>frame(
+    `<path d="M105 248Q155 192 218 85" stroke="${palette.teal}" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M350 248Q402 183 465 52" stroke="${palette.navy}" stroke-width="13" fill="none" stroke-linecap="round"/><path d="M580 248Q632 183 680 52" stroke="${palette.rose}" stroke-width="5" fill="none" stroke-linecap="round"/>`+
+    line(105,268,218,268,palette.teal,2)+line(105,258,105,278,palette.teal,2)+line(218,258,218,278,palette.teal,2)+
+    line(350,268,465,268,palette.navy,2)+line(350,258,350,278,palette.navy,2)+line(465,258,465,278,palette.navy,2)+
+    txt(160,305,en?"Short / fine":"Corta / fina",16,700,palette.teal,"middle")+txt(408,305,en?"Thicker fibre":"Fibra más gruesa",16,700,palette.navy,"middle")+
+    `<path d="M580 248L680 52" stroke-dasharray="8 7" stroke="${palette.gold}" stroke-width="2" fill="none"/>`+txt(610,38,en?"Longer lever":"Mayor palanca",16,700,palette.gold,"middle")+
+    txt(380,35,en?"Choose load for the natural lash":"Adaptar la carga a la pestaña natural",18,700,palette.ink,"middle")
+   )},
+   {caption:["Aislamiento individual y alineación sin unir pestañas vecinas","Individual isolation and alignment without bonding neighbouring lashes"],svg:()=>frame(
+    `<path d="M105 245Q120 150 160 65M290 245Q305 150 345 65M475 245Q490 150 530 65" stroke="${palette.navy}" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M160 65L173 28M345 65L358 28M530 65L543 28" stroke="${palette.gold}" stroke-width="5" fill="none" stroke-linecap="round"/>`+
+    `<rect x="65" y="258" width="190" height="42" rx="10" fill="#eaf4ef" stroke="${palette.teal}" stroke-width="2"/><rect x="280" y="258" width="190" height="42" rx="10" fill="#fff5e8" stroke="${palette.gold}" stroke-width="2"/><rect x="495" y="258" width="200" height="42" rx="10" fill="#fbeeee" stroke="${palette.rose}" stroke-width="2"/>`+
+    txt(160,285,en?"One lash / one bond":"Una pestaña / una unión",15,700,palette.teal,"middle")+txt(375,285,en?"Follow growth direction":"Seguir dirección natural",15,700,palette.gold,"middle")+txt(595,285,en?"No sticky bonds":"Evitar uniones múltiples",15,700,palette.rose,"middle")+
+    txt(160,32,en?"Natural lash":"Pestaña natural",16,700,palette.navy,"middle")+txt(530,32,en?"Extension fibre":"Fibra de extensión",16,700,palette.gold,"middle")
+   )}
+  ],
+  growth:[
+   {caption:["Fases generales del ciclo: anágena, catágena y telógena","General phases: anagen, catagen and telogen"],svg:()=>frame(
+    `<circle cx="380" cy="165" r="112" fill="none" stroke="#e8edf2" stroke-width="34"/><path d="M380 53A112 112 0 0 1 486 202" fill="none" stroke="${palette.teal}" stroke-width="30"/><path d="M486 202A112 112 0 0 1 280 232" fill="none" stroke="${palette.gold}" stroke-width="30"/><path d="M280 232A112 112 0 0 1 380 53" fill="none" stroke="${palette.blue}" stroke-width="30"/>`+
+    txt(380,155,en?"Lash":"Ciclo",24,700,palette.navy,"middle")+txt(380,184,en?"cycle":"de pestaña",22,700,palette.navy,"middle")+
+    txt(380,30,en?"ANAGEN · growth":"ANÁGENA · crecimiento",17,700,palette.teal,"middle")+txt(610,250,en?"CATAGEN · transition":"CATÁGENA · transición",16,700,palette.gold,"middle")+txt(140,250,en?"TELOGEN · rest":"TELÓGENA · reposo",16,700,palette.blue,"middle")
+   )},
+   {caption:["Las pestañas de un mismo párpado pueden estar en fases distintas","Lashes on one eyelid can be in different phases"],svg:()=>frame(
+    `<path d="M75 245Q380 120 685 245" fill="none" stroke="${palette.rose}" stroke-width="15" stroke-linecap="round"/>`+
+    [160,290,420,550].map((x,i)=>{const colors=[palette.teal,palette.gold,palette.blue,palette.teal];const heights=[115,75,95,130];return `<path d="M${x} 235Q${x-8} ${235-heights[i]} ${x+4} ${235-heights[i]-28}" stroke="${palette.navy}" stroke-width="6" fill="none" stroke-linecap="round"/><circle cx="${x+4}" cy="${235-heights[i]-28}" r="9" fill="${colors[i]}"/>${txt(x,295,en?["Growth","Transition","Rest","Growth"][i]:["Crecimiento","Transición","Reposo","Crecimiento"][i],14,700,colors[i],"middle")}`}).join("")+
+    txt(380,45,en?"Natural renewal is asynchronous":"La renovación natural no está sincronizada",19,700,palette.navy,"middle")
+   )},
+   {caption:["Antes del relleno: revisar crecimiento, unión y estado de cada pestaña","Before an infill: assess growth, bond and each natural lash"],svg:()=>frame(
+    `<rect x="48" y="54" width="300" height="222" rx="16" fill="#eef6f1" stroke="${palette.teal}" stroke-width="3"/><rect x="412" y="54" width="300" height="222" rx="16" fill="#fff4ed" stroke="${palette.rose}" stroke-width="3"/>`+
+    txt(198,88,en?"STABLE":"ESTABLE",20,700,palette.teal,"middle")+txt(562,88,en?"GROWN OUT / LOOSE":"CRECIDA / SUELTA",20,700,palette.rose,"middle")+
+    `<path d="M115 220Q130 160 145 118M235 220Q250 160 265 118M480 220Q500 155 545 110M600 220Q615 155 650 110" stroke="${palette.navy}" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M145 118L151 93M265 118L271 93M545 110L570 83M650 110L675 83" stroke="${palette.gold}" stroke-width="5" stroke-linecap="round"/>`+
+    txt(198,252,en?"Review and maintain":"Revisar y mantener",16,700,palette.teal,"middle")+txt(562,252,en?"Remove safely if indicated":"Retirar con técnica segura",16,700,palette.rose,"middle")+
+    txt(380,312,en?"Never pull or pluck an extension":"Nunca tirar ni arrancar una extensión",16,700,palette.ink,"middle")
+   )}
+  ],
+  consultation:[
+   {caption:["Consulta inicial: expectativas, antecedentes y comodidad","Initial consultation: expectations, history and comfort"],svg:()=>frame(
+    `<circle cx="130" cy="125" r="38" fill="#e8f1f8" stroke="${palette.blue}" stroke-width="4"/><path d="M65 270Q68 190 130 190Q192 190 195 270" fill="#e8f1f8" stroke="${palette.blue}" stroke-width="4"/><rect x="270" y="48" width="420" height="230" rx="16" fill="#f7f9fb" stroke="${palette.line}" stroke-width="3"/>`+
+    ["Expectations","Previous reactions","Current symptoms","Design preferences"].map((v,i)=>`<circle cx="315" cy="98" r="10" fill="#e6f3ed" stroke="${palette.teal}" stroke-width="2"/>${txt(342,105,en?["Expected result","Previous reactions","Current symptoms","Design preferences"][i]:["Resultado esperado","Reacciones anteriores","Síntomas actuales","Preferencias de diseño"][i],18,600)}`).join("")+
+    txt(130,310,en?"Client":"Clienta",16,700,palette.navy,"middle")+txt(480,32,en?"Ask and listen — do not diagnose":"Preguntar y escuchar — no diagnosticar",17,700,palette.navy,"middle")
+   )},
+   {caption:["Ficha de cliente: información necesaria, trazabilidad y confidencialidad","Client record: necessary information, traceability and confidentiality"],svg:()=>frame(
+    `<rect x="210" y="28" width="340" height="276" rx="14" fill="#f8fafc" stroke="${palette.blue}" stroke-width="3"/><rect x="235" y="52" width="290" height="42" rx="8" fill="#eaf0f6"/>`+
+    txt(380,80,en?"CLIENT RECORD":"FICHA DE CLIENTE",18,700,palette.navy,"middle")+
+    ["Date / service","Product and batch","Observations","Consent / aftercare"].map((v,i)=>`<rect x="240" y="116" width="16" height="16" rx="3" fill="#e8f4ed" stroke="${palette.teal}" stroke-width="2"/>${txt(272,130,en?["Date / service","Product and batch","Observations","Consent / aftercare"][i]:["Fecha / servicio","Producto y lote","Observaciones","Consentimiento / cuidados"][i],16,600)}`).join("")+
+    `<path d="M570 95Q640 95 640 165V220Q640 258 600 258H565" fill="none" stroke="${palette.gold}" stroke-width="4" stroke-linecap="round"/><path d="M575 245L560 258L575 271" fill="none" stroke="${palette.gold}" stroke-width="4"/>`+
+    txt(620,70,en?"Private":"Datos",16,700,palette.gold,"middle")+txt(620,90,en?"data":"privados",16,700,palette.gold,"middle")+txt(380,320,en?"Collect only what is necessary and protect access":"Recoger solo lo necesario y proteger el acceso",15,700,palette.ink,"middle")
+   )},
+   {caption:["Consentimiento informado y criterio de parada ante señales de alarma","Informed consent and stop decision when warning signs appear"],svg:()=>frame(
+    `<rect x="55" y="56" width="285" height="218" rx="16" fill="#eef6f1" stroke="${palette.teal}" stroke-width="3"/><rect x="420" y="56" width="285" height="218" rx="16" fill="#fff3ee" stroke="${palette.rose}" stroke-width="3"/>`+
+    `<circle cx="198" cy="130" r="42" fill="#fff" stroke="${palette.teal}" stroke-width="4"/><path d="M176 130L192 147L222 111" fill="none" stroke="${palette.teal}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>`+
+    `<path d="M562 88L606 168H518Z" fill="#fff" stroke="${palette.rose}" stroke-width="4"/><path d="M562 112V142" stroke="${palette.rose}" stroke-width="7" stroke-linecap="round"/><circle cx="562" cy="154" r="4" fill="${palette.rose}"/>`+
+    txt(198,210,en?"Explain risks and aftercare":"Explicar riesgos y cuidados",16,700,palette.teal,"middle")+txt(562,210,en?"Pain, redness or discharge":"Dolor, ojo rojo o secreción",16,700,palette.rose,"middle")+
+    txt(198,245,en?"Consent is informed and voluntary":"Consentimiento libre e informado",14,600,palette.ink,"middle")+txt(562,245,en?"Stop service and refer":"Detener servicio y derivar",14,600,palette.ink,"middle")
+   )}
+  ]
+ };
+ let key="";
+ if(/anatom[ií]a b[aá]sica del ojo|basic anatomy of the eye/.test(title))key="anatomy";
+ else if(/estructura de la pesta[nñ]a natural|natural eyelash structure/.test(title))key="natural";
+ else if(/ciclo de crecimiento de la pesta[nñ]a|eyelash growth cycle/.test(title))key="growth";
+ else if(/evaluaci[oó]n inicial y ficha de cliente|initial consultation and client record/.test(title))key="consultation";
+ if(!key)return;
+ const headings=[...article.querySelectorAll("h3")];
+ const development=headings.find(h=>/desarrollo de la lecci[oó]n|lesson development/i.test(h.textContent.trim()));
+ if(!development)return;
+ article.dataset.stageOneVisuals="1";
+ let node=development.nextElementSibling,index=0;
+ while(node&&node.tagName!=="H3"){
+  const next=node.nextElementSibling;
+  if(node.tagName==="P"&&node.textContent.trim()){
+   const item=diagrams[key][index];
+   if(item){
+    const figure=document.createElement("figure");
+    figure.className="lash-edu-figure";
+    figure.setAttribute("role","group");
+    figure.setAttribute("aria-label",item.caption[en?1:0]);
+    figure.innerHTML=item.svg()+'<figcaption>'+(en?item.caption[1]:item.caption[0])+'</figcaption>';
+    node.insertAdjacentElement("afterend",figure);
    }
-  }else{
-   root.querySelectorAll(".expanded-lesson > p").forEach(p=>{if(p.textContent.trim()&&!p.closest(".paragraph-vector"))ps.push(p);});
+   index++;
   }
-  ps.forEach(p=>{
-   if(p.nextElementSibling?.classList.contains("paragraph-vector"))return;
-   const item=selected.items.find(x=>x.k.test(p.textContent));
-   if(!item)return;
-   const figure=document.createElement("figure");figure.className="paragraph-vector";figure.setAttribute("role","img");
-   const caption=en?item.n[1]:item.n[0];
-   figure.setAttribute("aria-label",caption+" — "+p.textContent.slice(0,160));
-   figure.innerHTML='<svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">'+item.s+'</svg><figcaption>'+(en?"Illustration for this paragraph: ":"Ilustración de este párrafo: ")+caption+'</figcaption>';
-   p.insertAdjacentElement("afterend",figure);
-  });
-  return;
+  node=next;
  }
- const rules=[
-  {k:/desinfecci[oó]n|esterilizaci[oó]n|limpieza|descontamin|disinfect|steriliz|decontamin/i,n:["Secuencia de higiene","Hygiene sequence"],s:'<rect x="13" y="18" width="20" height="25" rx="4" fill="#e8f1fa" stroke="#315d83" stroke-width="2"/><rect x="40" y="18" width="20" height="25" rx="4" fill="#e8f4ed" stroke="#39856b" stroke-width="2"/><rect x="67" y="18" width="20" height="25" rx="4" fill="#fff3df" stroke="#b87935" stroke-width="2"/><path d="M33 30H40 M60 30H67 M36 26L40 30L36 34 M63 26L67 30L63 34" fill="none" stroke="#64748b" stroke-width="2"/><path d="M22 55H78 M22 64H66 M22 73H72" stroke="#39856b" stroke-width="3" stroke-linecap="round"/>'},
-  {k:/contaminaci[oó]n cruzada|desechable|residuo|guantes|cross.contamin|disposable|waste|glove/i,n:["Prevención de contaminación","Contamination prevention"],s:'<path d="M18 20H42V78H18Z M58 20H82V78H58Z" fill="#eef3f8" stroke="#315d83" stroke-width="3"/><path d="M42 49H58 M48 43L42 49L48 55 M52 43L58 49L52 55" stroke="#b87935" stroke-width="3" fill="none"/><path d="M24 30H36 M64 30H76" stroke="#39856b" stroke-width="4" stroke-linecap="round"/>'},
-  {k:/consentimiento|antecedentes|consulta|historial|ficha de cliente|consent|medical history|consultation/i,n:["Consulta y consentimiento","Consultation and consent"],s:'<rect x="24" y="12" width="52" height="74" rx="5" fill="#eef3f8" stroke="#315d83" stroke-width="3"/><path d="M36 31H64 M36 44H64 M36 57H55" stroke="#39856b" stroke-width="3" stroke-linecap="round"/><path d="M58 69L65 76L78 61" fill="none" stroke="#b87935" stroke-width="4" stroke-linecap="round"/>'},
-  {k:/forma del ojo|observaci[oó]n.*ojo|simetr[ií]a|adaptaci[oó]n.*dise[nñ]o|eye shape|eye assessment|symmetry/i,n:["Análisis de forma y simetría","Shape and symmetry analysis"],s:'<path d="M8 46Q50 8 92 46Q50 84 8 46Z" fill="#e8f1fa" stroke="#315d83" stroke-width="3"/><circle cx="50" cy="46" r="14" fill="#fff" stroke="#39856b" stroke-width="3"/><path d="M50 12V80 M12 46H88" stroke="#d39b45" stroke-width="2" stroke-dasharray="4 4"/>'},
-  {k:/mapping|mapa|zonas|zona interna|zona central|zona externa|transici[oó]n|transition/i,n:["Mapa de zonas","Zone mapping"],s:'<path d="M10 53Q50 8 90 53" fill="none" stroke="#315d83" stroke-width="4"/><path d="M17 51Q28 30 39 27 M39 27Q50 20 61 27 M61 27Q76 34 83 51" fill="none" stroke="#39856b" stroke-width="5"/><path d="M18 57V75 M39 36V75 M61 36V75 M83 57V75" stroke="#d39b45" stroke-width="3"/>'},
-  {k:/direcci[oó]n|alineaci[oó]n|distancia de la piel|clearance|alignment|direction/i,n:["Dirección y distancia","Direction and clearance"],s:'<path d="M14 74Q40 54 82 20" stroke="#315d83" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M70 20H82V32" stroke="#39856b" stroke-width="3" fill="none"/><path d="M18 82H82" stroke="#d39b45" stroke-width="2" stroke-dasharray="4 4"/><path d="M22 76V86 M78 76V86" stroke="#d39b45" stroke-width="2"/>'},
-  {k:/aisla|aislamiento|separar|isolation|isolat/i,n:["Aislamiento individual","Individual isolation"],s:'<path d="M50 82Q47 48 50 13" stroke="#315d83" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M50 43Q29 29 18 15 M50 43Q71 29 82 15" stroke="#d39b45" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M50 43L50 12" stroke="#39856b" stroke-width="3"/>'},
-  {k:/crecimiento|relleno|retenci[oó]n.*crecimiento|infill|growth assessment/i,n:["Evaluación del crecimiento","Growth assessment"],s:'<path d="M18 76V24 M18 76H82" stroke="#64748b" stroke-width="2"/><path d="M25 65L43 48L57 54L77 27" fill="none" stroke="#39856b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="25" cy="65" r="4" fill="#315d83"/><circle cx="43" cy="48" r="4" fill="#315d83"/><circle cx="57" cy="54" r="4" fill="#315d83"/><circle cx="77" cy="27" r="4" fill="#d39b45"/>'},
-  {k:/retirada|removedor|removal|disolver.*uni[oó]n/i,n:["Retirada controlada","Controlled removal"],s:'<path d="M18 24Q50 8 82 24 M18 76Q50 92 82 76" fill="none" stroke="#315d83" stroke-width="4"/><path d="M50 25V75" stroke="#d39b45" stroke-width="4" stroke-dasharray="5 4"/><path d="M39 45L50 56L61 45" fill="none" stroke="#39856b" stroke-width="4" stroke-linecap="round"/>'},
-  {k:/alerg|sensibilidad|irritaci[oó]n|reacci[oó]n|contraindicaci[oó]n|se[nñ]al de alarma|allerg|sensitivity|irritation|contraindication|warning sign/i,n:["Señales de alerta","Warning signs"],s:'<path d="M50 10L91 82H9Z" fill="#fff3df" stroke="#b87935" stroke-width="3" stroke-linejoin="round"/><path d="M50 33V57" stroke="#b87935" stroke-width="6" stroke-linecap="round"/><circle cx="50" cy="69" r="3.5" fill="#b87935"/>'},
-  {k:/retenci[oó]n deficiente|adhesi[oó]n m[uú]ltiple|stickies|poor retention|multiple bonds/i,n:["Diagnóstico de adhesión","Bond diagnosis"],s:'<path d="M20 18Q38 42 20 76 M50 18Q68 42 50 76 M80 18Q98 42 80 76" stroke="#315d83" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M20 47L50 47L80 47" stroke="#d39b45" stroke-width="3" stroke-dasharray="4 4"/><circle cx="50" cy="47" r="7" fill="#e8f4ed" stroke="#39856b" stroke-width="3"/>'},
-  {k:/ergonom[ií]a|postura|posici[oó]n corporal|camilla|silla|ergonomic|posture|body positioning|treatment bed/i,n:["Postura ergonómica","Ergonomic posture"],s:'<circle cx="47" cy="18" r="8" fill="#e8f1fa" stroke="#315d83" stroke-width="3"/><path d="M47 27L48 53L68 63 M48 39L28 48 M48 53L34 80 M48 53L68 80" stroke="#39856b" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M16 84H84" stroke="#d39b45" stroke-width="3"/>'},
-  {k:/iluminaci[oó]n|l[aá]mpara|lupa|lighting|lamp|magnifier/i,n:["Iluminación de precisión","Precision lighting"],s:'<path d="M35 18Q50 8 65 18L60 42H40Z" fill="#fff3df" stroke="#b87935" stroke-width="3"/><path d="M50 42V70L66 82" fill="none" stroke="#315d83" stroke-width="4"/><path d="M24 50L12 63 M50 50V67 M76 50L88 63" stroke="#d39b45" stroke-width="3" stroke-linecap="round"/>'},
-  {k:/seguridad el[eé]ctrica|cable|enchufe|equipo el[eé]ctrico|electrical safety|cable|plug/i,n:["Seguridad eléctrica","Electrical safety"],s:'<path d="M42 12V38 M58 12V38 M35 35H65V49Q65 67 50 67Q35 67 35 49Z" fill="#e8f1fa" stroke="#315d83" stroke-width="3"/><path d="M50 67V84 M43 78L50 85L57 78" fill="none" stroke="#39856b" stroke-width="3"/><path d="M74 17L64 39H78L68 60" stroke="#d39b45" stroke-width="4" fill="none"/>'},
-  {k:/cuidado.*posterior|cuidados posteriores|limpieza en casa|aftercare|home cleansing/i,n:["Rutina de cuidados","Aftercare routine"],s:'<circle cx="50" cy="50" r="34" fill="#e8f4ed" stroke="#39856b" stroke-width="3"/><path d="M50 28V50L66 60" stroke="#315d83" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M27 19L20 11 M73 19L80 11" stroke="#d39b45" stroke-width="3" stroke-linecap="round"/>'},
-  {k:/portafolio|evaluaci[oó]n te[oó]rica|evaluaci[oó]n pr[aá]ctica|assessment|portfolio/i,n:["Evaluación y portafolio","Assessment and portfolio"],s:'<rect x="18" y="16" width="64" height="68" rx="5" fill="#eef3f8" stroke="#315d83" stroke-width="3"/><path d="M31 33H68 M31 46H68 M31 59H53" stroke="#39856b" stroke-width="3" stroke-linecap="round"/><path d="M56 68L64 76L78 59" fill="none" stroke="#d39b45" stroke-width="4"/>'},
-  {k:/privacidad|datos personales|ética|etica|confidencial|privacy|personal data|ethics|confidential/i,n:["Ética y privacidad","Ethics and privacy"],s:'<path d="M50 12L82 24V48Q77 70 50 86Q23 70 18 48V24Z" fill="#eef3f8" stroke="#315d83" stroke-width="3"/><circle cx="50" cy="41" r="9" fill="none" stroke="#39856b" stroke-width="3"/><path d="M34 66Q50 49 66 66" fill="none" stroke="#d39b45" stroke-width="4" stroke-linecap="round"/>'},
-  {k:/inventario|mantenimiento de herramientas|registro de mantenimiento|inventory|tool maintenance|maintenance record/i,n:["Control de herramientas","Tool control"],s:'<rect x="17" y="22" width="66" height="58" rx="6" fill="#eef3f8" stroke="#315d83" stroke-width="3"/><path d="M30 39H70 M30 52H70 M30 65H58" stroke="#39856b" stroke-width="3" stroke-linecap="round"/><circle cx="72" cy="65" r="7" fill="#fff3df" stroke="#b87935" stroke-width="2"/>'},
-  {k:/efecto natural|efecto mu[nñ]eca|efecto gato|efecto ardilla|natural effect|doll effect|cat.eye|squirrel effect/i,n:["Diseños de pestañas","Lash design patterns"],s:'<path d="M10 57Q50 12 90 57" fill="none" stroke="#315d83" stroke-width="4"/><path d="M20 50L15 32 M32 39L30 18 M45 32L45 10 M58 32L63 14 M72 40L81 23" stroke="#39856b" stroke-width="4" stroke-linecap="round"/>'},
-  {k:/abanico|volumen|h[ií]brido|fan|volume|hybrid/i,n:["Abanico y volumen","Fan and volume"],s:'<path d="M50 82L18 20 M50 82L34 12 M50 82L50 8 M50 82L66 12 M50 82L82 20" stroke="#315d83" stroke-width="4" stroke-linecap="round"/><path d="M50 82L50 55" stroke="#d39b45" stroke-width="6" stroke-linecap="round"/>'},
-  {k:/ojo|p[aá]rpado|c[oó]rnea|conjuntiva|anatom|eyelid|cornea|conjunctiva/i,n:["Anatomía ocular","Ocular anatomy"],s:'<path d="M8 45Q50 4 92 45Q50 86 8 45Z" fill="#e8f1fa" stroke="#315d83" stroke-width="3"/><circle cx="50" cy="45" r="17" fill="#fff" stroke="#315d83" stroke-width="3"/><circle cx="50" cy="45" r="8" fill="#315d83"/>'},
-  {k:/crecimiento|an[aá]gen|cat[aá]gen|tel[oó]gen|growth|cycle|fol[ií]cul/i,n:["Ciclo de crecimiento","Growth cycle"],s:'<circle cx="50" cy="45" r="31" fill="none" stroke="#b9c9d8" stroke-width="8"/><path d="M50 14A31 31 0 0 1 80 52" fill="none" stroke="#39856b" stroke-width="8"/><path d="M80 52A31 31 0 0 1 30 70" fill="none" stroke="#d39b45" stroke-width="8"/><path d="M30 70A31 31 0 0 1 50 14" fill="none" stroke="#6689b0" stroke-width="8"/>'},
-  {k:/curvatura|longitud|di[aá]metro|fibra|extensi[oó]n|pesta[nñ]a natural|curl|diameter|length|fibre|fiber/i,n:["Fibras y medidas","Fibres and measurements"],s:'<path d="M18 76Q12 42 43 18 M42 76Q28 38 64 14 M65 76Q47 36 86 22" fill="none" stroke="#315d83" stroke-width="5" stroke-linecap="round"/><path d="M14 84H88" stroke="#64748b" stroke-width="2"/>'},
-  {k:/adhesivo|pegamento|gota|viscosidad|cianoacrilato|adhesive|glue|drop/i,n:["Adhesivo y control","Adhesive and control"],s:'<path d="M50 12C40 29 25 44 25 60A25 25 0 0 0 75 60C75 44 60 29 50 12Z" fill="#dcecf8" stroke="#315d83" stroke-width="3"/><path d="M39 62Q43 73 56 72" fill="none" stroke="#39856b" stroke-width="3" stroke-linecap="round"/>'},
-  {k:/pinza|herramienta|cepillo|aplicador|tweezer|brush|tool/i,n:["Herramientas","Tools"],s:'<path d="M22 16L50 54L78 16 M50 54L45 84 M50 54L56 84" fill="none" stroke="#315d83" stroke-width="5" stroke-linecap="round"/><circle cx="50" cy="54" r="5" fill="#d39b45"/>'},
-  {k:/humedad|temperatura|ventilaci[oó]n|ambiente|higr[oó]metro|humidity|temperature|ventilation/i,n:["Control ambiental","Environmental control"],s:'<rect x="38" y="14" width="24" height="56" rx="12" fill="#fff" stroke="#315d83" stroke-width="3"/><path d="M50 35V70" stroke="#d39b45" stroke-width="8" stroke-linecap="round"/><circle cx="50" cy="72" r="10" fill="#d39b45"/>'},
-  {k:/higiene|limpieza|desinfecci[oó]n|esterilizaci[oó]n|residuo|hygiene|clean|disinfect|steriliz/i,n:["Higiene y limpieza","Hygiene and cleaning"],s:'<path d="M50 10L82 22V47Q78 70 50 85Q22 70 18 47V22Z" fill="#e8f4ed" stroke="#39856b" stroke-width="3"/><path d="M33 47L45 59L68 34" fill="none" stroke="#39856b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>'},
-  {k:/aisla|aislamiento|separar|isolation|isolat/i,n:["Aislamiento","Isolation"],s:'<path d="M50 78Q45 49 50 14" stroke="#315d83" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M50 42Q28 29 20 16M50 42Q72 29 80 16" stroke="#d39b45" stroke-width="4" fill="none" stroke-linecap="round"/>'},
-  {k:/seguridad|riesgo|irritaci[oó]n|reacci[oó]n|dolor|alarma|safety|risk|irritation|reaction/i,n:["Seguridad","Safety"],s:'<path d="M50 12L91 82H9Z" fill="#fff3df" stroke="#b87935" stroke-width="3" stroke-linejoin="round"/><path d="M50 34V57" stroke="#b87935" stroke-width="6" stroke-linecap="round"/><circle cx="50" cy="69" r="3.5" fill="#b87935"/>'},
-  {k:/consulta|consentimiento|ficha|registro|cliente|expectativa|consult|consent|record|client/i,n:["Consulta y registro","Consultation and record"],s:'<rect x="25" y="12" width="50" height="72" rx="6" fill="#eef3f8" stroke="#315d83" stroke-width="3"/><path d="M36 32H64M36 45H64M36 58H57" stroke="#39856b" stroke-width="4" stroke-linecap="round"/>'}
- ];,n:["Anatomía ocular","Ocular anatomy"],s:'<path d="M8 45 Q50 4 92 45 Q50 86 8 45Z" fill="#e8f1fa" stroke="#315d83" stroke-width="3"/><circle cx="50" cy="45" r="17" fill="#fff" stroke="#315d83" stroke-width="3"/><circle cx="50" cy="45" r="8" fill="#315d83"/><path d="M14 45 Q50 13 86 45" fill="none" stroke="#b87956" stroke-width="4"/>'},
-  {k:/crecimiento|an[aá]gen|cat[aá]gen|tel[oó]gen|growth|cycle|fol[ií]cul/i,n:["Ciclo de crecimiento","Growth cycle"],s:'<circle cx="50" cy="45" r="31" fill="none" stroke="#b9c9d8" stroke-width="8"/><path d="M50 14 A31 31 0 0 1 80 52" fill="none" stroke="#39856b" stroke-width="8"/><path d="M80 52 A31 31 0 0 1 30 70" fill="none" stroke="#d39b45" stroke-width="8"/><path d="M30 70 A31 31 0 0 1 50 14" fill="none" stroke="#6689b0" stroke-width="8"/>'},
-  {k:/curvatura|longitud|di[aá]metro|fibra|extensi[oó]n|pesta[nñ]a natural|curl|diameter|length|fibre|fiber/i,n:["Fibras y medidas","Fibres and measurements"],s:'<path d="M18 76 Q12 42 43 18" fill="none" stroke="#315d83" stroke-width="5" stroke-linecap="round"/><path d="M42 76 Q28 38 64 14" fill="none" stroke="#39856b" stroke-width="5" stroke-linecap="round"/><path d="M65 76 Q47 36 86 22" fill="none" stroke="#d39b45" stroke-width="5" stroke-linecap="round"/><path d="M14 84H88" stroke="#64748b" stroke-width="2"/>'},
-  {k:/adhesivo|pegamento|gota|viscosidad|cianoacrilato|adhesive|glue|drop/i,n:["Adhesivo y control","Adhesive and control"],s:'<path d="M50 12 C40 29 25 44 25 60 A25 25 0 0 0 75 60 C75 44 60 29 50 12Z" fill="#dcecf8" stroke="#315d83" stroke-width="3"/><path d="M39 62 Q43 73 56 72" fill="none" stroke="#39856b" stroke-width="3" stroke-linecap="round"/>'},
-  {k:/pinza|herramienta|cepillo|aplicador|tweezer|brush|tool/i,n:["Herramientas","Tools"],s:'<path d="M22 16 L50 54 L78 16" fill="none" stroke="#315d83" stroke-width="5" stroke-linecap="round"/><path d="M50 54 L45 84 M50 54 L56 84" stroke="#39856b" stroke-width="4" stroke-linecap="round"/><circle cx="50" cy="54" r="5" fill="#d39b45"/>'},
-  {k:/humedad|temperatura|ventilaci[oó]n|ambiente|higr[oó]metro|humidity|temperature|ventilation/i,n:["Control ambiental","Environmental control"],s:'<rect x="38" y="14" width="24" height="56" rx="12" fill="#fff" stroke="#315d83" stroke-width="3"/><path d="M50 35V70" stroke="#d39b45" stroke-width="8" stroke-linecap="round"/><circle cx="50" cy="72" r="10" fill="#d39b45"/><path d="M70 27 Q86 40 70 54 M78 18 Q101 40 78 63" fill="none" stroke="#39856b" stroke-width="3" stroke-linecap="round"/>'},
-  {k:/higiene|limpieza|desinfecci[oó]n|esterilizaci[oó]n|residuo|hygiene|clean|disinfect|steriliz/i,n:["Higiene y limpieza","Hygiene and cleaning"],s:'<path d="M50 10 L82 22 V47 Q78 70 50 85 Q22 70 18 47 V22Z" fill="#e8f4ed" stroke="#39856b" stroke-width="3"/><path d="M33 47 L45 59 L68 34" fill="none" stroke="#39856b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>'},
-  {k:/mapa|zona interna|zona central|zona externa|dise[nñ]o|mapping|inner|outer zone/i,n:["Mapa de diseño","Design mapping"],s:'<path d="M12 48 Q50 9 88 48" fill="none" stroke="#315d83" stroke-width="4"/><path d="M18 47 Q29 28 39 25 M39 25 Q52 17 63 25 M63 25 Q76 30 84 47" fill="none" stroke="#39856b" stroke-width="4"/><path d="M18 55V70 M50 55V70 M84 55V70" stroke="#d39b45" stroke-width="3"/>'},
-  {k:/aisla|aislamiento|separar|isolation|isolat/i,n:["Aislamiento","Isolation"],s:'<path d="M50 78 Q45 49 50 14" stroke="#315d83" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M50 42 Q28 29 20 16 M50 42 Q72 29 80 16" stroke="#d39b45" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M50 42 L50 12" stroke="#39856b" stroke-width="3"/>'},
-  {k:/abanico|volumen|h[ií]brido|fan|volume|hybrid/i,n:["Abanico y volumen","Fan and volume"],s:'<path d="M50 82 L18 20 M50 82 L34 12 M50 82 L50 8 M50 82 L66 12 M50 82 L82 20" stroke="#315d83" stroke-width="4" stroke-linecap="round"/><path d="M50 82 L50 55" stroke="#d39b45" stroke-width="6" stroke-linecap="round"/>'},
-  {k:/seguridad|riesgo|irritaci[oó]n|reacci[oó]n|dolor|alarma|safety|risk|irritation|reaction/i,n:["Seguridad","Safety"],s:'<path d="M50 12 L91 82 H9Z" fill="#fff3df" stroke="#b87935" stroke-width="3" stroke-linejoin="round"/><path d="M50 34V57" stroke="#b87935" stroke-width="6" stroke-linecap="round"/><circle cx="50" cy="69" r="3.5" fill="#b87935"/>'},
-  {k:/consulta|consentimiento|ficha|registro|cliente|expectativa|consult|consent|record|client/i,n:["Consulta y registro","Consultation and record"],s:'<rect x="25" y="12" width="50" height="72" rx="6" fill="#eef3f8" stroke="#315d83" stroke-width="3"/><path d="M36 32H64 M36 45H64 M36 58H57" stroke="#39856b" stroke-width="4" stroke-linecap="round"/><path d="M40 12V7H60V12" fill="none" stroke="#315d83" stroke-width="3"/>'}
- ];
- const fallback={n:["Proceso de trabajo","Workflow"],s:'<rect x="12" y="30" width="22" height="28" rx="5" fill="#e8f1fa" stroke="#315d83" stroke-width="2"/><rect x="39" y="30" width="22" height="28" rx="5" fill="#e8f4ed" stroke="#39856b" stroke-width="2"/><rect x="66" y="30" width="22" height="28" rx="5" fill="#fff3df" stroke="#b87935" stroke-width="2"/><path d="M34 44H39 M61 44H66" stroke="#64748b" stroke-width="3"/><path d="M36 40L40 44L36 48 M63 40L67 44L63 48" fill="none" stroke="#64748b" stroke-width="2"/>'};
- root.querySelectorAll("p").forEach(p=>{
-  if(!p.textContent.trim()||p.closest(".paragraph-vector")||p.nextElementSibling?.classList.contains("paragraph-vector"))return;
-  const t=p.textContent;
-  const match=rules.find(x=>x.k.test(t));
-  const item=match||fallback;
-  const figure=document.createElement("figure");
-  figure.className="paragraph-vector";
-  figure.setAttribute("role","img");
-  figure.setAttribute("aria-label",(en?item.n[1]:item.n[0])+" — "+t.slice(0,180));
-  figure.innerHTML='<svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">'+item.s+'</svg><figcaption>'+(en?"Vector diagram: ":"Esquema vectorial: ")+(en?item.n[1]:item.n[0])+'</figcaption>';
-  p.insertAdjacentElement("afterend",figure);
- });
+ const style=document.createElement("style");
+ style.dataset.lashEduStyle="1";
+ style.textContent='.lash-edu-figure{width:100%;max-width:900px;margin:14px auto 24px;padding:10px;background:#fff;border:1px solid #dfe6ee;border-radius:16px;box-shadow:0 7px 22px #1727470b;overflow:hidden}.lash-edu-svg{display:block;width:100%;height:auto;max-height:390px}.lash-edu-figure figcaption{padding:9px 12px 5px;text-align:center;color:#52647a;font-size:13px;font-weight:700;line-height:1.5}.lash-single-lesson .expanded-lesson>p{line-height:1.85}.lash-single-lesson .lash-edu-figure+ h3{margin-top:24px}@media(max-width:600px){.lash-edu-figure{padding:5px;margin:10px auto 18px;border-radius:12px}.lash-edu-figure figcaption{font-size:12px;padding:8px 7px}.lash-edu-svg{max-height:none}}@media(prefers-reduced-motion:reduce){.lash-edu-figure{scroll-behavior:auto}}';
+ if(!document.querySelector('style[data-lash-edu-style="1"]'))document.head.appendChild(style);
 }
-const originalStage = typeof window.renderLashStage === "function" ? window.renderLashStage.bind(window) : null;
 const lesson=(tEs,tEn,oEs,oEn,cEs,cEn,sEs,sEn,aEs,aEn,qEs,qEn,rEs,rEn)=>({
  es:{title:tEs,objective:oEs,content:cEs,steps:sEs,avoid:aEs,check:qEs,answer:rEs},
  en:{title:tEn,objective:oEn,content:cEn,steps:sEn,avoid:aEn,check:qEn,answer:rEn}
