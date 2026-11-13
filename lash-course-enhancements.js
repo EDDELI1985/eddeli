@@ -779,6 +779,20 @@ window.printLashForm=function(index){
  root.innerHTML='<div class="lash-print-sheet"><h1>ELI BEAUTY ACADEMY</h1><h2>'+escapeHTML(en?forms[index][1]:forms[index][0])+'</h2><p>'+escapeHTML(en?"Training template — adapt to local requirements.":"Plantilla formativa — adaptar a los requisitos locales.")+'</p>'+idx.map(i=>'<div class="lash-print-field"><strong>'+escapeHTML(labels[i])+'</strong><div></div></div>').join("")+'<p class="lash-print-sign">'+(en?"Prepared by: ____________________   Date: ____________________":"Elaborado por: ____________________   Fecha: ____________________")+'</p></div>';
  root.scrollIntoView({behavior:"smooth",block:"start"});setTimeout(()=>window.print(),250);
 };
+window.openLashPrintableForms=function(){
+ const academy=document.getElementById("academia");
+ const modules=document.getElementById("modules");
+ const panel=document.getElementById("lash-lesson-panel");
+ if(!academy||!panel)return false;
+ if(modules)modules.hidden=true;
+ academy.classList.add("lash-studying");
+ panel.hidden=false;
+ const en=getLang()==="en";
+ panel.innerHTML=printableForms(getLang())+'<div style="max-width:940px;margin:18px auto"><button class="secondary" type="button" onclick="window.returnToLashCurriculum()">← '+(en?"BACK TO ALL STAGES":"VOLVER A TODAS LAS ETAPAS")+'</button></div>';
+ window.__lashViewState={mode:"printable-forms"};
+ panel.scrollTop=0;
+ return true;
+};
 const originalStage=window.renderLashStage;
 const originalTechnicalSheets=window.buildTechnicalSheets;
 window.buildTechnicalSheets=function(index){
@@ -792,7 +806,7 @@ window.buildTechnicalSheets=function(index){
  return '<section class="tech-library"><h3>'+(en?"Lesson-specific technical sheets":"Fichas técnicas específicas de cada lección")+'</h3><p class="study-note">'+(en?"Use these sheets with the actual product label, technical sheet and safety data sheet.":"Utiliza estas fichas junto con la etiqueta, ficha técnica y ficha de seguridad del producto real.")+'</p><div class="tech-grid">'+d.lessons.map((l,i)=>{const x=l[en?"en":"es"];return '<article class="tech-sheet"><span class="tech-kicker">'+(en?"REFERENCE SHEET ":"FICHA DE REFERENCIA ")+(i+1)+'</span><h4>'+escapeHTML(x.title)+'</h4><p><strong>'+(en?"Purpose: ":"Finalidad: ")+'</strong>'+escapeHTML(x.objective)+'</p><p><strong>'+(en?"Key points: ":"Puntos clave: ")+'</strong>'+escapeHTML(x.content[0])+'</p><p><strong>'+(en?"Operational check: ":"Comprobación operativa: ")+'</strong>'+escapeHTML(x.steps[0])+'</p><p><strong>'+(en?"Safety limit: ":"Límite de seguridad: ")+'</strong>'+escapeHTML(x.avoid[0])+'</p></article>';}).join("")+'</div><div class="tech-warning"><strong>'+(en?"Important: ":"Importante: ")+'</strong>'+(en?"Product-specific values, concentrations, contact times, environmental ranges and compatibility must come from current manufacturer documentation and applicable local rules.":"Los valores, concentraciones, tiempos de contacto, rangos ambientales y compatibilidades deben proceder de la documentación vigente del fabricante y de las normas locales aplicables.")+'</div></section>';
 };
 window.renderLashStage=function(index){
- if(index<2){const panel=document.getElementById('lash-lesson-panel');if(typeof originalStage==="function")originalStage(index);else if(typeof window.renderLashLesson==="function")window.renderLashLesson(index,0);if(panel){addStageOneLessonDiagrams(panel);panel.insertAdjacentHTML('beforeend',addInteractivePractice(index,getLang())+addPracticeSection(index,getLang())+addReferences(getLang())+printableForms(getLang()));wireInteractivePractice(panel);}return;}
+ if(index<2){const panel=document.getElementById('lash-lesson-panel');if(typeof originalStage==="function")originalStage(index);else if(typeof window.renderLashLesson==="function")window.renderLashLesson(index,0);if(panel){addStageOneLessonDiagrams(panel);panel.insertAdjacentHTML('beforeend',addInteractivePractice(index,getLang())+addPracticeSection(index,getLang())+addReferences(getLang()));wireInteractivePractice(panel);}return;}
  const lang=getLang(),d=stages[index-2];if(!d)return;
  const panel=document.getElementById("lash-lesson-panel");if(!panel)return;
  const academy=document.getElementById("academia");
@@ -802,7 +816,7 @@ window.renderLashStage=function(index){
  const en=lang==="en",stageTitle=en?stageNamesEn[index-2]:d.title,stageIntro=en?stageIntrosEn[index-2]:d.intro;let html='<header class="lash-stage-heading"><span class="pill">'+(en?"STAGE ":"ETAPA ")+(index+1)+' / 13 · '+escapeHTML(stageTitle)+'</span><h1>'+escapeHTML(stageTitle)+'</h1><p>'+escapeHTML(stageIntro)+'</p><div class="lash-progress"><span style="width:'+Math.round((index+1)/13*100)+'%"></span></div><small>'+(en?"4 lessons · Stage ":"4 lecciones · Etapa ")+(index+1)+' of 13</small></header><section class="expanded-course"><h2>'+(en?"Lesson content":"Contenido de las lecciones")+'</h2>';
  if(index===5){const video='<div class="lash-intro-video" style="display:flex;justify-content:center;margin:22px 0 26px"><div style="position:relative;overflow:hidden;width:100%;max-width:760px;aspect-ratio:16/9;border-radius:14px;background:#111"><iframe src="https://www.youtube.com/embed/qafmxW0imKw?rel=0&modestbranding=1" title="Etapa 6: Higiene, desinfección y bioseguridad" style="position:absolute;inset:0;width:100%;height:100%;border:0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div></div>';html=html.replace('<section class="expanded-course">',video+'<section class="expanded-course">');}
  d.lessons.forEach((l,i)=>{const x=l[lang];html+='<article class="expanded-lesson"><span class="tech-kicker">'+(en?"LESSON ":"LECCIÓN ")+(i+1)+' / 4</span><h2>'+escapeHTML(x.title)+'</h2><p><strong>'+(en?"Learning objective: ":"Objetivo de aprendizaje: ")+'</strong>'+escapeHTML(x.objective)+'</p><h3>'+(en?"Lesson development":"Desarrollo de la lección")+'</h3>'+x.content.map(p=>'<p>'+escapeHTML(p)+'</p>').join("")+'<h3>'+(en?"Guided learning steps":"Pasos de aprendizaje guiado")+'</h3><ol>'+x.steps.map(v=>'<li>'+escapeHTML(v)+'</li>').join("")+'</ol><h3>'+(en?"Errors and unsafe actions to avoid":"Errores y acciones inseguras que debes evitar")+'</h3><ul>'+x.avoid.map(v=>'<li>'+escapeHTML(v)+'</li>').join("")+'</ul></article>';});
- html+='</section>'+((window.buildVisuals&&index>=0)?window.buildVisuals(index):"")+((window.buildTechnicalSheets)?window.buildTechnicalSheets(index):"")+addInteractivePractice(index,lang)+addPracticeSection(index,lang)+addReferences(lang)+printableForms(lang)+'<div class="lash-stage-actions"><button class="primary lash-test-entry" onclick="window.renderLashTest('+index+')">'+(en?"TAKE STAGE TEST →":"REALIZAR TEST DE LA ETAPA "+(index+1)+" →")+'</button></div><nav class="lash-course-nav"><button class="secondary" onclick="window.renderLashStage('+(index-1)+')">← '+(en?"PREVIOUS":"ANTERIOR")+'</button><button class="primary" onclick="window.renderLashStage('+(index<12?index+1:index)+')">'+(index<12?(en?"NEXT STAGE →":"SIGUIENTE ETAPA →"):(en?"FINAL EXAM →":"PRUEBA FINAL →"))+'</button></nav>';
+ html+='</section>'+((window.buildVisuals&&index>=0)?window.buildVisuals(index):"")+((window.buildTechnicalSheets)?window.buildTechnicalSheets(index):"")+addInteractivePractice(index,lang)+addPracticeSection(index,lang)+addReferences(lang)+'<div class="lash-stage-actions"><button class="primary lash-test-entry" onclick="window.renderLashTest('+index+')">'+(en?"TAKE STAGE TEST →":"REALIZAR TEST DE LA ETAPA "+(index+1)+" →")+'</button></div><nav class="lash-course-nav"><button class="secondary" onclick="window.renderLashStage('+(index-1)+')">← '+(en?"PREVIOUS":"ANTERIOR")+'</button><button class="primary" onclick="window.renderLashStage('+(index<12?index+1:index)+')">'+(index<12?(en?"NEXT STAGE →":"SIGUIENTE ETAPA →"):(en?"FINAL EXAM →":"PRUEBA FINAL →"))+'</button></nav>';
  panel.hidden=false;panel.innerHTML=html;wireInteractivePractice(panel);addParagraphVectorSchemes(panel);window.__lashViewState={mode:"stage",index};
 };
 window.renderLashTest=function(index){
@@ -963,7 +977,7 @@ window.renderLashLesson=function(index,lessonIndex){
  const next=lessonIndex<3
   ?'<button class="primary" onclick="window.renderLashLesson('+index+','+(lessonIndex+1)+')">'+(en?"NEXT LESSON →":"SIGUIENTE LECCIÓN →")+'</button>'
   :'<button class="primary" onclick="window.renderLashTest('+index+')">'+(en?"TAKE STAGE TEST →":"REALIZAR TEST →")+'</button>';
- const extras=lessonIndex===3?'<details class="lash-extra-resources"><summary>'+(en?"Optional stage resources":"Material complementario de la etapa")+'</summary>'+addPracticeSection(index,getLang())+addReferences(getLang())+printableForms(getLang())+'</details>':"";
+ const extras=lessonIndex===3?'<details class="lash-extra-resources"><summary>'+(en?"Optional stage resources":"Material complementario de la etapa")+'</summary>'+addPracticeSection(index,getLang())+addReferences(getLang())+'</details>':"";
  const testShortcut="";
  panel.hidden=false;
  panel.innerHTML='<header class="lash-stage-heading"><span class="pill">'+(en?"STAGE ":"ETAPA ")+(index+1)+' / 13 · '+escapeHTML(level)+'</span><h1>'+escapeHTML(title)+'</h1><p>'+escapeHTML(intro)+'</p><div class="lash-progress"><span style="width:'+Math.round(((index*4+lessonIndex+1)/52)*100)+'%"></span></div><small>'+(en?"LESSON ":"LECCIÓN ")+(lessonIndex+1)+' / 4 · '+(en?"STAGE ":"ETAPA ")+(index+1)+' / 13</small></header><div class="lash-single-lesson">'+videoHtml+lessonHtml+visualHtml+sheetHtml+extras+'</div><nav class="lash-course-nav">'+previous+'<span class="lash-nav-count">'+(index*4+lessonIndex+1)+' / 52</span>'+testShortcut+next+'</nav>';
@@ -1062,6 +1076,12 @@ window.renderLashCurriculum=async function(){
  const finalDesc=document.createElement("p");finalDesc.textContent=state.admin?"Puedes revisar la evaluación final sin registrar un intento.":state.allComplete?"Has aprobado las 13 etapas. Ya puedes realizar la prueba final.":"Debes aprobar las 13 etapas, una por una, antes de acceder a la prueba final.";
  const finalButton=document.createElement("button");finalButton.className=(state.admin||state.allComplete)?"primary":"secondary";finalButton.textContent=(state.admin||state.allComplete)?"ENTRAR A LA PRUEBA FINAL →":"BLOQUEADA";finalButton.disabled=!(state.admin||state.allComplete);finalButton.onclick=()=>window.renderLashFinalExam();
  finalCard.append(finalTag,finalTitle,finalDesc,finalButton);box.append(finalCard);
+ const formsCard=document.createElement("article");formsCard.className="card module-card";
+ const formsTag=document.createElement("span");formsTag.className="pill";formsTag.textContent="RECURSOS DISPONIBLES";
+ const formsTitle=document.createElement("h3");formsTitle.textContent="Plantillas profesionales imprimibles";
+ const formsDesc=document.createElement("p");formsDesc.textContent="Accede a fichas y registros formativos para consultar, completar e imprimir cuando los necesites. No necesitas aprobar etapas anteriores.";
+ const formsButton=document.createElement("button");formsButton.className="primary";formsButton.textContent="ABRIR PLANTILLAS →";formsButton.onclick=()=>window.openLashPrintableForms();
+ formsCard.append(formsTag,formsTitle,formsDesc,formsButton);box.append(formsCard);
 };
 window.openModule=async function(index){
  try{
