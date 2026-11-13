@@ -531,9 +531,18 @@ const lashCurriculum = [
 ];
 const modules = lashCurriculum.map(m=>m.title);
 function renderLashCurriculum(){
- const box=document.getElementById("modules");if(!box)return;
- box.innerHTML=lashCurriculum.map((m,i)=>'<article class="card module-card"><span class="pill">ETAPA '+(i+1)+' · '+esc(m.level)+'</span><div class="card-icon">'+(i+1)+'</div><h3>'+esc(m.title)+'</h3><p>'+esc(m.intro)+'</p><p><strong>'+m.lessons.length+' lecciones</strong> · Ficha visual · Práctica · Seguridad</p><button class="primary" onclick="openModule('+i+')">ENTRAR A LA ETAPA →</button></article>').join("");
+ const box=document.getElementById("modules");
+ if(!box)return;
+ const safe=value=>String(value==null?"":value).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+ if(!Array.isArray(lashCurriculum)||lashCurriculum.length!==13){
+  box.innerHTML='<article class="card"><h3>El itinerario no está disponible</h3><p>No se pudo cargar la lista de etapas. Recarga EDDELI o vuelve a intentarlo más tarde.</p></article>';
+  console.error("EDDELI: lashCurriculum no contiene las 13 etapas esperadas.");
+  return;
+ }
+ box.innerHTML=lashCurriculum.map((m,i)=>'<article class="card module-card"><span class="pill">ETAPA '+(i+1)+' · '+safe(m.level)+'</span><div class="card-icon">'+(i+1)+'</div><h3>'+safe(m.title)+'</h3><p>'+safe(m.intro)+'</p><p><strong>'+((m.lessons||[]).length)+' lecciones</strong> · Ficha visual · Práctica · Seguridad</p><button class="primary" onclick="openModule('+i+')">ENTRAR A LA ETAPA →</button></article>').join("");
+ box.hidden=false;
 }
+window.renderLashCurriculum=renderLashCurriculum;
 
 function buildVisuals(index){
  const m=lashCurriculum[index];const title=esc(m.title);
