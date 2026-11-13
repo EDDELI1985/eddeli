@@ -12,7 +12,7 @@ const atlas = [
 {theme:"fibres",items:[
 ["Curvaturas comparadas","Perfiles J, B, C, CC, D y L como referencia visual. Las letras y geometrías varían por fabricante."],
 ["Longitudes y diámetros","La longitud y el diámetro se leen en la etiqueta; más grosor puede significar más peso."],
-["Acabados y fibras","Acabado mate, brillante, plano y textura. Los nombres comerciales no garantizan composición."],
+["Materiales y fibras comerciales","Compara las fibras y sus acabados; confirma siempre la composición y las características en la ficha del fabricante."],
 ["Bandeja y trazabilidad","Revisa mezcla de longitudes, curvatura, diámetro, fabricante, lote y estado del envase."]
 ]},
 {theme:"adhesive",items:[
@@ -23,9 +23,9 @@ const atlas = [
 ]},
 {theme:"tools",items:[
 ["Pinza recta","Para aislamiento según diseño y técnica. Comprueba alineación y cierre de puntas."],
-["Pinza curva y volumen","Formas de punta diferentes para tareas distintas; no existe una única pinza universal."],
-["Aplicadores y cepillos","Microbrushes y cepillos desechables: uso individual y eliminación tras el servicio."],
-["Soportes y paletas","Superficies para organizar material; deben poder limpiarse o ser desechables."]
+["Parches y cintas de protección","Accesorios para proteger las pestañas inferiores; deben colocarse cómodamente y sin contacto con el ojo."],
+["Paletas y superficies para adhesivo","Superficies de apoyo para organizar la gota y mantener el adhesivo libre de contaminación."],
+["Mantenimiento e inventario de herramientas","Revisa limpieza, alineación, estado, almacenamiento e inventario de cada herramienta."]
 ]},
 {theme:"equipment",items:[
 ["Lámpara de trabajo","Luz estable y regulable, sin deslumbramiento ni calor excesivo sobre el cliente."],
@@ -36,14 +36,14 @@ const atlas = [
 {theme:"hygiene",items:[
 ["Higiene de manos","Antes y después del servicio, siguiendo el protocolo local."],
 ["Limpieza de superficies","Retira suciedad antes de aplicar el desinfectante indicado."],
-["Procesamiento instrumental","Limpieza, desinfección y esterilización son procesos diferentes."],
-["Flujo limpio y usado","Mantén separados material limpio, material utilizado y residuos."]
+["Material desechable y control de contaminación cruzada","Utiliza consumibles de un solo uso y separa material limpio, utilizado y residuos."],
+["Incidentes y registro de bioseguridad","Documenta exposiciones, contaminación, medidas adoptadas y derivaciones necesarias."]
 ]},
 {theme:"mapping",items:[
-["Zonas del ojo","Divide el diseño en zona interna, central y externa para planificar."],
+["Observación y análisis visual del ojo","Compara las características externas de ambos ojos sin diagnosticar ni etiquetar condiciones."],
 ["Mapa natural","Patrón de longitudes moderadas que acompaña la dirección natural."],
-["Mapa muñeca","Mayor énfasis visual en el centro, siempre adaptado al ojo y pestaña natural."],
-["Mapa gato","Transición gradual hacia la zona externa; no es adecuado para todas las anatomías."]
+["Efectos de diseño comparados","Compara efectos natural, muñeca, gato y ardilla; ninguno es una receta universal."],
+["Simetría y adaptación del diseño","Compara ambos lados y adapta el mapa a la dirección y resistencia de las pestañas naturales."]
 ]},
 {theme:"prep",items:[
 ["Consulta y consentimiento","Explica el servicio, riesgos conocidos, cuidados y alternativas antes de empezar."],
@@ -84,12 +84,12 @@ const atlas = [
 ];
 const annotations={
 eye:[["Párpado y línea de pestañas","Córnea y conjuntiva: zona prohibida"],["Tallo visible","Raíz dentro del folículo"],["Anágena: crecimiento","Catágena y telógena: transición/reposo"],["Expectativas y antecedentes","Observaciones y decisión segura"]],
-fibres:[["Perfil de curvatura","Comparar sin estirar la fibra"],["Longitud en milímetros","Diámetro indicado por fabricante"],["Acabado mate","Acabado brillante o plano"],["Longitud y curvatura","Marca, lote y estado del envase"]],
+fibres:[["Perfil de curvatura","Comparar sin estirar la fibra"],["Longitud en milímetros","Diámetro indicado por fabricante"],["Muestras de fibras","Comparar textura y presentación"],["Longitud y curvatura","Marca, lote y estado del envase"]],
 adhesive:[["Envase y aplicador","Lote, fecha y advertencias"],["Gota pequeña y controlada","No contaminar ni reutilizar"],["Humedad del ambiente","Temperatura: registrar ambas"],["Limpiador y primer","Adhesivo y removedor: no confundir"]],
-tools:[["Pinza recta: aislamiento","Puntas alineadas y cierre suave"],["Pinza curva: toma","Elegir según técnica y control"],["Aplicador desechable","Cepillo individual: no compartir"],["Paleta de organización","Superficie limpia o desechable"]],
+tools:[["Pinza recta: aislamiento","Puntas alineadas y cierre suave"],["Parches de protección","Cinta colocada sin invadir el ojo"],["Paleta para adhesivo","Superficie limpia y organizada"],["Herramientas revisadas","Limpieza, estado e inventario"]],
 equipment:[["Luz estable y regulable","Evitar calor y deslumbramiento"],["Camilla nivelada","Cuello y espalda bien apoyados"],["Higrómetro","Termómetro: leer y registrar"],["Cables en buen estado","Ventilación y líquidos separados"]],
-hygiene:[["Higiene de manos","Antes y después del servicio"],["Limpiar antes de desinfectar","Respetar tiempo del producto"],["Limpieza","Desinfección y esterilización"],["Material limpio","Material usado y residuos separados"]],
-mapping:[["Zona interna","Zona central y zona externa"],["Longitudes progresivas","Seguir la dirección natural"],["Énfasis en el centro","Adaptar al ojo; no universal"],["Longitud aumenta hacia fuera","Valorar anatomía antes de elegir"]],
+hygiene:[["Higiene de manos","Antes y después del servicio"],["Limpiar antes de desinfectar","Respetar tiempo del producto"],["Consumibles de un solo uso","Separar limpio, utilizado y residuos"],["Incidente documentado","Registro y respuesta segura"]],
+mapping:[["Observar ambos ojos","Análisis externo sin diagnóstico"],["Longitudes progresivas","Seguir la dirección natural"],["Natural, muñeca, gato y ardilla","Comparar efectos y límites"],["Comparar simetría","Adaptar el mapa a cada ojo"]],
 prep:[["Consulta y consentimiento","Explicar riesgos y cuidados"],["Limpieza compatible","Pestañas secas según fabricante"],["Párpado inferior protegido","Parches sin tocar el ojo"],["Maniquí de práctica","Aislar una fibra cada vez"]],
 classic:[["Separar una pestaña","No atrapar pestañas vecinas"],["Sujetar la extensión","No deformar la fibra"],["Unión fibra-pestaña","Sin contacto con piel"],["Revisar dirección","Comprobar que no haya uniones"]],
 volume:[["Clásico: una fibra","Una pestaña natural aislada"],["Abanico de fibras finas","Controlar el peso total"],["Híbrido: dos texturas","Distribución planificada"],["Base del abanico","Simetría y puntas ordenadas"]],
@@ -167,6 +167,23 @@ function svg(theme,n){
   '<rect x="30" y="20" width="55" height="68" rx="6"/><rect x="105" y="20" width="55" height="68" rx="6"/><path d="M43 40H72 M118 40H147 M43 56H72 M118 56H147"/>',
   '<path d="M90 12L145 35V62Q130 90 90 104Q50 90 35 62V35Z"/><path d="M65 58L82 73L116 40"/>'][n];
  }
+ const tailored={
+  tools:{
+   1:'<path d="M30 40Q90 15 150 40L150 60Q90 39 30 60Z" fill="#e8eef7" stroke="#36577f" stroke-width="3"/><path d="M40 54H140" stroke="#9b7844" stroke-width="3" stroke-dasharray="5 5"/><path d="M48 72Q90 91 132 72" fill="none" stroke="#36577f" stroke-width="3"/><path d="M52 78L45 94 M128 78L135 94" stroke="#9b7844" stroke-width="3"/>',
+   2:'<path d="M28 30H152V88H28Z" fill="#f7f9fc" stroke="#36577f" stroke-width="3"/><path d="M42 45H138 M42 60H138 M42 75H120" stroke="#36577f" stroke-width="3"/><path d="M90 18V30 M82 18H98" stroke="#9b7844" stroke-width="3"/><circle cx="140" cy="76" r="6" fill="#c9a66b"/>',
+   3:'<rect x="30" y="20" width="100" height="84" rx="8" fill="#f7f9fc" stroke="#36577f" stroke-width="3"/><path d="M48 42L56 50L70 34 M48 66L56 74L70 58 M48 88L56 96L70 80" fill="none" stroke="#9b7844" stroke-width="3"/><path d="M84 42H114 M84 66H114 M84 88H114" stroke="#36577f" stroke-width="3"/><path d="M148 30L166 94 M166 30L148 94" stroke="#36577f" stroke-width="3" stroke-linecap="round"/>'
+  },
+  hygiene:{
+   2:'<rect x="24" y="28" width="38" height="58" rx="7" fill="#e8eef7" stroke="#36577f" stroke-width="3"/><rect x="81" y="28" width="38" height="58" rx="7" fill="#f4eddf" stroke="#9b7844" stroke-width="3"/><path d="M90 18H110V28 M35 18H51V28" stroke="#36577f" stroke-width="3"/><path d="M137 38H158V92H137Z" fill="#fff" stroke="#36577f" stroke-width="3"/><path d="M142 55H153 M142 68H153" stroke="#9b7844" stroke-width="3"/>',
+   3:'<rect x="32" y="20" width="96" height="82" rx="8" fill="#f7f9fc" stroke="#36577f" stroke-width="3"/><path d="M50 42H111 M50 58H111 M50 74H95" stroke="#36577f" stroke-width="3"/><path d="M150 26L174 36V60Q166 82 150 90Q134 82 126 60V36Z" fill="#f4eddf" stroke="#9b7844" stroke-width="3"/><path d="M150 45V62 M150 73V75" stroke="#9b7844" stroke-width="4" stroke-linecap="round"/>'
+  },
+  mapping:{
+   0:'<path d="M15 55Q90 8 165 55Q90 102 15 55Z" fill="#e8eef7" stroke="#36577f" stroke-width="3"/><path d="M42 54Q90 25 138 54" fill="none" stroke="#9b7844" stroke-width="3"/><path d="M90 16V94" stroke="#36577f" stroke-width="2" stroke-dasharray="5 5"/><circle cx="50" cy="55" r="5" fill="#9b7844"/><circle cx="90" cy="40" r="5" fill="#9b7844"/><circle cx="130" cy="55" r="5" fill="#9b7844"/>',
+   2:'<path d="M18 54Q43 29 68 54Q43 79 18 54Z M72 54Q97 29 122 54Q97 79 72 54Z M126 54Q151 29 176 54Q151 79 126 54Z" fill="#e8eef7" stroke="#36577f" stroke-width="2"/><path d="M25 51L30 40 M38 45L43 34 M52 45L57 34 M80 51L85 40 M93 45L98 34 M107 51L112 40 M134 51L139 40 M147 45L152 34 M161 51L166 40" stroke="#9b7844" stroke-width="3" stroke-linecap="round"/><path d="M18 94H176" stroke="#9b7844" stroke-width="2" stroke-dasharray="4 4"/>',
+   3:'<path d="M18 52Q55 18 90 52Q55 86 18 52Z M90 52Q125 18 162 52Q125 86 90 52Z" fill="#e8eef7" stroke="#36577f" stroke-width="3"/><path d="M90 14V100" stroke="#9b7844" stroke-width="2" stroke-dasharray="5 5"/><path d="M35 50L43 38 M52 43L59 31 M70 43L77 31 M107 43L114 31 M125 43L132 31 M143 50L151 38" stroke="#36577f" stroke-width="3" stroke-linecap="round"/>'
+  }
+ };
+ if(tailored[theme]?.[n])body=tailored[theme][n];
  const labels=annotations[theme]?.[n]||["Observar el esquema","Contrastar con la explicación"];
  const labelSvg=labels.map((label,i)=>'<rect x="'+(i===0?12:184)+'" y="224" width="164" height="30" rx="8" fill="'+(i===0?'#e8eef7':'#f4eddf')+'" stroke="'+(i===0?'#b9c9df':'#dfcba7')+'"/><circle cx="'+(i===0?25:197)+'" cy="239" r="7" fill="'+(i===0?'#36577f':'#9b7844')+'"/><text x="'+(i===0?25:197)+'" y="242" text-anchor="middle" font-size="8" font-weight="700" fill="#fff">'+(i+1)+'</text><text x="'+(i===0?38:210)+'" y="243" font-size="8.5" font-weight="600" fill="#273b57">'+label.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</text>').join("");
  return '<svg viewBox="0 0 360 266" role="img" aria-label="Diagrama didáctico de '+theme+', con dos referencias identificadas" xmlns="'+NS+'"><rect x="5" y="5" width="350" height="210" rx="13" fill="#fbfcfe" stroke="#d8e1ed"/><g transform="translate(18 24) scale(1.6)" '+common+'>'+body+'</g><text x="15" y="20" font-size="9" font-weight="800" letter-spacing="1" fill="#6c7f98">OBSERVA · IDENTIFICA</text>'+labelSvg+'</svg>';
