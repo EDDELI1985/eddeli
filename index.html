@@ -458,6 +458,7 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
 <nav class="mobile-nav">
   <button class="active" data-page="inicio" onclick="go('inicio')"><span>⌂</span>Inicio</button>
   <button data-page="academia" onclick="go('academia')"><span>🎓</span>Academia</button>
+  <button data-page="biblioteca" onclick="go('biblioteca')"><span>▣</span>Biblioteca</button>
   <button data-page="cursos" onclick="go('cursos')"><span>▤</span>Cursos</button>
   <button data-page="notificaciones" onclick="go('notificaciones')"><span>♧</span>Avisos</button>
   <button data-page="perfil" onclick="go('perfil')"><span>◉</span>Perfil</button>
@@ -990,6 +991,9 @@ async function checkSystem(){const el=document.getElementById("system-status");t
       button.classList.toggle("active", button.dataset.page === page ||
         (page.startsWith("admin-") && button.dataset.page === "login-admin") ||
         (page === "estudiante" && button.dataset.page === "login-alumno"));
+    });
+    document.querySelectorAll(".mobile-nav button").forEach(button => {
+      button.classList.toggle("active", button.dataset.page === page);
     });
     /* Cargar las etapas solo después de que go() haya validado la sesión.
        La llamada inicial al cargar la página ocurre antes de restaurar la sesión. */
