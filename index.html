@@ -421,7 +421,7 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
   <div class="welcome"><div><span class="eyebrow">TU ESPACIO DE APRENDIZAJE</span><h1>Hola, estudiante</h1><p>Continúa tu formación y descubre tus próximos retos.</p></div><div style="font-size:55px">🎓</div></div>
   <h2 class="section-title">Mi espacio académico</h2>
   <div class="grid">
-    <div class="card"><div class="card-icon">✿</div><h3>Mi formación</h3><p>Accede directamente al programa de Especialista en Extensiones de Pestañas de ELI BEAUTY ACADEMY.</p><button class="primary" onclick="openStudentAcademy()">CONTINUAR MI FORMACIÓN</button></div><div class="card"><h3>Mis cursos</h3><p>Consulta tus formaciones disponibles.</p><button class="secondary" onclick="go('cursos')">VER CURSOS</button></div>
+    <div class="card"><div class="card-icon">✿</div><h3>Mi formación</h3><p>Accede directamente al Curso de Formación Complementaria en Extensiones de Pestañas de ELI BEAUTY ACADEMY.</p><button class="primary" onclick="openStudentAcademy()">CONTINUAR MI FORMACIÓN</button></div><div class="card"><h3>Mis cursos</h3><p>Consulta tus formaciones disponibles.</p><button class="secondary" onclick="go('cursos')">VER CURSOS</button></div>
     <div class="card"><h3>Mi progreso</h3><p id="student-progress-overview">Cargando tu progreso académico…</p><button class="secondary" onclick="go('cursos')">VER MI PROGRESO</button></div>
     <div class="card"><h3>Mis exámenes</h3><p>Historial de tus evaluaciones y calificaciones.</p><div id="student-exam-history">Cargando tus resultados…</div></div>
     <div class="card"><h3>Mis certificados</h3><p>Consulta tus acreditaciones.</p><button class="secondary" onclick="go('perfil')">VER MIS CERTIFICADOS</button></div>
@@ -431,7 +431,7 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
 
 <section id="academia" class="view">
   <section class="card eddeli-course-welcome" aria-labelledby="eddeli-course-welcome-title"><div class="eddeli-course-welcome-copy"><span class="pill">BIENVENIDA · ELI BEAUTY ACADEMY</span><h2 id="eddeli-course-welcome-title">Conoce tu curso y cómo avanzar</h2><p>Reproduce esta guía antes de comenzar. Puedes volver a verla cuando quieras.</p></div><div class="eddeli-course-welcome-frame"><video controls playsinline preload="metadata" aria-label="Video de bienvenida y orientación del curso de extensiones de pestañas"><source src="./course-welcome.mp4" type="video/mp4">Tu navegador no puede reproducir este video. Actualiza el navegador o intenta desde otro dispositivo.</video></div><p class="eddeli-course-welcome-caption">Guía de inicio: etapas, lecciones, recursos, prácticas y evaluaciones.</p></section>
-  <div class="welcome"><div><span class="eyebrow">ELI BEAUTY ACADEMY · FORMACIÓN PROFESIONAL</span><h1>Especialista en Extensiones de Pestañas</h1><p>Un recorrido formativo desde los fundamentos hasta la práctica profesional, con 13 etapas y 52 lecciones, fichas técnicas, ejercicios y evaluaciones de aprendizaje.</p><span class="pill">PROGRAMA COMPLETO · NIVEL INICIAL A PROFESIONAL</span></div><div style="font-size:65px">✧</div></div>
+  <div class="welcome"><div><span class="eyebrow">ELI BEAUTY ACADEMY · FORMACIÓN PROFESIONAL</span><h1>Curso de Formación Complementaria en Extensiones de Pestañas</h1><p>Un recorrido formativo desde los fundamentos hasta la práctica profesional, con 13 etapas y 52 lecciones, fichas técnicas, ejercicios y evaluaciones de aprendizaje.</p><span class="pill">PROGRAMA FORMATIVO · NIVEL INICIAL A AVANZADO</span></div><div style="font-size:65px">✧</div></div>
   <div class="card" style="margin-top:18px"><h2>Tu zona de estudio</h2><p>Avanza en orden. Estudia cada lección, revisa las fichas y realiza la práctica propuesta antes de pasar a la siguiente etapa. Este material es formativo: la práctica sobre personas requiere supervisión presencial y cumplimiento de las normas sanitarias locales.</p><div class="quick"><span class="pill">13 etapas</span><span class="pill">52 lecciones</span><span class="pill">Prácticas guiadas</span><span class="pill">Seguridad ocular</span></div></div>
   <h2 class="section-title">Itinerario de aprendizaje</h2>
   <div id="modules" class="grid"></div>
@@ -854,7 +854,7 @@ async function loadStudentCourses(){
  const academy=document.createElement("article");academy.className="card";
  const tag=document.createElement("span");tag.className="pill";tag.textContent="DISPONIBLE · ELI BEAUTY ACADEMY";
  const icon=document.createElement("div");icon.className="card-icon";icon.textContent="✿";
- const title=document.createElement("h3");title.textContent="Especialista en Extensiones de Pestañas";
+ const title=document.createElement("h3");title.textContent="Curso de Formación Complementaria en Extensiones de Pestañas";
  const desc=document.createElement("p");desc.textContent="13 etapas, 52 lecciones bilingües, atlas visual, fichas técnicas, 52 preguntas de etapa, examen final y registro de progreso.";
  const action=document.createElement("button");action.className="primary";action.textContent="ENTRAR AL CURSO →";action.onclick=()=>go("academia");
  academy.append(tag,icon,title,desc,action);box.append(academy);
