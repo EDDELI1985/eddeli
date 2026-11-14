@@ -58,9 +58,10 @@ function addStyles(){if(document.getElementById("eddeli-academic-library-style")
 .academic-book-intro{background:linear-gradient(140deg,#142542,#203a61);color:#f8f0dd}.academic-book-intro .academic-book-brand{margin:0 0 14px}.academic-book-intro h1{font:700 clamp(26px,4vw,40px)/1.1 Georgia,serif;margin:8px 0 12px;color:#f4dfad}.academic-book-intro p{line-height:1.75;color:#f1eee7}.academic-book-intro .academic-book-disclaimer{font-size:12px;color:#d7ddea;border-top:1px solid #ffffff35;padding-top:14px;margin-top:15px}
 .academic-chapter-kicker{font-size:10px;letter-spacing:1.5px;font-weight:800;color:#a17c42}.academic-book-chapter h2{font:700 clamp(22px,3vw,30px)/1.2 Georgia,serif;color:#1e3152;margin:10px 0}.academic-chapter-intro{color:#667286;line-height:1.7;padding-bottom:14px;border-bottom:1px solid #ebe5da}
 .academic-book-lesson{margin:20px 0;padding:0 0 18px;border-bottom:1px solid #eee8df}.academic-book-lesson h3{font:700 19px Georgia,serif;color:#314766;margin:6px 0 10px}.academic-book-lesson p,.academic-book-lesson li{color:#4d5b70;line-height:1.8}.academic-book-lesson h4{font-size:12px;color:#80643b;letter-spacing:.5px;margin:17px 0 5px}.academic-book-check{background:#f6f2e9;border-left:3px solid #ba985f;padding:13px 15px;border-radius:0 9px 9px 0;margin-top:14px;color:#374960;line-height:1.6}.academic-book-chapter-note{background:#f4f7fa;border:1px solid #e1e8ef;border-radius:11px;padding:14px;margin-top:14px;color:#526177;line-height:1.7}
+.academic-audio-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:9px;padding:13px;background:#f8f5ef;border:1px solid #e6ddce;border-radius:13px;margin:0 0 17px}.academic-audio-toolbar label{font-size:12px;font-weight:700;color:#43536a}.academic-audio-toolbar select{max-width:240px;min-height:38px;padding:7px 10px;border:1px solid #d7cbb8;border-radius:8px;background:#fff;color:#31435d}.academic-audio-toolbar button,.book-chapter-audio{min-height:38px}.academic-audio-status{flex-basis:100%;font-size:12px;color:#667286;line-height:1.5}.academic-audio-note{font-size:11px;color:#7a8494;margin:0 0 15px}.book-chapter-audio{margin:5px 0 10px;padding:8px 13px;font-size:12px}
 .academic-library-message{max-width:680px;margin:40px auto;text-align:center}
 @media(max-width:900px){.library-shelf{grid-template-columns:repeat(2,minmax(0,1fr))}.academic-reader-layout{grid-template-columns:1fr}.academic-toc{position:static;max-height:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px}.academic-toc h3{grid-column:1/-1}}
-@media(max-width:600px){.academic-library-shell{padding:0 0 24px}.academic-library-head{display:block}.library-shelf{grid-template-columns:1fr;padding:13px;gap:13px}.library-book-card,.library-future-card{min-height:0;padding:22px 14px}.academic-book-stage{width:195px;height:265px}.academic-book-face h3{font-size:19px}.academic-book-eye{width:130px;height:75px}.academic-reader-top{align-items:flex-start;flex-direction:column}.academic-toc{grid-template-columns:1fr}.academic-book-intro,.academic-book-chapter{padding:18px}}
+@media(max-width:600px){.academic-library-shell{padding:0 0 24px}.academic-library-head{display:block}.library-shelf{grid-template-columns:1fr;padding:13px;gap:13px}.library-book-card,.library-future-card{min-height:0;padding:22px 14px}.academic-book-stage{width:195px;height:265px}.academic-book-face h3{font-size:19px}.academic-book-eye{width:130px;height:75px}.academic-reader-top{align-items:flex-start;flex-direction:column}.academic-toc{grid-template-columns:1fr}.academic-book-intro,.academic-book-chapter{padding:18px}.academic-audio-toolbar{align-items:stretch;flex-direction:column}.academic-audio-toolbar select,.academic-audio-toolbar button{width:100%;max-width:none}.book-chapter-audio{width:100%}}
 `;document.head.appendChild(style);}
 
 function bookCover(){return `<div class="academic-book-stage" aria-label="Portada del libro Manual integral de extensiones de pestañas"><div class="academic-book-volume"><div class="academic-book-spine"></div><div class="academic-book-face"><div class="academic-book-brand">ELI BEAUTY ACADEMY</div><svg class="academic-book-eye" viewBox="0 0 180 100" aria-hidden="true"><path d="M16 57Q90 -2 164 57Q90 112 16 57Z" fill="none" stroke="#d8bb7a" stroke-width="3"/><path d="M57 55Q90 26 123 55Q90 83 57 55Z" fill="#b9975d"/><circle cx="90" cy="55" r="15" fill="#172742" stroke="#f1d895" stroke-width="3"/><circle cx="90" cy="55" r="6" fill="#f0d79c"/><path d="M35 42L23 25M52 32L44 13M71 25L67 5M91 22V2M111 25L116 5M130 32L140 13M146 42L159 25" stroke="#e2c887" stroke-width="3" stroke-linecap="round"/><path d="M28 64Q90 95 152 64" fill="none" stroke="#947647" stroke-width="1.5"/></svg><h3>MANUAL INTEGRAL DE EXTENSIONES DE PESTAÑAS</h3><p>Fundamentos · Diseño · Técnica · Bioseguridad</p><div class="academic-book-rule"></div><div class="academic-book-footer">EDDELI · FORMACIÓN PROFESIONAL</div></div></div></div>`;}
@@ -84,12 +85,93 @@ function renderBook(bookData){
    const x=lesson.es||lesson.en||{};
    return `<article class="academic-book-lesson"><span class="academic-chapter-kicker">LECCIÓN ${index*4+lessonIndex+1} · ${index+1}.${lessonIndex+1}</span><h3>${esc(x.title||chapterNames[index])}</h3>${x.objective?`<p><strong>Objetivo de aprendizaje:</strong> ${esc(x.objective)}</p>`:""}${Array.isArray(x.content)?x.content.map(paragraph=>`<p>${esc(paragraph)}</p>`).join(""):""}${Array.isArray(x.steps)&&x.steps.length?`<h4>Pasos de aprendizaje guiado</h4><ol>${x.steps.map(step=>`<li>${esc(step)}</li>`).join("")}</ol>`:""}${Array.isArray(x.avoid)&&x.avoid.length?`<h4>Errores y acciones que debes evitar</h4><ul>${x.avoid.map(item=>`<li>${esc(item)}</li>`).join("")}</ul>`:""}${x.check||x.answer?`<div class="academic-book-check"><strong>Autoevaluación:</strong> ${esc(x.check||"")} ${x.answer?`<details><summary>Ver respuesta</summary><p>${esc(x.answer)}</p></details>`:""}</div>`:""}</article>`;
   }).join("");
-  return `<section class="academic-book-chapter" id="academic-chapter-${index}"><span class="academic-chapter-kicker">CAPÍTULO ${String(index+1).padStart(2,"0")} · ${esc(chapterEyebrows[index])}</span><h2>${esc(title)}</h2><p class="academic-chapter-intro">${esc(stage.intro)}</p>${lessons}<div class="academic-book-chapter-note"><strong>Práctica del capítulo:</strong> ${esc(stage.practice||"Repasa las lecciones y registra tus observaciones con materiales de entrenamiento.")}<br><strong>Criterio de seguridad:</strong> ${esc(stage.safety||"Respeta la documentación del fabricante y la normativa sanitaria local.")}</div></section>`;
+  return `<section class="academic-book-chapter" id="academic-chapter-${index}"><span class="academic-chapter-kicker">CAPÍTULO ${String(index+1).padStart(2,"0")} · ${esc(chapterEyebrows[index])}</span><h2>${esc(title)}</h2><button class="secondary book-chapter-audio" type="button" onclick="window.playAcademicBookChapter(${index})">▶ ESCUCHAR ESTE CAPÍTULO</button><p class="academic-chapter-intro">${esc(stage.intro)}</p>${lessons}<div class="academic-book-chapter-note"><strong>Práctica del capítulo:</strong> ${esc(stage.practice||"Repasa las lecciones y registra tus observaciones con materiales de entrenamiento.")}<br><strong>Criterio de seguridad:</strong> ${esc(stage.safety||"Respeta la documentación del fabricante y la normativa sanitaria local.")}</div></section>`;
  }).join("");
  shelf.hidden=true;reader.hidden=false;
- reader.innerHTML=`<div class="academic-reader-top"><h2>${esc(BOOK_TITLE)}</h2><button class="secondary" type="button" onclick="window.returnToAcademicLibrary()">← VOLVER A LA ESTANTERÍA</button></div><div class="academic-reader-layout"><nav class="academic-toc" aria-label="Índice del libro"><h3>Índice · 13 capítulos</h3>${stages.map(({index,title})=>`<a href="#academic-chapter-${index}">${String(index+1).padStart(2,"0")}. ${esc(title)}</a>`).join("")}</nav><div class="academic-book-pages"><header class="academic-book-intro"><div class="academic-book-brand">ELI BEAUTY ACADEMY · EDDELI</div><h1>${esc(BOOK_TITLE)}</h1><p>${esc(BOOK_SUBTITLE)}</p><p>Una guía de estudio organizada en 13 capítulos y 52 lecciones: anatomía y materiales, diseño, técnicas de aplicación, mantenimiento, bioseguridad y desarrollo profesional.</p><p class="academic-book-disclaimer"><strong>Uso formativo:</strong> este manual no sustituye la formación práctica presencial ni las normas sanitarias locales. No es una guía médica. Ante dolor, irritación, lesión, secreción o duda ocular, se debe suspender el servicio y recomendar atención sanitaria. Para productos químicos y equipos, prevalecen siempre las etiquetas e instrucciones actuales del fabricante y su ficha de seguridad.</p></header>${chapterMarkup}<footer class="academic-book-chapter-note"><strong>Fin del manual.</strong> Continúa practicando con supervisión adecuada, mantén actualizados tus conocimientos y consulta la documentación vigente de cada producto.</footer></div></div>`;
+ reader.innerHTML=`<div class="academic-reader-top"><h2>${esc(BOOK_TITLE)}</h2><button class="secondary" type="button" onclick="window.returnToAcademicLibrary()">← VOLVER A LA ESTANTERÍA</button></div><div class="academic-audio-toolbar" role="region" aria-label="Audiolibro"><label for="academic-audio-voice">Voz de lectura</label><select id="academic-audio-voice" aria-label="Elegir voz"></select><button class="primary" type="button" onclick="window.playAcademicBook()">▶ ESCUCHAR TODO EL LIBRO</button><button id="academic-audio-pause" class="secondary" type="button" onclick="window.pauseAcademicBook()">⏸ PAUSAR</button><button class="secondary" type="button" onclick="window.stopAcademicBookAudio()">■ DETENER</button><span id="academic-audio-status" class="academic-audio-status" aria-live="polite">Preparando voces disponibles…</span></div><p class="academic-audio-note">La voz disponible depende de las voces instaladas en el teléfono o navegador. Se seleccionará una voz femenina en español cuando esté disponible.</p><div class="academic-reader-layout"><nav class="academic-toc" aria-label="Índice del libro"><h3>Índice · 13 capítulos</h3>${stages.map(({index,title})=>`<a href="#academic-chapter-${index}">${String(index+1).padStart(2,"0")}. ${esc(title)}</a>`).join("")}</nav><div class="academic-book-pages"><header class="academic-book-intro"><div class="academic-book-brand">ELI BEAUTY ACADEMY · EDDELI</div><h1>${esc(BOOK_TITLE)}</h1><p>${esc(BOOK_SUBTITLE)}</p><p>Una guía de estudio organizada en 13 capítulos y 52 lecciones: anatomía y materiales, diseño, técnicas de aplicación, mantenimiento, bioseguridad y desarrollo profesional.</p><p class="academic-book-disclaimer"><strong>Uso formativo:</strong> este manual no sustituye la formación práctica presencial ni las normas sanitarias locales. No es una guía médica. Ante dolor, irritación, lesión, secreción o duda ocular, se debe suspender el servicio y recomendar atención sanitaria. Para productos químicos y equipos, prevalecen siempre las etiquetas e instrucciones actuales del fabricante y su ficha de seguridad.</p></header>${chapterMarkup}<footer class="academic-book-chapter-note"><strong>Fin del manual.</strong> Continúa practicando con supervisión adecuada, mantén actualizados tus conocimientos y consulta la documentación vigente de cada producto.</footer></div></div>`;
+ setupAcademicAudio();
  reader.scrollIntoView({behavior:"smooth",block:"start"});
 }
+
+let academicAudioChunks=[];
+let academicAudioIndex=0;
+let academicAudioToken=0;
+let academicAudioLabel="";
+let academicAudioVoices=[];
+let academicVoicesChangedHandler=null;
+function academicAudioStatus(message){const status=document.getElementById("academic-audio-status");if(status)status.textContent=message;}
+function feminineVoiceHint(name){return /female|woman|mujer|femen|helena|elena|laura|lucia|lucía|paulina|sabina|monica|mónica|ana|sofia|sofía|zira/i.test(name||"");}
+function setupAcademicAudio(){
+ const synth=window.speechSynthesis;const select=document.getElementById("academic-audio-voice");
+ if(!select)return;
+ if(!synth||typeof window.SpeechSynthesisUtterance!=="function"){
+  select.innerHTML="<option>Voz no disponible en este navegador</option>";select.disabled=true;
+  academicAudioStatus("Este navegador no ofrece lectura en voz alta. El libro sigue disponible para leer.");return;
+ }
+ const fillVoices=()=>{
+  const previous=select.value;
+  const all=synth.getVoices();
+  const spanish=all.filter(voice=>/^es(?:-|$)/i.test(voice.lang||""));
+  academicAudioVoices=spanish.length?spanish:all;
+  select.innerHTML=academicAudioVoices.length?academicAudioVoices.map((voice,index)=>`<option value="${index}">${feminineVoiceHint(voice.name)?"Voz femenina · ":"Voz disponible · "}${esc(voice.name)} (${esc(voice.lang||"es")})</option>`).join(""):"<option value=''>No hay voces disponibles</option>";
+  if(previous&&academicAudioVoices[Number(previous)])select.value=previous;
+  else {const female=academicAudioVoices.findIndex(voice=>feminineVoiceHint(voice.name));select.value=String(female>=0?female:0);}
+  if(!academicAudioVoices.length){academicAudioStatus("No hay voces de lectura instaladas. Puedes leer el libro en pantalla.");return;}
+  const chosen=academicAudioVoices[Number(select.value)];
+  academicAudioStatus(feminineVoiceHint(chosen?.name)?"Voz femenina en español seleccionada.":"Elige una voz femenina de la lista si aparece; las voces dependen del dispositivo.");
+ };
+ if(academicVoicesChangedHandler)synth.removeEventListener?.("voiceschanged",academicVoicesChangedHandler);
+ academicVoicesChangedHandler=fillVoices;synth.addEventListener?.("voiceschanged",fillVoices);fillVoices();
+}
+function academicTextChunks(text,limit=900){
+ const sentences=String(text||"").replace(/\s+/g," ").match(/[^.!?]+[.!?]+|[^.!?]+$/g)||[];const chunks=[];let current="";
+ sentences.forEach(sentence=>{const part=sentence.trim();if(!part)return;if(part.length>limit){const words=part.split(/\s+/);words.forEach(word=>{if(current&&current.length+word.length+1>limit){chunks.push(current.trim());current="";}current+=(current?" ":"")+word;});return;}if(current&&current.length+part.length+1>limit){chunks.push(current.trim());current="";}current+=(current?" ":"")+part;});
+ if(current.trim())chunks.push(current.trim());return chunks;
+}
+function academicReadableText(container){
+ if(!container)return "";
+ return [...container.querySelectorAll("h1,h2,h3,h4,p,li,summary")].filter(node=>!node.closest("details")||node.tagName==="SUMMARY").map(node=>node.textContent.trim()).filter(Boolean).join(". ");
+}
+function speakAcademicChunk(token){
+ if(token!==academicAudioToken)return;
+ const synth=window.speechSynthesis;
+ if(academicAudioIndex>=academicAudioChunks.length){academicAudioStatus("Terminó la lectura: "+academicAudioLabel+".");return;}
+ const utterance=new window.SpeechSynthesisUtterance(academicAudioChunks[academicAudioIndex]);
+ const voiceSelect=document.getElementById("academic-audio-voice");const voice=academicAudioVoices[Number(voiceSelect?.value)];
+ utterance.lang=voice?.lang||"es-ES";if(voice)utterance.voice=voice;utterance.rate=0.96;utterance.pitch=1;
+ utterance.onend=()=>{if(token!==academicAudioToken)return;academicAudioIndex++;academicAudioStatus("Escuchando "+academicAudioLabel+" · parte "+academicAudioIndex+" de "+academicAudioChunks.length);window.setTimeout(()=>speakAcademicChunk(token),0);};
+ utterance.onerror=event=>{if(token!==academicAudioToken)return;academicAudioStatus("No se pudo continuar la lectura: "+(event.error||"error de voz"));};
+ academicAudioStatus("Escuchando "+academicAudioLabel+" · parte "+(academicAudioIndex+1)+" de "+academicAudioChunks.length);
+ synth.speak(utterance);
+}
+function startAcademicAudio(text,label){
+ const synth=window.speechSynthesis;
+ if(!synth||typeof window.SpeechSynthesisUtterance!=="function"){academicAudioStatus("La lectura en voz alta no está disponible. Puedes leer el texto en pantalla.");return false;}
+ const chunks=academicTextChunks(text);if(!chunks.length){academicAudioStatus("No hay texto para reproducir.");return false;}
+ academicAudioToken++;const token=academicAudioToken;synth.cancel();academicAudioChunks=chunks;academicAudioIndex=0;academicAudioLabel=label;
+ const pauseButton=document.getElementById("academic-audio-pause");if(pauseButton)pauseButton.textContent="⏸ PAUSAR";
+ if(!academicAudioVoices.length)setupAcademicAudio();
+ if(!academicAudioVoices.length){academicAudioStatus("Activa una voz en español en los ajustes del teléfono para escuchar el libro.");return false;}
+ speakAcademicChunk(token);return true;
+}
+window.playAcademicBook=function(){
+ if(!allowed()){window.go("login-alumno");return false;}
+ const pages=libraryRoot()?.querySelector(".academic-book-pages");return startAcademicAudio(academicReadableText(pages),"el libro");
+};
+window.playAcademicBookChapter=function(index){
+ if(!allowed()){window.go("login-alumno");return false;}
+ const chapter=libraryRoot()?.querySelector("#academic-chapter-"+Number(index));return startAcademicAudio(academicReadableText(chapter),"el capítulo "+(Number(index)+1));
+};
+window.pauseAcademicBook=function(){
+ const synth=window.speechSynthesis;if(!synth)return;
+ const button=document.getElementById("academic-audio-pause");
+ if(synth.paused){synth.resume();if(button)button.textContent="⏸ PAUSAR";academicAudioStatus("Reanudando "+academicAudioLabel+".");}
+ else if(synth.speaking){synth.pause();if(button)button.textContent="▶ REANUDAR";academicAudioStatus("Lectura pausada.");}
+};
+window.stopAcademicBookAudio=function(){
+ academicAudioToken++;window.speechSynthesis?.cancel();academicAudioChunks=[];academicAudioIndex=0;academicAudioLabel="";const button=document.getElementById("academic-audio-pause");if(button)button.textContent="⏸ PAUSAR";academicAudioStatus("Lectura detenida.");
+};
+document.addEventListener("click",event=>{const nav=event.target.closest(".navbtn,.mobile-nav button");if(nav&&nav.dataset.page!=="biblioteca")window.stopAcademicBookAudio?.();});
 
 window.renderAcademicLibrary=function(){
  addStyles();const root=libraryRoot();if(!root)return;
@@ -105,6 +187,7 @@ window.openAcademicBook=function(bookId){
 };
 window.returnToAcademicLibrary=function(){
  if(!allowed()){window.go("login-alumno");return false;}
+ window.stopAcademicBookAudio?.();
  const root=libraryRoot();if(!root)return false;
  const reader=root.querySelector("#academic-book-reader");const shelf=root.querySelector(".library-shelf");
  if(reader)reader.hidden=true;if(shelf)shelf.hidden=false;
