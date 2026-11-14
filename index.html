@@ -119,6 +119,7 @@ border-radius:8px;margin:7px 0 16px;background:#fff
 }
 .form-card label{font-size:12px;font-weight:bold;color:#655b4c}
 .form-card button{margin:5px 5px 5px 0}
+.student-presence{display:inline-flex;align-items:center;justify-content:center;min-height:34px;margin:5px 5px 5px 0;padding:7px 11px;border:1px solid #cbd5e1;border-radius:999px;background:#eef2f7;color:#64748b;font-size:11px;font-weight:700;letter-spacing:.03em;white-space:nowrap;opacity:1;cursor:default}.student-presence:disabled{opacity:1;cursor:default}.student-presence.is-online{border-color:#86efac;background:#dcfce7;color:#166534}.student-presence.is-offline{border-color:#cbd5e1;background:#eef2f7;color:#64748b}
 .notice{padding:15px;border-bottom:1px solid var(--line)}
 .notice strong{color:#725a35}
 .profile-head{display:flex;align-items:center;gap:20px;
@@ -636,7 +637,7 @@ async function demoLogin(event,type){
  if(currentProfile.approval_status!=="approved"){await supabaseClient.auth.signOut();currentUser=null;alert("Tu cuenta está pendiente de aprobación administrativa.");return;}
  if(type==="admin"&&currentProfile.role!=="admin"){await supabaseClient.auth.signOut();currentUser=null;alert("Esta cuenta no tiene permisos de administración.");return;}
  if(type==="alumno"&&currentProfile.role!=="student"){await supabaseClient.auth.signOut();currentUser=null;alert("Utiliza el acceso administrativo para esta cuenta.");return;}
- go(type==="admin"?"admin":"estudiante");
+ go(type==="admin"?"admin":"estudiante");if(type==="alumno")startStudentPresence();
  }catch(err){alert("No se pudo iniciar sesión: "+(err.message||"Comprueba tus datos."));}
  finally{button.disabled=false;button.textContent="ENTRAR";}
 }
@@ -647,8 +648,85 @@ async function registroDemo(event){
  form.reset();alert("Registro enviado. Revisa tu correo y confirma tu dirección. Después, tu cuenta quedará pendiente de aprobación.");go("acceso");
  }catch(err){alert("No se pudo completar el registro: "+(err.message||"Inténtalo de nuevo."));}
 }
-async function signOut(){await supabaseClient.auth.signOut();currentUser=null;currentProfile=null;go("inicio");}
+async function signOut(){await stopStudentPresence(true);await supabaseClient.auth.signOut();currentUser=null;currentProfile=null;go("inicio");}
 async function recoverPassword(form){const email=form.querySelector('input[type="email"]').value.trim();if(!email){alert("Escribe primero tu correo electrónico.");return;}try{const r=await supabaseClient.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname});if(r.error)throw r.error;alert("Si el correo existe, recibirás un mensaje para restablecer tu contraseña.");}catch(err){alert("No se pudo solicitar el cambio: "+err.message);}}
+
+const STUDENT_PRESENCE_HEARTBEAT_MS=30000;
+const STUDENT_PRESENCE_STALE_MS=90000;
+let studentPresenceHeartbeatTimer=null;
+let studentPresenceMonitorTimer=null;
+let studentPresenceSessionId=null;
+function getStudentPresenceSessionId(){
+ if(studentPresenceSessionId)return studentPresenceSessionId;
+ const key="eddeli-student-presence-session";
+ try{
+  const saved=sessionStorage.getItem(key);
+  studentPresenceSessionId=saved||window.crypto.randomUUID();
+  if(!saved)sessionStorage.setItem(key,studentPresenceSessionId);
+ }catch(_){studentPresenceSessionId=window.crypto.randomUUID();}
+ return studentPresenceSessionId;
+}
+async function setStudentPresence(isOnline){
+ if(!currentUser||!currentUser.email_confirmed_at||currentProfile?.role!=="student"||currentProfile?.approval_status!=="approved")return;
+ try{
+  const result=await supabaseClient.rpc("eddeli_set_student_presence",{p_session_id:getStudentPresenceSessionId(),p_online:isOnline});
+  if(result.error)throw result.error;
+ }catch(err){console.warn("EDDELI: no se pudo actualizar la presencia del alumno.",err);}
+}
+function startStudentPresence(){
+ if(!currentUser||currentProfile?.role!=="student"||currentProfile?.approval_status!=="approved")return;
+ if(studentPresenceHeartbeatTimer)window.clearInterval(studentPresenceHeartbeatTimer);
+ void setStudentPresence(true);
+ studentPresenceHeartbeatTimer=window.setInterval(function(){void setStudentPresence(true);},STUDENT_PRESENCE_HEARTBEAT_MS);
+}
+async function stopStudentPresence(markOffline){
+ if(studentPresenceHeartbeatTimer){window.clearInterval(studentPresenceHeartbeatTimer);studentPresenceHeartbeatTimer=null;}
+ if(markOffline&&currentUser&&currentProfile?.role==="student")await setStudentPresence(false);
+}
+async function refreshStudentPresence(){
+ const list=document.getElementById("students-list");
+ if(!list||!document.getElementById("admin-alumnos")?.classList.contains("active"))return;
+ const cutoff=new Date(Date.now()-STUDENT_PRESENCE_STALE_MS).toISOString();
+ try{
+  const result=await supabaseClient.from("student_presence_sessions").select("student_id,last_seen_at").gte("last_seen_at",cutoff);
+  if(result.error)throw result.error;
+  const now=Date.now();
+  const onlineIds=new Set((result.data||[]).filter(function(row){
+   const seen=Date.parse(row.last_seen_at);
+   return Number.isFinite(seen)&&seen<=now&&now-seen<=STUDENT_PRESENCE_STALE_MS;
+  }).map(function(row){return row.student_id;}));
+  list.querySelectorAll(".student-presence").forEach(function(button){
+   const online=onlineIds.has(button.dataset.studentId);
+   button.classList.toggle("is-online",online);
+   button.classList.toggle("is-offline",!online);
+   button.textContent=online?"EN LA APLICACIÓN":"FUERA";
+   button.setAttribute("aria-label",online?"El estudiante está en la aplicación":"El estudiante está fuera de la aplicación");
+  });
+ }catch(err){
+  console.warn("EDDELI: no se pudo comprobar la presencia de los alumnos.",err);
+  list.querySelectorAll(".student-presence").forEach(function(button){
+   button.classList.remove("is-online");button.classList.add("is-offline");
+   button.textContent="FUERA";button.setAttribute("aria-label","No se pudo confirmar que el estudiante esté en la aplicación");
+  });
+ }
+}
+window.startStudentPresenceMonitor=function(){
+ if(studentPresenceMonitorTimer)window.clearInterval(studentPresenceMonitorTimer);
+ void refreshStudentPresence();
+ studentPresenceMonitorTimer=window.setInterval(function(){void refreshStudentPresence();},15000);
+};
+window.stopStudentPresenceMonitor=function(){
+ if(studentPresenceMonitorTimer){window.clearInterval(studentPresenceMonitorTimer);studentPresenceMonitorTimer=null;}
+};
+window.startStudentPresence=startStudentPresence;
+window.stopStudentPresence=stopStudentPresence;
+document.addEventListener("visibilitychange",function(){
+ if(document.visibilityState==="visible"&&currentUser&&currentProfile?.role==="student")void setStudentPresence(true);
+});
+window.addEventListener("pagehide",function(){
+ if(currentUser&&currentProfile?.role==="student")void setStudentPresence(false);
+});
+
 async function loadStudents(){
  const box=document.getElementById("students-list");if(!box)return;box.textContent="Cargando solicitudes...";
  try{
@@ -672,10 +750,12 @@ async function loadStudents(){
     reject.textContent=state==="rejected"?"RECHAZADO":"RECHAZAR";
     reject.disabled=state==="rejected";
     reject.onclick=function(){setApproval(s.id,"rejected",reject);};
-    item.append(approve,reject);
+    const presence=document.createElement("button");presence.type="button";presence.disabled=true;presence.className="student-presence is-offline";presence.textContent="FUERA";presence.setAttribute("aria-label","El estudiante está fuera de la aplicación");presence.dataset.studentId=s.id;
+    item.append(approve,reject,presence);
    }
    box.appendChild(item);
   });
+  if(document.getElementById("admin-alumnos")?.classList.contains("active"))void refreshStudentPresence();
  }catch(err){box.textContent="No se pudo cargar la lista: "+(err.message||"Error desconocido");}
 }
 async function setApproval(id,status,button){
@@ -694,7 +774,7 @@ async function setApproval(id,status,button){
   alert("No se pudo actualizar la solicitud:\n"+(detail||"Error desconocido"));
  }
 }
-async function restoreSession(){try{const r=await supabaseClient.auth.getSession();if(r.error){console.warn("No se pudo comprobar la sesión; se conserva para reintentar:",r.error);return;}if(!r.data.session)return;currentUser=r.data.session.user;if(!currentUser.email_confirmed_at){await supabaseClient.auth.signOut();currentUser=null;currentProfile=null;return;}const p=await supabaseClient.from("profiles").select("id,full_name,role,approval_status,phone,country").eq("id",currentUser.id).maybeSingle();if(p.error){console.warn("No se pudo cargar el perfil; no se cerrará la sesión automáticamente:",p.error);return;}if(!p.data){console.warn("La sesión existe, pero el perfil aún no está disponible.");return;}currentProfile=p.data;if(currentProfile.approval_status!=="approved"){await supabaseClient.auth.signOut();currentUser=null;currentProfile=null;return;}go(currentProfile.role==="admin"?"admin":"estudiante");}catch(err){console.error("Error al restaurar la sesión:",err);}}
+async function restoreSession(){try{const r=await supabaseClient.auth.getSession();if(r.error){console.warn("No se pudo comprobar la sesión; se conserva para reintentar:",r.error);return;}if(!r.data.session)return;currentUser=r.data.session.user;if(!currentUser.email_confirmed_at){await supabaseClient.auth.signOut();currentUser=null;currentProfile=null;return;}const p=await supabaseClient.from("profiles").select("id,full_name,role,approval_status,phone,country").eq("id",currentUser.id).maybeSingle();if(p.error){console.warn("No se pudo cargar el perfil; no se cerrará la sesión automáticamente:",p.error);return;}if(!p.data){console.warn("La sesión existe, pero el perfil aún no está disponible.");return;}currentProfile=p.data;if(currentProfile.approval_status!=="approved"){await supabaseClient.auth.signOut();currentUser=null;currentProfile=null;return;}go(currentProfile.role==="admin"?"admin":"estudiante");if(currentProfile.role==="student")startStudentPresence();}catch(err){console.error("Error al restaurar la sesión:",err);}}
 restoreSession();
 
 let eddeliInstallPrompt=null;
@@ -713,7 +793,7 @@ document.addEventListener("DOMContentLoaded",function(){
 });
 
 if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(err=>console.warn("PWA:",err)));}
-supabaseClient.auth.onAuthStateChange(function(event,session){currentUser=session?session.user:null;if(event==="SIGNED_OUT"){currentProfile=null;}if(event==="PASSWORD_RECOVERY"){setTimeout(async function(){const password=prompt("Escribe tu nueva contraseña (mínimo 12 caracteres, con mayúscula, minúscula, número y símbolo):");if(!password||password.length<12||!/[a-z]/.test(password)||!/[A-Z]/.test(password)||!/[0-9]/.test(password)||!/[^A-Za-z0-9]/.test(password)){alert("La contraseña debe tener al menos 12 caracteres, una mayúscula, una minúscula, un número y un símbolo. Solicita nuevamente el cambio si es necesario.");return;}const result=await supabaseClient.auth.updateUser({password:password});if(result.error)alert("No se pudo cambiar la contraseña: "+result.error.message);else alert("Contraseña actualizada correctamente.");},0);}});</script>
+supabaseClient.auth.onAuthStateChange(function(event,session){currentUser=session?session.user:null;if(event==="SIGNED_OUT"){currentProfile=null;if(typeof window.stopStudentPresence==="function")window.stopStudentPresence(false);}if(event==="PASSWORD_RECOVERY"){setTimeout(async function(){const password=prompt("Escribe tu nueva contraseña (mínimo 12 caracteres, con mayúscula, minúscula, número y símbolo):");if(!password||password.length<12||!/[a-z]/.test(password)||!/[A-Z]/.test(password)||!/[0-9]/.test(password)||!/[^A-Za-z0-9]/.test(password)){alert("La contraseña debe tener al menos 12 caracteres, una mayúscula, una minúscula, un número y un símbolo. Solicita nuevamente el cambio si es necesario.");return;}const result=await supabaseClient.auth.updateUser({password:password});if(result.error)alert("No se pudo cambiar la contraseña: "+result.error.message);else alert("Contraseña actualizada correctamente.");},0);}});</script>
 
 <script>
 let activeModule=null;
@@ -915,7 +995,10 @@ async function checkSystem(){const el=document.getElementById("system-status");t
     if(page === "academia" && typeof window.renderLashCurriculum === "function") {
       window.renderLashCurriculum();
     }
-    if(page === "admin-alumnos" && typeof window.loadStudents === "function") window.loadStudents();
+    if(page === "admin-alumnos"){
+      if(typeof window.loadStudents === "function") window.loadStudents();
+      if(typeof window.startStudentPresenceMonitor === "function") window.startStudentPresenceMonitor();
+    }else if(typeof window.stopStudentPresenceMonitor === "function") window.stopStudentPresenceMonitor();
     if(page === "admin-cursos" && typeof window.loadAdminAcademy === "function") window.loadAdminAcademy();
     if(page === "admin-examenes" && typeof window.loadAdminAcademy === "function") window.loadAdminAcademy();
     if(page === "admin-certificados" && typeof window.loadCertificates === "function") window.loadCertificates(true);
