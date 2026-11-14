@@ -190,6 +190,8 @@ for(let stage=2;stage<lashCurriculum.length;stage++){
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function language(){try{return localStorage.getItem("eddeli-language")==="en"?"en":"es";}catch(e){return "es";}}
 function allStageLessons(){const groups=[lessons];for(let i=1;i<=12;i++)groups.push(stageContent[i]||[]);return groups;}
+/* Exposición de solo lectura para el libro de biblioteca; no cambia el itinerario ni sus evaluaciones. */
+window.getLashLibraryBookContent=function(){return {curriculum:lashCurriculum,stages:allStageLessons()};};
 function allQuestionRecords(){const out=[];allStageLessons().forEach((group,stage)=>group.forEach((lesson,lessonIndex)=>{const d=lesson.es||lesson.en;if(d&&d.check&&d.answer)out.push({stage,lessonIndex,question:d.check,answer:d.answer});}));return out;}
 function escapeHtml(value){return String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function buildChoices(correct,index){const wrong=[...new Set(allQuestionRecords().filter(q=>q.answer!==correct).map(q=>q.answer))],picked=[];for(let n=0;n<wrong.length&&picked.length<3;n++){const candidate=wrong[(index*7+n*3)%wrong.length];if(candidate!==correct&&!picked.includes(candidate))picked.push(candidate);}const choices=[correct,...picked],shift=choices.length?index%choices.length:0;return choices.slice(shift).concat(choices.slice(0,shift));}
