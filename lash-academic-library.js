@@ -83,7 +83,8 @@ function renderBook(bookData){
  }
  const stages=curriculum.map((stage,index)=>({stage,index,title:chapterNames[index]||stage.title,group:groups[index]}));
  const chapterMarkup=stages.map(({stage,index,title,group})=>{
-  const visuals=bookVisualCards(index);\n  const lessons=group.map((lesson,lessonIndex)=>{
+  const visuals=bookVisualCards(index);
+  const lessons=group.map((lesson,lessonIndex)=>{
    const x=lesson.es||lesson.en||{};
    return `<article class="academic-book-lesson"><span class="academic-chapter-kicker">LECCIÓN ${index*4+lessonIndex+1} · ${index+1}.${lessonIndex+1}</span><h3>${esc(x.title||chapterNames[index])}</h3>${visuals[lessonIndex]||""}${x.objective?`<p><strong>Objetivo de aprendizaje:</strong> ${esc(x.objective)}</p>`:""}${Array.isArray(x.content)?x.content.map(paragraph=>`<p>${esc(paragraph)}</p>`).join(""):""}${Array.isArray(x.steps)&&x.steps.length?`<h4>Pasos de aprendizaje guiado</h4><ol>${x.steps.map(step=>`<li>${esc(step)}</li>`).join("")}</ol>`:""}${Array.isArray(x.avoid)&&x.avoid.length?`<h4>Errores y acciones que debes evitar</h4><ul>${x.avoid.map(item=>`<li>${esc(item)}</li>`).join("")}</ul>`:""}${x.check||x.answer?`<div class="academic-book-check"><strong>Autoevaluación:</strong> ${esc(x.check||"")} ${x.answer?`<details><summary>Ver respuesta</summary><p>${esc(x.answer)}</p></details>`:""}</div>`:""}</article>`;
   }).join("");
