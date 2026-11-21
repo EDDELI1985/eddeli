@@ -301,6 +301,17 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
 #cocina .cocina-stage-accordion ol{list-style:none;margin:.8rem 0 0;padding:0;display:grid;gap:.5rem}
 #cocina .cocina-stage-accordion button{width:100%;text-align:start}
 #cocina .cocina-stage-accordion button span{font-weight:700}
+#cocina .cocina-fold{border:1px solid #bc9181;border-radius:.55rem;background:#fff9ee;color:#35241f}
+#cocina .cocina-fold-title{display:flex;align-items:center;justify-content:space-between;gap:1rem;border:0}
+#cocina .cocina-fold-title[aria-expanded=true]{background:#f0e0cf}
+#cocina .cocina-fold-chevron{transition:transform .24s ease}
+#cocina .cocina-fold-title[aria-expanded=true] .cocina-fold-chevron{transform:rotate(180deg)}
+#cocina .cocina-fold-panel{display:grid;grid-template-rows:0fr;visibility:hidden;transition:grid-template-rows .24s ease,visibility 0s linear .24s}
+#cocina .cocina-fold-title[aria-expanded=true]+.cocina-fold-panel{grid-template-rows:1fr;visibility:visible;transition-delay:0s}
+#cocina .cocina-fold-clip{min-height:0;overflow:hidden}
+#cocina .cocina-fold-clip ul{margin:.75rem 1rem;padding-inline-start:1.2rem}
+#cocina .cocina-fold-clip button{width:auto;margin:0 1rem .75rem;background:#703c32;color:#fff}
+@media(prefers-reduced-motion:reduce){#cocina .cocina-fold-panel,#cocina .cocina-fold-chevron{transition:none}}
 
 #cocina .cocina-photo{width:min(100%,24rem);margin:.8rem 0 1.35rem;padding:0;overflow:hidden;border:1px solid #bc9181;border-radius:.75rem}
 #cocina .cocina-photo-crop{aspect-ratio:1;background-color:#f0e0cf;background-image:var(--cocina-sheet);background-size:400% 400%;background-position:var(--cocina-x) var(--cocina-y);background-repeat:no-repeat}
@@ -2169,11 +2180,42 @@ async function checkSystem(){const el=document.getElementById("system-status");t
         `<h4>${label}</h4><ul class="cocina-search-list">${items.map(item=>`<li>${item}</li>`).join("")}</ul>`:"").join("");
     }
     const stageAccordion = section.querySelector(".cocina-stage-accordion");
-    stageAccordion.querySelector("ol").innerHTML = worldChapters.map(([title], index) =>
-      `<li><button type="button" data-stage="${index}"><span>${index + 1}.</span> ${esc(title)}</button></li>`).join("");
+    stageAccordion.querySelector("ol").innerHTML = worldChapters.map(([title], index) => {
+      const lessonNames = index === 0 ? internationalLessons.map(([name]) => name) : stages[index].slice(1,5).map(entry => entry.split("|")[0]);
+      return `<li class="cocina-fold">
+        <button class="cocina-fold-title" type="button" aria-expanded="false" aria-controls="cocina-fold-${index}">
+          <span>${index+1}. ${esc(title)}</span><span class="cocina-fold-chevron" aria-hidden="true">⌄</span>
+        </button>
+        <div class="cocina-fold-panel" id="cocina-fold-${index}" inert><div class="cocina-fold-clip">
+          <ul>${lessonNames.map(name => `<li>${esc(name)}</li>`).join("")}</ul>
+          <button type="button" data-stage="${index}" aria-label="Entrar en ${esc(title)}">Entrar en la etapa →</button>
+        </div></div>
+      </li>`;
+    }).join("");
+    const folds = Array.from(stageAccordion.querySelectorAll(".cocina-fold"));
+    let activeFold;
+    function showFold(nextFold){
+      if(activeFold === nextFold) return;
+      if(activeFold){
+        activeFold.title.setAttribute("aria-expanded","false");
+        activeFold.panel.inert = true;
+      }
+      activeFold = nextFold;
+      if(activeFold){
+        activeFold.title.setAttribute("aria-expanded","true");
+        activeFold.panel.inert = false;
+      }
+    }
+    folds.forEach(row => {
+      const fold = {title:row.querySelector(".cocina-fold-title"),panel:row.querySelector(".cocina-fold-panel")};
+      fold.title.addEventListener("click", () => showFold(activeFold === fold ? undefined : fold));
+      row.addEventListener("pointerenter", event => {
+        if(event.pointerType === "mouse" && window.matchMedia("(hover: hover) and (pointer: fine)").matches) showFold(fold);
+      });
+    });
     function renderView(){
       stageAccordion.hidden = view !== "inicio";
-      if(stageAccordion.hidden) stageAccordion.open = false;
+      if(stageAccordion.hidden){stageAccordion.open = false;showFold();}
       section.querySelector(".cocina-hero").hidden = view !== "inicio";
       section.querySelectorAll("[data-cocina]").forEach(button => button.setAttribute("aria-pressed", String(button.dataset.cocina === view)));
       if(view === "inicio"){
