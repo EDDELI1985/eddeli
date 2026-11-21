@@ -797,6 +797,13 @@ async function loadStudents(){
     certificate.setAttribute("aria-label","Certificado · "+title.textContent);
     certificate.onclick=()=>window.eddeliAcademyCertificateAction?.(s.id,title.textContent,certificate);
     tracking.after(certificate);
+    const preview=document.createElement("button");
+    preview.type="button";
+    preview.className="eddeli-certificate-button eddeli-certificate-preview-button";
+    preview.textContent="Vista previa";
+    preview.setAttribute("aria-label","Vista previa del certificado de "+title.textContent);
+    preview.onclick=()=>window.eddeliPreviewAcademyCertificate?.(s.id,title.textContent);
+    certificate.after(preview);
     const approve=document.createElement("button");approve.className="secondary";
     approve.textContent=state==="approved"?"APROBADO":"APROBAR";
     approve.disabled=state==="approved";
@@ -1776,7 +1783,11 @@ if (typeof window.renderLashCurriculum === "function") {
 .eddeli-certificate-button.is-ready{background:#b84413;color:white;border-color:#a13a10;box-shadow:0 3px 10px #bb4b2338}
 .eddeli-certificate-button.is-ready:hover{background:#a4390e}
 .eddeli-certificate-button:focus-visible{outline:3px solid #5b3ac7;outline-offset:2px}
+.eddeli-certificate-preview-button{background:#fff;color:#4b1534;border-color:#c8a5ba}
+.eddeli-certificate-preview{width:min(940px,calc(100% - 2rem))}
+.eddeli-certificate-preview-image{display:block;width:100%;height:auto;margin-block:1rem;border:1px solid #d5b5c6}
+.eddeli-certificate-preview p{white-space:pre-line}
 </style>
-<script src="./eddeli-certificates.js?v=1"></script>
+<script src="./eddeli-certificates.js?v=2"></script>
 </body>
 </html>
