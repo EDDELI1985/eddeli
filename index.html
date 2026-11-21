@@ -433,6 +433,19 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
   <section class="card eddeli-course-welcome" aria-labelledby="eddeli-course-welcome-title"><div class="eddeli-course-welcome-copy"><span class="pill">BIENVENIDA · ELI BEAUTY ACADEMY</span><h2 id="eddeli-course-welcome-title">Conoce tu curso y cómo avanzar</h2><p>Reproduce esta guía antes de comenzar. Puedes volver a verla cuando quieras.</p></div><div class="eddeli-course-welcome-frame"><video controls playsinline preload="metadata" aria-label="Video de bienvenida y orientación del curso de extensiones de pestañas"><source src="./course-welcome.mp4" type="video/mp4">Tu navegador no puede reproducir este video. Actualiza el navegador o intenta desde otro dispositivo.</video></div><p class="eddeli-course-welcome-caption">Guía de inicio: etapas, lecciones, recursos, prácticas y evaluaciones.</p></section>
   <div class="welcome"><div><span class="eyebrow">ELI BEAUTY ACADEMY · FORMACIÓN PROFESIONAL</span><h1>Curso de Formación Complementaria en Extensiones de Pestañas</h1><p>Un recorrido formativo desde los fundamentos hasta la práctica profesional, con 13 etapas y 52 lecciones, fichas técnicas, ejercicios y evaluaciones de aprendizaje.</p><span class="pill">PROGRAMA FORMATIVO · NIVEL INICIAL A AVANZADO</span></div><div style="font-size:65px">✧</div></div>
   <div class="card" style="margin-top:18px"><h2>Tu zona de estudio</h2><p>Avanza en orden. Estudia cada lección, revisa las fichas y realiza la práctica propuesta antes de pasar a la siguiente etapa. Este material es formativo: la práctica sobre personas requiere supervisión presencial y cumplimiento de las normas sanitarias locales.</p><div class="quick"><span class="pill">13 etapas</span><span class="pill">52 lecciones</span><span class="pill">Prácticas guiadas</span><span class="pill">Seguridad ocular</span></div></div>
+  <section class="eddeli-study-clock" id="eddeli-study-clock" aria-labelledby="eddeli-study-clock-title" hidden>
+   <div class="eddeli-clock-copy">
+    <span class="eddeli-clock-icon" aria-hidden="true">⏱</span>
+    <div>
+     <h3 id="eddeli-study-clock-title">Mi tiempo de estudio</h3>
+     <p class="eddeli-clock-state" id="eddeli-study-clock-state">En pausa</p>
+     <p class="eddeli-clock-goal" id="eddeli-study-clock-goal">Meta estimada: 40 h</p>
+    </div>
+   </div>
+   <div class="eddeli-clock-ring" id="eddeli-study-clock-ring">
+    <time id="eddeli-study-clock-time">00:00:00</time>
+   </div>
+  </section>
   <h2 class="section-title">Itinerario de aprendizaje</h2>
   <div id="modules" class="grid"></div>
   <div id="lash-lesson-panel" class="card" hidden style="margin-top:20px"></div>
@@ -1098,6 +1111,23 @@ if (typeof window.renderLashCurriculum === "function") {
 </script>
 
 <style>
+
+.eddeli-study-clock[hidden]{display:none}
+.eddeli-study-clock{--clock-turn:0deg;isolation:isolate;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:clamp(18px,4vw,52px);margin-top:16px;padding:clamp(20px,4vw,46px);border:1px solid #e69abf;border-radius:22px;background:radial-gradient(ellipse at 100% 100%,#b75b86 0%,transparent 49%),radial-gradient(ellipse at 52% 12%,#77235c 0%,transparent 57%),linear-gradient(115deg,#32112d,#461538 60%,#60244e);color:#fff5fd;box-shadow:0 10px 30px #4e174630}
+.eddeli-study-clock::after{content:"";position:absolute;z-index:-1;right:-100px;bottom:-170px;width:320px;height:320px;border:1px solid #ffc2df99;border-radius:45%;transform:rotate(-24deg);box-shadow:0 0 42px #ffd6ea65,inset 0 0 30px #ffbdd745;pointer-events:none}
+.eddeli-clock-copy{display:flex;align-items:flex-start;gap:14px}
+.eddeli-clock-icon{font-size:clamp(1.55rem,3vw,2.35rem);color:#ffb7db;line-height:1}
+.eddeli-study-clock h3{margin:0 0 12px;color:#fff5fd;font:700 clamp(1.4rem,3.2vw,2.55rem)/1.08 Georgia,serif}
+.eddeli-clock-state{display:inline-flex;align-items:center;gap:.5rem;margin:0;padding:.3rem .75rem;border-radius:999px;background:#f5d9ef;color:#381331;font-weight:700}
+.eddeli-clock-state::before{content:"";width:.55rem;height:.55rem;border-radius:50%;background:#9a5c90}
+.eddeli-study-clock.is-running .eddeli-clock-state{background:#c7f8e6;color:#16392e}
+.eddeli-study-clock.is-running .eddeli-clock-state::before{background:#147e5c;box-shadow:0 0 10px #5aebbc}
+.eddeli-clock-goal{margin:.8rem 0 0;color:#ffe4f5}
+.eddeli-clock-ring{display:grid;place-items:center;flex:none;width:clamp(126px,23vw,190px);aspect-ratio:1;border-radius:50%;background:conic-gradient(from 0deg,#ffd2e3 0deg,#f294df var(--clock-turn),#ffffff36 var(--clock-turn));padding:6px;box-shadow:0 0 24px #f998d236}
+.eddeli-clock-ring time{display:grid;place-items:center;width:100%;height:100%;border-radius:50%;background:#421431;font:700 clamp(1.38rem,3.25vw,2.25rem)/1 Georgia,serif;font-variant-numeric:tabular-nums;color:#fff9fd}
+.eddeli-study-clock-chip{position:sticky;top:0;z-index:2;display:table;margin:0 0 12px auto;padding:.45rem .8rem;border:1px solid #e99cce;border-radius:999px;background:#48163b;color:#fff5fd;font-size:.84rem;font-weight:700;font-variant-numeric:tabular-nums;box-shadow:0 4px 14px #42143140}
+.eddeli-study-clock-chip::before{content:"";display:inline-block;width:.5rem;height:.5rem;margin-inline-end:.45rem;border-radius:50%;background:#8af2cd}
+@media(max-width:480px){.eddeli-study-clock{flex-direction:column;align-items:flex-start}.eddeli-clock-ring{align-self:center}}
 .student-tracking-button{margin-inline-start:.65rem;background:#6d28d9;color:#fff;border:0;border-radius:8px;padding:.5rem .8rem;font-weight:700;cursor:pointer}
 .student-tracking-button:hover{background:#5b21b6}
 .student-tracking-button.is-recent{background:#166534}
@@ -1118,13 +1148,80 @@ if (typeof window.renderLashCurriculum === "function") {
   notificaciones:"Notificaciones",perfil:"Mi perfil",plantillas:"Plantillas profesionales"
  };
  let lastScreen="",lastDescriptor=null,queue=Promise.resolve();
- function confirmScreen(){
-  if(document.visibilityState!=="visible"||!lastScreen||lastScreen.startsWith("exit/")||currentProfile?.role!=="student"||!currentUser)return;
+
+ const clockCard=document.getElementById("eddeli-study-clock");
+ const clockTime=document.getElementById("eddeli-study-clock-time");
+ const clockStatus=document.getElementById("eddeli-study-clock-state");
+ const goalSeconds=40*3600;
+ let clockTotal=0,clockStarted=false,clockRunning=false,clockBaseline=performance.now(),clockRevision=0;
+ function clockStudent(){
+  return currentUser?.email_confirmed_at&&currentProfile?.role==="student"&&currentProfile.approval_status==="approved";
+ }
+ function displayedStudySeconds(){
+  return clockTotal+(clockRunning?Math.min(30,Math.floor((performance.now()-clockBaseline)/1000)):0);
+ }
+ function formatStudyTime(seconds){
+  return [Math.floor(seconds/3600),Math.floor(seconds/60)%60,seconds%60].map(part=>String(part).padStart(2,"0")).join(":");
+ }
+ function paintStudyClock(){
+  if(!clockCard)return;
+  const student=!!clockStudent();
+  clockCard.hidden=!student;
+  if(!student)return;
+  const en=typeof getLang==="function"&&getLang()==="en";
+  const seconds=displayedStudySeconds(),time=formatStudyTime(seconds);
+  document.getElementById("eddeli-study-clock-title").textContent=en?"My study time":"Mi tiempo de estudio";
+  document.getElementById("eddeli-study-clock-goal").textContent=en?"Estimated goal: 40 h":"Meta estimada: 40 h";
+  clockTime.textContent=time;
+  clockTime.dateTime="PT"+seconds+"S";
+  clockCard.style.setProperty("--clock-turn",Math.min(360,360*seconds/goalSeconds)+"deg");
+  clockCard.classList.toggle("is-running",clockRunning);
+  clockStatus.textContent=clockRunning?(en?"Studying":"En estudio"):clockStarted?(en?"Paused":"En pausa"):(en?"Start in stage 1":"Empieza en la etapa 1");
+  const panel=document.getElementById("lash-lesson-panel");
+  let chip=panel?.querySelector(".eddeli-study-clock-chip");
+  if(!clockRunning||!studying()){chip?.remove();return;}
+  if(!chip){
+   chip=document.createElement("time");chip.className="eddeli-study-clock-chip";
+   panel.prepend(chip);
+  }
+  chip.dateTime="PT"+seconds+"S";
+  chip.textContent=(en?"Study time":"En estudio")+" · "+time;
+ }
+ function setStudyClock(screen,stage){
+  const academic=["stage","lesson","test"].includes(screen);
+  if(academic&&stage===1)clockStarted=true;
+  const running=academic&&clockStarted&&document.visibilityState==="visible";
+  if(running!==clockRunning){
+   clockTotal=displayedStudySeconds();
+   clockRunning=running;
+   clockBaseline=performance.now();
+  }
+  paintStudyClock();
+ }
+ async function syncStudyClock(){
+  if(!clockStudent())return;
+  const rev=++clockRevision,userId=currentUser.id;
+  try{
+   const response=await supabaseClient.rpc("eddeli_my_study_clock");
+   if(response.error)throw response.error;
+   const value=response.data?.[0];
+   if(!value||rev!==clockRevision||currentUser?.id!==userId)return;
+   clockStarted=value.started||clockStarted;
+   clockTotal=Math.max(0,Number(value.total_seconds)||0);
+   clockBaseline=performance.now();
+   const screen=lastScreen.split("/")[0];
+   if(["stage","lesson","test"].includes(screen))setStudyClock(screen,lastDescriptor?.[1]);
+   else paintStudyClock();
+  }catch(error){console.warn("EDDELI: no se pudo consultar el cronómetro.",error);}
+ }
+ function confirmScreen(finalTick=false){
+  if((!finalTick&&document.visibilityState!=="visible")||!lastScreen||lastScreen.startsWith("exit/")||currentProfile?.role!=="student"||!currentUser)return;
   const userId=currentUser.id,sessionId=getStudentPresenceSessionId();
   queue=queue.then(async()=>{
-   if(currentUser?.id!==userId||document.visibilityState!=="visible")return;
+   if(currentUser?.id!==userId||(!finalTick&&document.visibilityState!=="visible"))return;
    const response=await supabaseClient.rpc("eddeli_confirm_study_screen",{p_session_id:sessionId});
    if(response.error)throw response.error;
+   if(clockRunning)void syncStudyClock();
   }).catch(error=>console.warn("No se pudo confirmar el tiempo de uso.",error));
  }
  function record(screen,stage=null,lesson=null,area=null){
@@ -1136,13 +1233,16 @@ if (typeof window.renderLashCurriculum === "function") {
   const key=[screen,stage,lesson,area].join("/");
   if(key===lastScreen||(screen==="exit"&&!lastScreen))return;
   if(screen!=="exit")confirmScreen();
+  else if(clockRunning)confirmScreen(true);
   lastScreen=key;
+  setStudyClock(screen,stage);
   const userId=currentUser.id;
   const event={session_id:getStudentPresenceSessionId(),screen,stage_number:stage,lesson_number:lesson,area_key:area};
   queue=queue.then(async()=>{
    if(currentUser?.id!==userId)return;
    const result=await supabaseClient.from("eddeli_study_events").insert(event);
    if(result.error)throw result.error;
+   void syncStudyClock();
   }).catch(error=>{
    if(lastScreen===key)lastScreen="";
    console.warn("No se pudo registrar la actividad de estudio.",error);
@@ -1168,7 +1268,7 @@ if (typeof window.renderLashCurriculum === "function") {
  observe("renderLashLesson",(index,lesson)=>{if(rendered("lesson",index,lesson))record("lesson",index+1,lesson+1);});
  observe("renderLashTest",index=>{
   if(rendered("test-db",index)&&document.getElementById("lash-db-assessment-form")){
-   lastScreen="";
+   if(lastScreen.startsWith("test/"+(index+1)+"/")){confirmScreen();lastScreen="";}
    record("test",index+1);
   }
  });
@@ -1194,9 +1294,16 @@ if (typeof window.renderLashCurriculum === "function") {
   else if(studying()&&lastDescriptor)record(...lastDescriptor);
   else recordVisibleArea();
  });
- window.setInterval(confirmScreen,20000);
- supabaseClient.auth.onAuthStateChange(event=>{if(event==="SIGNED_OUT"){lastScreen="";lastDescriptor=null;}});
+ window.setInterval(()=>confirmScreen(),20000);
+ window.setInterval(()=>{if(clockRunning)paintStudyClock();},1000);
+ window.addEventListener("pagehide",()=>{if(clockRunning)record("exit");});
+ supabaseClient.auth.onAuthStateChange(event=>{
+  if(event==="SIGNED_OUT"){
+   lastScreen="";lastDescriptor=null;clockRevision++;clockTotal=0;clockStarted=false;clockRunning=false;paintStudyClock();
+  }
+ });
  recordVisibleArea();
+ void syncStudyClock();
 
  const relative=new Intl.RelativeTimeFormat("es",{numeric:"always"});
  function ago(timestamp){
