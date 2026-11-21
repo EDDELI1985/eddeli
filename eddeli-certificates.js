@@ -47,9 +47,9 @@
   push("trailer\n<< /Size 7 /Root 1 0 R >>\nstartxref\n"+xref+"\n%%EOF\n");
   return new Blob(pieces,{type:"application/pdf"});
  }
- async function buildCertificate(record){
+ async function renderCertificate(record,preview=false){
   const {certificate_code:code,recipient_name:name,course_name:course,issued_at:issuedAt}=record;
-  if(!/^EDDELI-[0-9A-F]{32}$/.test(code)||!name||!course||!Number.isFinite(Date.parse(issuedAt)))throw new Error("Datos del certificado incompletos.");
+  if(!name||!course||(!preview&&(!/^EDDELI-[0-9A-F]{32}$/.test(code)||!Number.isFinite(Date.parse(issuedAt)))))throw new Error("Datos del certificado incompletos.");
   const [logo,seal]=await Promise.all([image(certificateLogo),image(certificateStamp)]);
   const canvas=document.createElement("canvas");canvas.width=1754;canvas.height=1240;
   const ctx=canvas.getContext("2d");
@@ -74,12 +74,22 @@
   text("ha completado y aprobado el curso",877,710,42,1500);
   text(course,877,799,51,1510,"bold");
   ctx.textAlign="left";
-  text("Fecha de emisión: "+formatDate(issuedAt),116,993,32,1040);
-  text("Código: "+code,116,1049,27,1040);
-  ctx.fillStyle="#145256";
-  text("Verificar certificado en EDDELI",116,1131,30,1040,"bold");
+  if(preview){
+   ctx.fillStyle="#9c304a";
+   text("VISTA PREVIA · SIN VALIDEZ",116,993,40,1040,"bold");
+   text("Fecha y código asignados al emitir",116,1056,32,1040);
+  }else{
+   text("Fecha de emisión: "+formatDate(issuedAt),116,993,32,1040);
+   text("Código: "+code,116,1049,27,1040);
+   ctx.fillStyle="#145256";
+   text("Verificar certificado en EDDELI",116,1131,30,1040,"bold");
+  }
+  return canvas;
+ }
+ async function buildCertificate(record){
+  const canvas=await renderCertificate(record);
   const jpeg=await new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error("No se pudo preparar el PDF.")),"image/jpeg",.96));
-  return makePdf(new Uint8Array(await jpeg.arrayBuffer()),canvas.width,canvas.height,verifyBase+code);
+  return makePdf(new Uint8Array(await jpeg.arrayBuffer()),canvas.width,canvas.height,verifyBase+record.certificate_code);
  }
  window.eddeliDownloadCertificate=async function(record){
   try{
@@ -99,8 +109,49 @@
   if(Number(status.practice_count)!==3)reasons.push("Prácticas aprobadas: "+status.practice_count+" de 3");
   return reasons.join("\n")||"Aún hay requisitos pendientes.";
  }
+ window.eddeliPreviewAcademyCertificate=async function(studentId,name){
+  if(!asAdmin())return;
+  const dialog=document.createElement("dialog");
+  dialog.className="eddeli-practice-dialog eddeli-certificate-preview";
+  dialog.setAttribute("aria-label","Vista previa del certificado");
+  const heading=document.createElement("h2");heading.textContent="Vista previa del certificado";
+  const close=document.createElement("button");close.type="button";close.className="secondary";close.textContent="Cerrar";
+  close.onclick=()=>dialog.close();
+  const status=document.createElement("p");status.setAttribute("role","status");status.textContent="Preparando la vista previa…";
+  const details=document.createElement("p");
+  dialog.append(heading,close,status,details);
+  document.body.append(dialog);
+  dialog.addEventListener("close",()=>dialog.remove(),{once:true});
+  dialog.showModal();
+  try{
+   const [canvas]=await Promise.all([
+    renderCertificate({recipient_name:name==="Sin nombre"?"Nombre completo pendiente":name,course_name:"Formación Complementaria en Extensiones de Pestañas"},true),
+    window.eddeliRefreshAcademyCertificates()
+   ]);
+   if(!dialog.open||!asAdmin())return;
+   canvas.className="eddeli-certificate-preview-image";
+   canvas.setAttribute("role","img");
+   canvas.setAttribute("aria-label","Maqueta del certificado para "+name+" · Vista previa sin validez");
+   dialog.insertBefore(canvas,status);
+   status.textContent="La vista previa no emite ni envía un certificado.";
+   const state=statuses.get(studentId);
+   if(state?.certificate_code)details.textContent="Ya existe un certificado emitido. Puedes abrirlo desde Gestión de alumnos.";
+   else if(state?.ready){
+    details.textContent="El alumno ha completado los requisitos.";
+    const issue=document.createElement("button");issue.type="button";issue.className="primary";issue.textContent="Autorizar y emitir";
+    issue.onclick=async()=>{
+     if(!confirm("¿Emitir y entregar el certificado a "+name+" en EDDELI?"))return;
+     dialog.close();
+     await window.eddeliAcademyCertificateAction(studentId,name);
+    };
+    dialog.append(issue);
+   }else details.textContent=state?"Requisitos pendientes\n"+describe(state):"Estado de los requisitos no disponible.";
+  }catch(error){
+   if(dialog.open)status.textContent="No se pudo abrir la vista previa. Vuelve a intentarlo.";
+  }
+ };
  function renderButtons(){
-  for(const button of document.querySelectorAll(".eddeli-certificate-button")){
+  for(const button of document.querySelectorAll(".eddeli-certificate-button[data-student-id]")){
    if(button.dataset.issuing==="true")continue;
    const state=statuses.get(button.dataset.studentId);
    const emitted=!!state?.certificate_code,ready=state?.ready&&!emitted;
@@ -141,7 +192,7 @@
    const state=statuses.get(studentId);
    if(!state){alert("No se pudo confirmar el estado del certificado. Vuelve a intentarlo.");return;}
    if(state.certificate_code){await openExisting(state,name);return;}
-   if(!state.ready){alert(describe(state));return;}
+   if(!state.ready){await window.eddeliPreviewAcademyCertificate(studentId,name);return;}
    button.dataset.issuing="true";button.disabled=true;button.textContent="Emitiendo…";
   }
   try{
