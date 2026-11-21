@@ -291,6 +291,12 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
 #cocina .cocina-academy-nav button[aria-pressed=true]{background:#703c32}
 #cocina .cocina-zone{padding:1rem 1.2rem;margin:1rem 0;background:#fcf2e8;color:#35241f;border:1px solid #cdab95;border-left:4px solid #975a46;border-radius:12px}
 #cocina .cocina-zone h3{margin:0}
+#cocina .cocina-school{font-size:1.15rem;font-weight:700;margin:.5rem 0}
+#cocina .cocina-search-home label{display:block;margin:.8rem 0 .3rem;font-weight:700}
+#cocina .cocina-search-home input{box-sizing:border-box;width:min(100%,34rem)}
+#cocina .cocina-search-list{display:flex;flex-wrap:wrap;gap:.45rem;padding:0;list-style:none}
+#cocina .cocina-search-list button{text-align:start}
+
 #cocina .cocina-photo{width:min(100%,24rem);margin:.8rem 0 1.35rem;padding:0;overflow:hidden;border:1px solid #bc9181;border-radius:.75rem}
 #cocina .cocina-photo-crop{aspect-ratio:1;background-color:#f0e0cf;background-image:var(--cocina-sheet);background-size:400% 400%;background-position:var(--cocina-x) var(--cocina-y);background-repeat:no-repeat}
 #cocina .cocina-photo figcaption{padding:.55rem .75rem;font-size:.9rem}
@@ -1312,8 +1318,8 @@ async function checkSystem(){const el=document.getElementById("system-status");t
     box.innerHTML = `<section class="cocina-preview" tabindex="-1" aria-label="Curso de Cocina Internacional">
       <header class="cocina-hero">
         <div><p class="cocina-label">EDDELI · Formación gastronómica</p>
-          <h2 id="cocina-titulo" tabindex="-1">Academia de Cocina Internacional</h2>
-          <p>Aprende a organizar tu puesto, elegir las herramientas adecuadas, cocinar con distintas técnicas y servir un menú completo.</p>
+          <h2 id="cocina-titulo" tabindex="-1">Te damos la bienvenida</h2><p class="cocina-school">Academia de Cocina Internacional</p>
+          <p>Este es tu espacio para aprender desde cero. Explora una técnica, consulta una receta o sigue el programa en orden hasta preparar y servir tu primer menú.</p>
           <div class="cocina-tabs"><button type="button" class="cocina-primary" data-stage="0">Entrar a la primera etapa</button>
           <button type="button" class="cocina-guide-button" data-cocina="guia" aria-pressed="false">Cómo funciona la academia</button></div>
         </div>
@@ -1325,7 +1331,8 @@ async function checkSystem(){const el=document.getElementById("system-status");t
         </dl>
       </header>
       <nav class="cocina-tabs cocina-academy-nav" aria-label="Recursos de la academia">
-        <button type="button" data-cocina="curso" aria-pressed="true">Etapas</button>
+        <button type="button" data-cocina="inicio" aria-pressed="true">Inicio</button>
+        <button type="button" data-cocina="curso" aria-pressed="false">Ver etapas</button>
         <button type="button" data-cocina="recetas" aria-pressed="false">Recetario</button>
         <button type="button" data-cocina="biblioteca" aria-pressed="false">Biblioteca</button>
         <button type="button" data-cocina="menu" aria-pressed="false">Práctica de menú</button>
@@ -2098,7 +2105,7 @@ async function checkSystem(){const el=document.getElementById("system-status");t
       !["Moros y cristianos","Congrí con frijoles colorados","Café cubano","Picadillo a la cubana","Fricasé de pollo","Tamal en cazuela","Yuca con mojo","Ropa vieja","Enchilado de camarones","Frituras de malanga","Bistec de cerdo encebollado"].includes(title))];
     section.querySelector("[data-cocina-recipes]").textContent = available.length;
     section.querySelector("[data-cocina-cards]").textContent = Object.values(fichas).reduce((total,group) => total+group.length,0);
-    let view = "curso";
+    let view = "inicio";
     let selection = "";
     let query = "";
     const menu = `<article><h3>Tu primer menú de tres platos</h3>
@@ -2135,9 +2142,35 @@ async function checkSystem(){const el=document.getElementById("system-status");t
       }
       return "";
     }
+    function searchAcademy(value){
+      const terms = normalize(value.trim()).split(/\s+/).filter(Boolean);
+      if(!terms.length) return "";
+      const matches = (...values) => {const text = normalize(values.flat(Infinity).join(" "));return terms.every(term => text.includes(term));};
+      const groups = [
+        ["Etapas",stages.flatMap((stage,i)=>matches(stage,worldChapters[i],i===2?equipmentAtlas:[],i===0?internationalLessons:[])?
+          [`<button type="button" data-stage="${i}">Etapa ${i+1} · ${esc(worldChapters[i][0])}</button>`]:[])],
+        ["Recetas",available.flatMap(([name,tags])=>matches(name,tags)?
+          [`<button type="button" data-cocina="recetas" data-find="${esc(name)}">${esc(name)}</button>`]:[])],
+        ["Fichas",Object.values(fichas).flat().flatMap(([name,description])=>matches(name,description)?
+          [`<button type="button" data-cocina="biblioteca" data-find="${esc(name)}">${esc(name)}</button>`]:[])]
+      ];
+      const count = groups.reduce((total,[,items])=>total+items.length,0);
+      if(!count) return "<p>Sin resultados. Prueba con otro término, como arroz, cuchillos o salsas.</p>";
+      return `<p>${count} ${count===1?"resultado":"resultados"}</p>`+groups.map(([label,items])=>items.length?
+        `<h4>${label}</h4><ul class="cocina-search-list">${items.map(item=>`<li>${item}</li>`).join("")}</ul>`:"").join("");
+    }
     function renderView(){
-      section.querySelector(".cocina-hero").hidden = view !== "curso" || step !== "list";
+      section.querySelector(".cocina-hero").hidden = view !== "inicio";
       section.querySelectorAll("[data-cocina]").forEach(button => button.setAttribute("aria-pressed", String(button.dataset.cocina === view)));
+      if(view === "inicio"){
+        content.innerHTML = `<section class="cocina-zone cocina-search-home">
+          <h3 tabindex="-1">¿Qué quieres aprender hoy?</h3>
+          <label for="cocina-search-all">Buscar en la academia</label>
+          <input id="cocina-search-all" type="search" data-academy-search placeholder="Ej. cuchillos, arroz o higiene">
+          <div data-academy-results aria-live="polite"></div>
+        </section>`;
+        return;
+      }
       if(view === "curso"){content.innerHTML = stageList();return;}
       if(view === "menu"){content.innerHTML = menu;return;}
       if(view === "guia"){
@@ -2166,6 +2199,10 @@ async function checkSystem(){const el=document.getElementById("system-status");t
       content.querySelector("[data-results]").innerHTML = resultMarkup();
     }
     content.addEventListener("input", (event) => {
+      if(event.target.matches("[data-academy-search]")){
+        content.querySelector("[data-academy-results]").innerHTML = searchAcademy(event.target.value);
+        return;
+      }
       if(!event.target.matches("[data-search]")) return;
       query = event.target.value;
       renderResults();
@@ -2183,7 +2220,7 @@ async function checkSystem(){const el=document.getElementById("system-status");t
         step = "list";
         view = ingredient ? "recetas" : tab.dataset.cocina;
         selection = ingredient ? ingredient.dataset.ingredient : "";
-        query = "";
+        query = tab?.dataset.find ?? "";
         renderView();
         focusCocina();
         if(ingredient) content.querySelector("[data-filter]").focus({preventScroll:true});
