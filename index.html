@@ -277,6 +277,9 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
 .cocina-preview button[data-feedback=correct] {background:#165d3b;color:white}
 .cocina-preview button[data-feedback=incorrect] {background:#902c2c;color:white}
 .cocina-preview .cocina-note {font-style:italic}
+.cocina-preview .cocina-stage-list li {margin:.5rem 0}
+.cocina-preview .cocina-stage-list button {width:100%;text-align:start}
+.cocina-preview button:disabled {opacity:.55;cursor:default}
 .cocina-preview .cocina-filters {display:flex;flex-wrap:wrap;gap:.8rem}
 .cocina-preview .cocina-filters label {display:grid;gap:.25rem;max-width:100%}
 .cocina-preview input,.cocina-preview select {font:inherit;color:#2d2317;background:#fff9ee;padding:.55rem;border:1px solid #8c7451;border-radius:.45rem;max-width:100%}
@@ -496,6 +499,8 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
 </section>
 
 <section id="perfil" class="view"><h1 class="section-title">Mi perfil</h1><div class="card"><h2 id="profile-name">Mi espacio personal</h2><p id="profile-summary">Inicia sesión para ver tus datos.</p><label>Nombre completo</label><input id="profile-fullname" class="field" maxlength="120"><label>Teléfono</label><input id="profile-phone" class="field" maxlength="30"><label>País</label><input id="profile-country" class="field" maxlength="80"><button class="primary" onclick="saveProfile()">GUARDAR MIS DATOS</button><div id="profile-status" class="status"></div><h3>Mis certificados</h3><div id="student-cert-list"></div><button class="secondary" onclick="signOut()">CERRAR SESIÓN</button></div></section>
+
+<section id="cocina" class="view" aria-label="Cocina y gastronomía"></section>
 
 </main>
 </div>
@@ -878,7 +883,7 @@ document.addEventListener("DOMContentLoaded",function(){
 });
 
 if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(err=>console.warn("PWA:",err)));}
-supabaseClient.auth.onAuthStateChange(function(event,session){currentUser=session?session.user:null;if(event==="SIGNED_OUT"){currentProfile=null;const cocinaArea=document.getElementById("area-detail");if(cocinaArea?.querySelector(".cocina-preview")){cocinaArea.replaceChildren();cocinaArea.hidden=true;}if(typeof window.stopStudentPresence==="function")window.stopStudentPresence(false);}if(event==="PASSWORD_RECOVERY"){setTimeout(async function(){const password=prompt("Escribe tu nueva contraseña (mínimo 12 caracteres, con mayúscula, minúscula, número y símbolo):");if(!password||password.length<12||!/[a-z]/.test(password)||!/[A-Z]/.test(password)||!/[0-9]/.test(password)||!/[^A-Za-z0-9]/.test(password)){alert("La contraseña debe tener al menos 12 caracteres, una mayúscula, una minúscula, un número y un símbolo. Solicita nuevamente el cambio si es necesario.");return;}const result=await supabaseClient.auth.updateUser({password:password});if(result.error)alert("No se pudo cambiar la contraseña: "+result.error.message);else alert("Contraseña actualizada correctamente.");},0);}});</script>
+supabaseClient.auth.onAuthStateChange(function(event,session){currentUser=session?session.user:null;if(event==="SIGNED_OUT"){currentProfile=null;const cocinaArea=document.getElementById("cocina");if(cocinaArea?.classList.contains("active"))window.go("inicio");if(typeof window.stopStudentPresence==="function")window.stopStudentPresence(false);}if(event==="PASSWORD_RECOVERY"){setTimeout(async function(){const password=prompt("Escribe tu nueva contraseña (mínimo 12 caracteres, con mayúscula, minúscula, número y símbolo):");if(!password||password.length<12||!/[a-z]/.test(password)||!/[A-Z]/.test(password)||!/[0-9]/.test(password)||!/[^A-Za-z0-9]/.test(password)){alert("La contraseña debe tener al menos 12 caracteres, una mayúscula, una minúscula, un número y un símbolo. Solicita nuevamente el cambio si es necesario.");return;}const result=await supabaseClient.auth.updateUser({password:password});if(result.error)alert("No se pudo cambiar la contraseña: "+result.error.message);else alert("Contraseña actualizada correctamente.");},0);}});</script>
 
 <script>
 let activeModule=null;
@@ -1069,7 +1074,7 @@ async function checkSystem(){const el=document.getElementById("system-status");t
     } else if(page === "perfil" && (typeof currentUser === "undefined" || !currentUser)){
       page = "acceso";
     }
-    if(page !== "areas"){const cocinaArea=document.getElementById("area-detail");if(cocinaArea?.querySelector(".cocina-preview")){cocinaArea.replaceChildren();cocinaArea.hidden=true;}}
+    if(page !== "cocina"){document.getElementById("cocina")?.replaceChildren();}
     document.querySelectorAll("main.content > .view").forEach(section => {
       section.classList.toggle("active", section.id === page);
     });
@@ -1129,7 +1134,7 @@ async function checkSystem(){const el=document.getElementById("system-status");t
     return true;
   };
   function renderCocinaPreview(){
-    const box = document.getElementById("area-detail");
+    const box = document.getElementById("cocina");
     if(!box) return;
     const stages = [
   [
@@ -1250,7 +1255,6 @@ async function checkSystem(){const el=document.getElementById("system-status");t
     "¿Qué permite evaluar y mejorar la próxima práctica?|Registrar qué salió bien y qué ajustar|Cambiar el nombre del plato|Guardar solo los utensilios"
   ]
 ];
-    box.hidden = false;
     box.innerHTML = `<section class="cocina-preview" aria-labelledby="cocina-titulo">
       <span class="pill">Vista de prueba</span>
       <h2 id="cocina-titulo" tabindex="-1">Curso de Cocina Cubana</h2>
@@ -1265,7 +1269,11 @@ async function checkSystem(){const el=document.getElementById("system-status");t
     </section>`;
     const section = box.querySelector(".cocina-preview");
     const content = section.querySelector(".cocina-content");
-    const stageList = () => stages.map((stage, i) => {
+    let currentStage = 0, step = "list";
+    function stageList(){
+      if(step === "list") return `<h3 tabindex="-1">Etapas del curso</h3><ol class="cocina-stage-list">${stages.map(([title],i) => `<li><button type="button" data-stage="${i}">${title}</button></li>`).join("")}</ol>`;
+      const i = currentStage;
+      const stage = stages[i];
       const [title, ...entries] = stage;
       const [question, correct, ...wrong] = entries[5].split("|");
       const choices = [...wrong];
@@ -1276,20 +1284,27 @@ async function checkSystem(){const el=document.getElementById("system-status");t
         ["Uniforme de arriba abajo", "Cabeza: gorro · Torso: filipina · Frente: delantal · Pies: calzado cerrado"],
         ["Mesa de preparación", "Ingredientes medidos · Tabla estable al centro · Utensilios a mano"]
       ];
-      return `<details ${i === 0 ? "open" : ""}>
-        <summary>${i + 1}. ${title}</summary>
+      const heading = `<h3 tabindex="-1">Etapa ${i+1} de ${stages.length} · ${title}${step === "test" ? " · Test" : ""}</h3>`;
+      const back = '<button type="button" data-step="list">Volver a las etapas</button>';
+      if(step === "study") return `${heading}
         ${i > 1 ? '<p class="cocina-note">Contenido introductorio en desarrollo</p>' : ""}
         ${entries.slice(0, 4).map((entry, j) => {
           const [heading, body] = entry.split("|");
           return `<h3>${heading}</h3><p>${body}</p>${i === 0 ? `<figure><figcaption>${diagrams[j][0]}</figcaption><p>${diagrams[j][1]}</p></figure>` : ""}`;
         }).join("")}
         <h3>Práctica</h3><p>${entries[4]}</p>
-        <fieldset><legend>${question}</legend>
+        <div class="cocina-tabs">${back}<button type="button" data-step="test">Siguiente · Test</button></div>`;
+      return `${heading}<fieldset><legend>${question}</legend>
           ${choices.map(choice => `<button type="button" data-answer="${choice === correct}">${choice}</button>`).join("")}
           <p role="status"></p>
-        </fieldset>
-      </details>`;
-    }).join("");
+        </fieldset><div class="cocina-tabs">
+        <button type="button" data-step="study">Anterior · Estudiar</button>${back}
+        <button type="button" data-step="next" disabled>${i < stages.length-1 ? "Siguiente etapa" : "Terminar"}</button></div>`;
+    }
+    function focusCocina(){
+      (content.querySelector("h3[tabindex]") || section.querySelector("h2")).focus({preventScroll:true});
+      window.scrollTo({top:0,behavior:"instant"});
+    }
     const recipe = `<article>
       <h3>Arroz blanco</h3><p>2 a 3 porciones · Arroz blanco de grano largo</p>
       <h4>Ingredientes</h4><ul><li>1 taza de arroz</li><li>1½ tazas de agua</li><li>1 cucharadita de aceite</li><li>¼ de cucharadita de sal, o al gusto</li></ul>
@@ -1377,11 +1392,28 @@ async function checkSystem(){const el=document.getElementById("system-status");t
       const tab = event.target.closest("[data-cocina]");
       const ingredient = event.target.closest("[data-ingredient]");
       if(tab || ingredient){
+        step = "list";
         view = ingredient ? "recetas" : tab.dataset.cocina;
         selection = ingredient ? ingredient.dataset.ingredient : "";
         query = "";
         renderView();
-        if(ingredient) content.querySelector("[data-filter]").focus();
+        focusCocina();
+        if(ingredient) content.querySelector("[data-filter]").focus({preventScroll:true});
+        return;
+      }
+      const stageButton = event.target.closest("[data-stage]");
+      const stepButton = event.target.closest("[data-step]");
+      if(stageButton || stepButton){
+        if(stepButton?.disabled) return;
+        if(stageButton){
+          currentStage = Number(stageButton.dataset.stage);
+          step = "study";
+        }else if(stepButton.dataset.step === "next"){
+          if(currentStage < stages.length-1){currentStage++;step = "study";}
+          else step = "list";
+        }else step = stepButton.dataset.step;
+        renderView();
+        focusCocina();
         return;
       }
       const answer = event.target.closest("[data-answer]");
@@ -1389,23 +1421,26 @@ async function checkSystem(){const el=document.getElementById("system-status");t
       const field = answer.closest("fieldset");
       field.querySelectorAll("[data-answer]").forEach(button => button.removeAttribute("data-feedback"));
       const correct = answer.dataset.answer === "true";
+      if(correct) content.querySelector('[data-step="next"]').disabled = false;
       answer.dataset.feedback = correct ? "correct" : "incorrect";
       field.querySelector('[role="status"]').textContent = correct ? "Respuesta correcta." : "Vuelve a intentarlo.";
     });
-    section.querySelector("h2").focus();
+    focusCocina();
   }
 
   function openCocinaForAdmin(){
-    if(!(currentUser?.email_confirmed_at && currentProfile?.role === "admin" && currentProfile.approval_status === "approved")){
-      const box = document.getElementById("area-detail");
-      if(!box) return;
-      box.hidden = false;
-      box.innerHTML = "<h2>Cocina y gastronomía</h2><p>El curso está en preparación. Si administras EDDELI, entra con tu cuenta habitual para revisarlo.</p><button type='button' class='secondary' onclick=\"go('login-admin')\">Acceso de administrador</button>";
-      box.scrollIntoView({block:"nearest"});
+    const box = document.getElementById("cocina");
+    if(!box) return;
+    window.go("cocina");
+    if(currentUser?.email_confirmed_at && currentProfile?.role === "admin" && currentProfile.approval_status === "approved"){
+      renderCocinaPreview();
       return;
     }
-    if(!document.getElementById("areas").classList.contains("active")) window.go("areas");
-    renderCocinaPreview();
+    box.innerHTML = `<div class="cocina-preview"><h2 tabindex="-1">Cocina y gastronomía</h2>
+      <p>El curso está en preparación. Si administras EDDELI, entra con tu cuenta habitual para revisarlo.</p>
+      <button type="button" class="secondary" onclick="go('login-admin')">Acceso de administrador</button>
+      <button type="button" class="secondary" onclick="go('areas')">Volver a las áreas</button></div>`;
+    box.querySelector("h2").focus({preventScroll:true});
   }
   window.openLearningArea = function(key){
     if(key === "food"){openCocinaForAdmin();return;}
