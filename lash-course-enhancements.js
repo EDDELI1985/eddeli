@@ -1053,9 +1053,10 @@ async function getLashProgressState(){
  ]);
  if(progressResult.error)throw progressResult.error;
  if(enrollmentResult.error)throw enrollmentResult.error;
- const completed=new Set((progressResult.data||[]).filter(x=>x.completed===true).map(x=>x.module_id));
+ const passedGrades=new Map((progressResult.data||[]).filter(x=>x.completed===true).map(x=>[x.module_id,x.grade]));
+ const completed=new Set(passedGrades.keys());
  const enrollmentApproved=!!(enrollmentResult.data&&enrollmentResult.data.status==="approved");
- return {admin:false,student:true,modules,completed,enrollmentApproved,allComplete:enrollmentApproved&&modules.every(m=>completed.has(m.id))};
+ return {admin:false,student:true,modules,completed,passedGrades,enrollmentApproved,allComplete:enrollmentApproved&&modules.every(m=>completed.has(m.id))};
 }
 function lashStageCanOpen(state,index){
  if(!state||index<0||index>12)return false;
@@ -1124,6 +1125,41 @@ window.openModule=async function(index){
   await window.renderLashStage(index);return true;
  }catch(err){alert("No se pudo abrir la etapa: "+(err.message||String(err)));return false;}
 };
+function lashPassedStage(state,index){
+ return state.student&&state.completed.has(state.modules[index]?.id);
+}
+function lashPassedTestText(state,index,en){
+ const grade=state?.passedGrades?.get(state.modules[index]?.id);
+ return (en?"Test passed":"Test aprobado")+(grade==null?"":" · "+Number(grade).toFixed(2)+"%");
+}
+function addLashPassedNext(container,state,index,en){
+ const nextIndex=index+1;
+ const nextModule=state.modules[nextIndex];
+ if(nextModule?!lashStageCanOpen(state,nextIndex):!state.allComplete)return;
+ const button=document.createElement("button");
+ button.type="button";button.className="primary";
+ button.textContent=nextModule?(en?"Go to stage ":"Ir a la etapa ")+nextModule.module_number:(en?"Go to the final exam":"Ir al examen final");
+ button.onclick=nextModule?()=>window.openModule(nextIndex):()=>window.renderLashFinalExam();
+ container.append(button);
+}
+function showLashPassedTest(panel,state,index,en){
+ const box=document.createElement("section");box.className="lash-locked-screen";
+ const heading=document.createElement("h2");heading.textContent=lashPassedTestText(state,index,en);box.append(heading);
+ const message=document.createElement("p");message.textContent=en?"This test is closed. You can review the stage or continue.":"Este test está cerrado. Puedes volver a estudiar la etapa o continuar.";box.append(message);
+ if(state)addLashPassedNext(box,state,index,en);
+ const review=document.createElement("button");review.type="button";review.className="secondary";
+ review.textContent=(en?"Back to stage ":"Volver a la etapa ")+(index+1);review.onclick=()=>window.openModule(index);box.append(review);
+ const back=document.createElement("button");back.type="button";back.className="secondary";
+ back.textContent=en?"BACK TO ALL STAGES":"VOLVER A TODAS LAS ETAPAS";back.onclick=()=>window.returnToLashCurriculum();box.append(back);
+ panel.replaceChildren(box);
+}
+function replaceLashPassedAction(button,state,index,en){
+ const status=document.createElement("span");status.className="pill";
+ status.textContent=lashPassedTestText(state,index,en);
+ const actions=button.parentElement;
+ button.replaceWith(status);
+ addLashPassedNext(actions,state,index,en);
+}
 const lashStageRendererBase=window.renderLashStage;
 window.renderLashStage=async function(index){
  let state;
@@ -1138,8 +1174,27 @@ window.renderLashStage=async function(index){
  const panel=document.getElementById("lash-lesson-panel");if(!panel)return;
  panel.querySelectorAll(".lash-course-nav").forEach(nav=>nav.remove());
  const next=panel.querySelector(".lash-test-entry")||panel.querySelector(".lash-stage-actions button");
- if(next)next.textContent=getLang()==="en"?"NEXT: GO TO STAGE TEST →":"SIGUIENTE: IR AL TEST →";
+ const en=getLang()==="en";
+ if(next){
+  if(lashPassedStage(state,index))replaceLashPassedAction(next,state,index,en);
+  else next.textContent=en?"NEXT: GO TO STAGE TEST →":"SIGUIENTE: IR AL TEST →";
+ }
  window.__lashViewState={mode:"stage",index};
+};
+const lashLessonRendererWithTests=window.renderLashLesson;
+window.renderLashLesson=function(index,lessonIndex){
+ const result=lashLessonRendererWithTests.apply(this,arguments);
+ if(lessonIndex===3&&currentProfile?.role==="student"){
+  const panel=document.getElementById("lash-lesson-panel");
+  const button=panel?.querySelector(".lash-course-nav button.primary");
+  if(button)void getLashProgressState().then(state=>{
+   const view=window.__lashViewState;
+   if(button.isConnected&&view?.mode==="lesson"&&view.index===index&&view.lesson===lessonIndex&&lashPassedStage(state,index)){
+    replaceLashPassedAction(button,state,index,getLang()==="en");
+   }
+  }).catch(error=>console.warn("No se pudo confirmar si el test está aprobado.",error));
+ }
+ return result;
 };
 function shuffleLashAnswerOptions(options){
  const shuffled=options.slice();
@@ -1163,6 +1218,10 @@ async function renderLashAssessmentFlow(stageIndex,isFinal){
    if(!state.enrollmentApproved){showMessage(en?"Enrollment pending":"Matrícula pendiente","El administrador debe aprobar tu matrícula antes de realizar evaluaciones.");return;}
    if(isFinal&&!state.allComplete){showMessage(en?"Final exam locked":"Prueba final bloqueada","Debes aprobar las 13 etapas, una por una, antes de realizar la prueba final.");return;}
    if(!isFinal&&!lashStageCanOpen(state,stageIndex)){showMessage(en?"Stage locked":"Etapa bloqueada","Debes aprobar las etapas anteriores antes de realizar este test.");return;}
+   if(!isFinal&&lashPassedStage(state,stageIndex)){
+    showLashPassedTest(panel,state,stageIndex,en);
+    return;
+   }
   }
   let assessment;
   if(isFinal){
@@ -1196,6 +1255,11 @@ async function renderLashAssessmentFlow(stageIndex,isFinal){
    try{
     if(Object.values(answers).some(v=>!v))throw new Error(en?"Answer every question before submitting.":"Debes responder todas las preguntas.");
     const result=await supabaseClient.rpc("eddeli_submit_assessment",{p_assessment_id:assessment.id,p_answers:answers});
+    if(!isFinal&&result.error?.message==="Este test ya está aprobado."){
+     const progress=await getLashProgressState().catch(()=>null);
+     if(form.isConnected)showLashPassedTest(panel,progress,stageIndex,en);
+     return;
+    }
     if(result.error)throw result.error;const outcome=result.data&&result.data[0];if(!outcome)throw new Error("No se recibió el resultado de la evaluación.");
     form.remove();const box=document.getElementById("lash-db-assessment-result");
     const heading=document.createElement("h2");
