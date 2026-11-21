@@ -291,6 +291,14 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
 #cocina .cocina-academy-nav button[aria-pressed=true]{background:#703c32}
 #cocina .cocina-zone{padding:1rem 1.2rem;margin:1rem 0;background:#fcf2e8;color:#35241f;border:1px solid #cdab95;border-left:4px solid #975a46;border-radius:12px}
 #cocina .cocina-zone h3{margin:0}
+#cocina .cocina-international{padding:clamp(1rem,3vw,1.6rem);margin:1rem 0}
+#cocina .cocina-international h4{font-size:1.3rem;margin:0 0 .6rem}
+#cocina .cocina-international dt{font-weight:700}
+#cocina .cocina-international dd{margin:0 0 .65rem}
+#cocina .cocina-plan{padding:1rem}
+#cocina .cocina-plan ol{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,8rem),1fr));gap:.5rem;list-style:none;padding:0;margin:.6rem 0 0}
+#cocina .cocina-plan li{display:grid;align-content:start;gap:.15rem;padding:.6rem;background:#f0e0cf;color:#35241f;border:1px solid #bc9181;border-radius:.45rem}
+#cocina .cocina-plan span{font-size:.875rem}
 #cocina .cocina-stage-list{list-style:none;padding:0;gap:.9rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr))}
 #cocina .cocina-stage-list li{margin:0}
 #cocina .cocina-stage-card{box-sizing:border-box;height:100%;margin:0;display:flex;flex-direction:column;gap:.5rem;background:#fffaf5;color:#35241f;border-color:#b48e79;border-top:4px solid #975a46}
@@ -1180,7 +1188,7 @@ async function checkSystem(){const el=document.getElementById("system-status");t
     if(!box) return;
     const stages = [
   [
-    "El cocinero y la cocina",
+    "El cocinero y la cocina internacional",
     "Qué es una cocina|Una cocina es un espacio equipado para guardar, preparar y cocinar alimentos. Una cocina puede ser doméstica o profesional. Identifica dónde se almacenan los ingredientes, dónde se lavan y preparan, dónde se cocinan y dónde sale el plato.",
     "Qué hace un cocinero|Un cocinero transforma ingredientes en alimentos listos para servir. Lee la receta, calcula porciones, organiza su trabajo, cocina, prueba y deja limpio el puesto. En un equipo, cada persona puede encargarse de una parte.",
     "El uniforme|La filipina cubre el torso, el delantal protege la ropa, el gorro recoge el cabello y el calzado cerrado antideslizante protege los pies. Antes de empezar, comprueba que llevas ropa limpia y que puedes moverte con comodidad.",
@@ -1448,6 +1456,160 @@ async function checkSystem(){const el=document.getElementById("system-status");t
       ["Servicio y proyecto final", 11, 13]
     ];
     let currentStage = 0, step = "list";
+    const internationalLessons = [
+  [
+    "Qué es una cocina profesional",
+    "Una cocina es el espacio donde se reciben, guardan, preparan y transforman alimentos para servirlos. En una cocina doméstica, la misma mesa puede cumplir varias funciones en momentos distintos. En una profesional, la división del trabajo depende del volumen, del menú y de cómo se sirve.",
+    [
+      [
+        "Restaurante",
+        "Prepara platos por pedido. La mesa de preparación y el pase ayudan a coordinar las comandas."
+      ],
+      [
+        "Hotel",
+        "Puede tener puestos separados para desayuno, restaurante, repostería y banquetes."
+      ],
+      [
+        "Comedor colectivo",
+        "Planifica por raciones y horarios. Una cocina escolar o institucional puede servir un menú común en varias tandas."
+      ],
+      [
+        "Cocina central",
+        "Prepara lotes para otros puntos de servicio. El envasado, el etiquetado y la expedición forman parte del recorrido."
+      ],
+      [
+        "Cocina móvil",
+        "Trabaja con espacio limitado y un menú adaptado al equipo y a la capacidad de almacenamiento."
+      ]
+    ],
+    "Plano didáctico · Restaurante pequeño",
+    [
+      "Recepción · Entrada de insumos",
+      "Despensa y frío · Guardado",
+      "Preparación · Mesas y tablas",
+      "Cocción · Fogón y horno",
+      "Pase · Revisión y salida",
+      "Lavado · Retorno del servicio"
+    ],
+    "Localiza la entrada de ingredientes y el retorno de platos usados. Dibuja ambos recorridos en colores distintos."
+  ],
+  [
+    "Quién hace qué en una cocina",
+    "Cocinar incluye interpretar la receta, organizar el puesto, medir, transformar ingredientes, probar y presentar. En una brigada, las responsabilidades se reparten. Los cargos cambian según el tamaño y el tipo de establecimiento.",
+    [
+      [
+        "Jefatura de cocina",
+        "Define el menú, coordina el equipo y revisa la producción."
+      ],
+      [
+        "Segundo de cocina",
+        "Organiza el turno y coordina los puestos durante el servicio."
+      ],
+      [
+        "Responsable de partida",
+        "Dirige un puesto, por ejemplo cocina caliente, cocina fría o repostería."
+      ],
+      [
+        "Ayudante de cocina",
+        "Prepara ingredientes, pesa raciones y asiste a la partida."
+      ],
+      [
+        "Pase y equipo de lavado",
+        "En el pase se comprueba la salida de los platos. En lavado se recogen, limpian y devuelven los utensilios."
+      ]
+    ],
+    "Ejemplo ilustrado · Un pedido de fricasé con arroz y ensalada",
+    [
+      "Comanda · Se recibe el pedido",
+      "Cocina caliente · Fricasé y arroz",
+      "Cocina fría · Ensalada",
+      "Pase · Se reúne y revisa el plato",
+      "Servicio · Sale el pedido"
+    ],
+    "En un equipo de dos personas, reparte las tres preparaciones y decide quién comprueba el plato antes de servir."
+  ],
+  [
+    "Uniforme y preparación personal",
+    "Las piezas del uniforme se eligen según la tarea y las normas del lugar. Antes de empezar un turno, identifica qué necesitas para trabajar con libertad de movimiento y mantener el puesto ordenado.",
+    [
+      [
+        "Filipina o chaqueta",
+        "Cubre el torso y los brazos según el diseño."
+      ],
+      [
+        "Delantal",
+        "Protege la ropa de trabajo y se cambia cuando corresponde."
+      ],
+      [
+        "Gorro o redecilla",
+        "Recoge el cabello."
+      ],
+      [
+        "Pantalón de trabajo",
+        "Permite moverse y cubre las piernas."
+      ],
+      [
+        "Calzado",
+        "Elige un calzado cerrado, estable y adecuado para el suelo del puesto."
+      ]
+    ],
+    "Ficha visual · Uniforme de arriba abajo",
+    [
+      "Cabeza · Gorro o redecilla",
+      "Torso · Filipina",
+      "Frente · Delantal",
+      "Piernas · Pantalón",
+      "Pies · Calzado cerrado"
+    ],
+    "Describe qué piezas llevarías para una práctica y dónde guardarías tu ropa y objetos personales."
+  ],
+  [
+    "Organización del puesto y recorrido del plato",
+    "La mise en place es la preparación previa del puesto. Lee la receta, decide cuántas porciones harás y reúne los ingredientes medidos junto con el equipo. Coloca cada elemento cerca de donde lo vas a usar.",
+    [
+      [
+        "Recepción y almacenaje",
+        "Identifica ingredientes, cantidades y lugar de guardado."
+      ],
+      [
+        "Mesa de preparación",
+        "Reúne tabla estable, recipientes, balanza y herramientas adecuadas al menú."
+      ],
+      [
+        "Área de cocción",
+        "Prevé qué hornillas, ollas o bandejas necesitarás y cuándo estará libre cada equipo."
+      ],
+      [
+        "Pase",
+        "Revisa la comanda, las porciones y la presentación antes de servir."
+      ],
+      [
+        "Lavado y cierre",
+        "Organiza dónde regresan los utensilios y qué debe quedar recogido al finalizar el turno."
+      ]
+    ],
+    "Mesa de trabajo · Vista desde arriba",
+    [
+      "Izquierda · Ingredientes medidos",
+      "Centro · Tabla de preparación",
+      "Derecha · Herramientas y recipientes",
+      "Salida · Preparaciones listas"
+    ],
+    "Antes de hacer arroz blanco y ensalada, anota cuál preparación empieza primero y qué necesitas reservar para el servicio."
+  ]
+];
+    function renderInternationalLessons(){
+      return internationalLessons.map(([title,intro,topics,caption,zones,exercise],index) => `
+        <article class="cocina-international">
+          <h4>Lección ${index+1} · ${title}</h4>
+          <p>${intro}</p>
+          <figure class="cocina-plan"><figcaption>${caption}</figcaption>
+            <ol>${zones.map(zone => {const [label,detail]=zone.split(" · ");return `<li><strong>${label}</strong><span>${detail}</span></li>`;}).join("")}</ol>
+          </figure>
+          <dl>${topics.map(([term,detail]) => `<dt>${term}</dt><dd>${detail}</dd>`).join("")}</dl>
+          <p><strong>Ejercicio de aplicación</strong> · ${exercise}</p>
+        </article>`).join("");
+    }
     function stageList(){
       if(step === "list") return `<section class="cocina-zone"><h3 tabindex="-1">Tu zona de estudio</h3>
         <p>Entra en una etapa, estudia sus cuatro lecciones, haz la práctica y responde el test. Usa el recetario y la biblioteca para preparar tus ejercicios.</p></section>
@@ -1466,22 +1628,16 @@ async function checkSystem(){const el=document.getElementById("system-status");t
       const [title, ...entries] = stage;
       const [objective, evidence, criteria, scenario, response, ...distractors] = learning[i];
       const questions = [entries[5].split("|"), [scenario,response,...distractors]];
-      const diagrams = [
-        ["Zonas de una cocina", "Almacenamiento → Lavado y preparación → Cocción → Servicio"],
-        ["Tareas del cocinero", "Leer → Medir → Organizar → Cocinar → Servir → Limpiar"],
-        ["Uniforme de arriba abajo", "Cabeza: gorro · Torso: filipina · Frente: delantal · Pies: calzado cerrado"],
-        ["Mesa de preparación", "Ingredientes medidos · Tabla estable al centro · Utensilios a mano"]
-      ];
       const heading = `<h3 tabindex="-1">Etapa ${i+1} de ${stages.length} · ${title}${step === "test" ? " · Test" : ""}</h3>`;
       const back = '<button type="button" data-step="list">Volver a las etapas</button>';
       if(step === "study") return `${heading}
         <p class="cocina-objective"><strong>Al terminar</strong> · ${objective}</p>
         ${i > 1 ? '<p class="cocina-note">Lecciones introductorias en desarrollo</p>' : ""}
-        ${entries.slice(0, 4).map((entry, j) => {
+        ${i === 0 ? renderInternationalLessons() : entries.slice(0, 4).map((entry, j) => {
           const [heading, body] = entry.split("|");
-          return `<h4>Lección ${j+1} · ${heading}</h4><p>${body}</p>${i === 0 ? `<figure><figcaption>${diagrams[j][0]}</figcaption><p>${diagrams[j][1]}</p></figure>` : ""}`;
+          return `<h4>Lección ${j+1} · ${heading}</h4><p>${body}</p>`;
         }).join("")}
-        <section class="cocina-practice"><h3>Práctica</h3><p>${entries[4]}</p>
+        <section class="cocina-practice"><h3>Práctica</h3><p>${i===0 ? "Diseña una cocina pequeña para preparar arroz blanco, fricasé y ensalada. Dibuja el plano, marca dónde entra cada ingrediente, dónde sale el plato y por dónde regresan los utensilios usados. Asigna las tareas a dos personas y anota el orden de preparación." : entries[4]}</p>
         <p><strong>Qué debes preparar</strong> · ${evidence}</p>
         <p><strong>Cómo revisar tu trabajo</strong> · ${criteria}</p></section>
         <div class="cocina-tabs">${back}<button type="button" data-step="test">Siguiente · Test</button></div>`;
