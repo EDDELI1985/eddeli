@@ -280,7 +280,26 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
 #cocina .cocina-stage-list span{display:block;margin-top:.3rem;font-size:.9rem}
 #cocina .cocina-objective,#cocina .cocina-practice{padding:.75rem 1rem;border-left:4px solid #ad7d48;background:#f7ecd9;color:#292117;border-radius:.4rem;margin:1rem 0}
 #cocina .cocina-practice h3{margin:0}
-@media(max-width:650px){#cocina .cocina-hero{grid-template-columns:1fr}}
+#cocina .cocina-hero{background:radial-gradient(ellipse at top right,#673b31,#321f22 72%);border-color:#8c6250;border-radius:18px}
+#cocina .cocina-hero h2{max-width:14ch}
+#cocina .cocina-hero .cocina-tabs{margin-bottom:0}
+#cocina .cocina-guide-button,#cocina .cocina-primary{margin-top:0;font-weight:700}
+#cocina .cocina-guide-button{background:transparent;color:#fff8ed;border-color:#cf9b7e}
+#cocina .cocina-overview{display:grid;grid-template-columns:repeat(2,minmax(4.5rem,1fr));gap:.65rem;border:0;padding:0}
+#cocina .cocina-overview div{padding:.65rem .8rem;border:1px solid #bc9181;border-radius:10px;background:#2d1d20}
+#cocina .cocina-academy-nav{padding:.65rem;border:1px solid #9d7868;border-radius:12px}
+#cocina .cocina-academy-nav button[aria-pressed=true]{background:#703c32}
+#cocina .cocina-zone{padding:1rem 1.2rem;margin:1rem 0;background:#fcf2e8;color:#35241f;border:1px solid #cdab95;border-left:4px solid #975a46;border-radius:12px}
+#cocina .cocina-zone h3{margin:0}
+#cocina .cocina-stage-list{list-style:none;padding:0;gap:.9rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr))}
+#cocina .cocina-stage-list li{margin:0}
+#cocina .cocina-stage-card{box-sizing:border-box;height:100%;margin:0;display:flex;flex-direction:column;gap:.5rem;background:#fffaf5;color:#35241f;border-color:#b48e79;border-top:4px solid #975a46}
+#cocina .cocina-stage-card h5{font-size:1.15rem;margin:0}
+#cocina .cocina-stage-card p{margin:0}
+#cocina .cocina-card-meta{font-size:.85rem;font-weight:700;color:#6c4539}
+#cocina .cocina-stage-list .cocina-stage-card button{height:auto;margin-top:auto;background:#703c32;border-color:#703c32;color:white;font-weight:700}
+#cocina .cocina-stage-card .cocina-sr-only{position:absolute;width:1px;height:1px;clip-path:inset(50%);overflow:hidden}
+@media(max-width:650px){#cocina .cocina-hero{grid-template-columns:1fr}#cocina .cocina-overview{grid-template-columns:repeat(auto-fit,minmax(4.5rem,1fr))}}
 .cocina-preview {line-height:1.55; color:inherit}
 .cocina-preview .cocina-tabs {display:flex;gap:.6rem;flex-wrap:wrap;margin:1rem 0}
 .cocina-preview button {border:1px solid #8c7451;border-radius:.45rem;padding:.6rem .9rem;background:#fff9ee;color:#2d2317;cursor:pointer;font:inherit}
@@ -1280,23 +1299,25 @@ async function checkSystem(){const el=document.getElementById("system-status");t
 ];
     box.innerHTML = `<section class="cocina-preview" tabindex="-1" aria-label="Curso de Cocina Cubana">
       <header class="cocina-hero">
-        <div><p class="cocina-label">Formación práctica · Nivel inicial</p>
-          <h2 id="cocina-titulo" tabindex="-1">Cocina cubana</h2>
+        <div><p class="cocina-label">EDDELI · Formación gastronómica</p>
+          <h2 id="cocina-titulo" tabindex="-1">Academia de Cocina Cubana</h2>
           <p>Aprende a organizar tu puesto, dominar las técnicas básicas y servir un menú cubano completo.</p>
-          <button type="button" class="cocina-primary" data-stage="0">Empezar por la etapa 1</button>
+          <div class="cocina-tabs"><button type="button" class="cocina-primary" data-stage="0">Entrar a la primera etapa</button>
+          <button type="button" class="cocina-guide-button" data-cocina="guia" aria-pressed="false">Cómo funciona la academia</button></div>
         </div>
         <dl class="cocina-overview">
           <div><dt>Etapas</dt><dd>${stages.length}</dd></div>
+          <div><dt>Lecciones</dt><dd>${stages.reduce((total,stage) => total + stage.slice(1,5).length,0)}</dd></div>
           <div><dt>Recetas</dt><dd data-cocina-recipes></dd></div>
           <div><dt>Fichas</dt><dd data-cocina-cards></dd></div>
         </dl>
       </header>
-      <div class="cocina-tabs" aria-label="Contenido del curso">
+      <nav class="cocina-tabs cocina-academy-nav" aria-label="Recursos de la academia">
         <button type="button" data-cocina="curso" aria-pressed="true">Etapas</button>
         <button type="button" data-cocina="recetas" aria-pressed="false">Recetario</button>
         <button type="button" data-cocina="biblioteca" aria-pressed="false">Biblioteca</button>
         <button type="button" data-cocina="menu" aria-pressed="false">Práctica de menú</button>
-      </div>
+      </nav>
       <div class="cocina-content"></div>
       <div class="cocina-tabs"><button type="button" onclick="go('areas')">Volver a las áreas</button></div>
     </section>`;
@@ -1428,10 +1449,17 @@ async function checkSystem(){const el=document.getElementById("system-status");t
     ];
     let currentStage = 0, step = "list";
     function stageList(){
-      if(step === "list") return `<h3 tabindex="-1">Itinerario de aprendizaje</h3>${blocks.map(([name,start,end]) =>
+      if(step === "list") return `<section class="cocina-zone"><h3 tabindex="-1">Tu zona de estudio</h3>
+        <p>Entra en una etapa, estudia sus cuatro lecciones, haz la práctica y responde el test. Usa el recetario y la biblioteca para preparar tus ejercicios.</p></section>
+        <h3>Itinerario de aprendizaje</h3>${blocks.map(([name,start,end]) =>
         `<section class="cocina-block"><h4>${name}</h4><ol start="${start+1}" class="cocina-stage-list">${stages.slice(start,end).map(([title],offset) => {
           const index = start + offset;
-          return `<li><button type="button" data-stage="${index}"><strong>${title}</strong><span>${learning[index][0]}</span></button></li>`;
+          return `<li><article class="cocina-stage-card">
+            <p class="cocina-card-meta">Etapa ${String(index+1).padStart(2,"0")} · ${index < 4 ? "Fundamentos" : index < 11 ? "Técnica y cocina" : "Servicio"}</p>
+            <h5>${title}</h5><p>${learning[index][0]}</p>
+            <p class="cocina-card-meta">4 lecciones · Práctica · Test</p>
+            <button type="button" data-stage="${index}">Entrar a la etapa <span class="cocina-sr-only">${index+1}</span> →</button>
+          </article></li>`;
         }).join("")}</ol></section>`).join("")}`;
       const i = currentStage;
       const stage = stages[i];
@@ -1451,7 +1479,7 @@ async function checkSystem(){const el=document.getElementById("system-status");t
         ${i > 1 ? '<p class="cocina-note">Lecciones introductorias en desarrollo</p>' : ""}
         ${entries.slice(0, 4).map((entry, j) => {
           const [heading, body] = entry.split("|");
-          return `<h3>${heading}</h3><p>${body}</p>${i === 0 ? `<figure><figcaption>${diagrams[j][0]}</figcaption><p>${diagrams[j][1]}</p></figure>` : ""}`;
+          return `<h4>Lección ${j+1} · ${heading}</h4><p>${body}</p>${i === 0 ? `<figure><figcaption>${diagrams[j][0]}</figcaption><p>${diagrams[j][1]}</p></figure>` : ""}`;
         }).join("")}
         <section class="cocina-practice"><h3>Práctica</h3><p>${entries[4]}</p>
         <p><strong>Qué debes preparar</strong> · ${evidence}</p>
@@ -1534,6 +1562,17 @@ async function checkSystem(){const el=document.getElementById("system-status");t
       section.querySelectorAll("[data-cocina]").forEach(button => button.setAttribute("aria-pressed", String(button.dataset.cocina === view)));
       if(view === "curso"){content.innerHTML = stageList();return;}
       if(view === "menu"){content.innerHTML = menu;return;}
+      if(view === "guia"){
+        content.innerHTML = `<article class="cocina-zone">
+          <h3 tabindex="-1">Cómo funciona la academia</h3>
+          <ol><li>Empieza en Fundamentos para conocer el oficio, el uniforme y el puesto.</li>
+          <li>En cada etapa, estudia las lecciones y reúne la evidencia que pide la práctica.</li>
+          <li>Completa el test y continúa a la siguiente etapa.</li>
+          <li>Consulta las fichas y recetas cuando prepares el menú final.</li></ol>
+          <button type="button" data-cocina="curso">Volver al itinerario</button>
+        </article>`;
+        return;
+      }
       const filters = view === "biblioteca" ? Object.keys(fichas) : [...new Set(available.flatMap(([,tags]) => tags.split(", ")))].sort((a,b) => a.localeCompare(b,"es"));
       content.innerHTML = `<div class="cocina-filters">
         <label>Buscar <input type="search" data-search></label>
