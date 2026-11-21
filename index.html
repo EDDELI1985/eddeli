@@ -1123,6 +1123,11 @@ async function checkSystem(){const el=document.getElementById("system-status");t
     return !!(currentUser && currentUser.email_confirmed_at && currentProfile && currentProfile.approval_status === "approved" && ((currentProfile.role === "student") || (currentProfile.role === "admin")));
   }
   window.hasApprovedAcademyAccess = hasApprovedAcademyAccess;
+  function canOpenCookingCourse(){
+    return Boolean(currentUser?.id && currentUser.email_confirmed_at &&
+      currentProfile?.id === currentUser.id &&
+      currentProfile.role === "admin" && currentProfile.approval_status === "approved");
+  }
   window.go = function(page){
     const target = document.getElementById(page);
     if(!target || !target.classList.contains("view")){
@@ -1145,6 +1150,7 @@ async function checkSystem(){const el=document.getElementById("system-status");t
     } else if(page === "perfil" && (typeof currentUser === "undefined" || !currentUser)){
       page = "acceso";
     }
+    if(page === "cocina" && !canOpenCookingCourse()) page = currentUser ? "areas" : "login-admin";
     const cocina = document.getElementById("cocina");
     if(cocina){
       cocina.hidden = page !== "cocina";
@@ -1209,6 +1215,7 @@ async function checkSystem(){const el=document.getElementById("system-status");t
     return true;
   };
   function renderCocinaPreview(){
+    if(!canOpenCookingCourse()) return;
     const box = document.getElementById("cocina");
     if(!box) return;
     const stages = [
@@ -2345,19 +2352,12 @@ async function checkSystem(){const el=document.getElementById("system-status");t
   }
 
   function openCocinaForAdmin(){
-    const box = document.getElementById("cocina");
-    if(!box) return;
-    window.go("cocina");
-    if(currentUser?.email_confirmed_at && currentProfile?.role === "admin" && currentProfile.approval_status === "approved"){
-      renderCocinaPreview();
+    if(!canOpenCookingCourse()){
+      window.alert("El curso de Cocina está en preparación. Por ahora, el acceso está reservado a administradores.");
+      if(!currentUser) window.go("login-admin");
       return;
     }
-    box.innerHTML = `<div class="cocina-preview"><h2 tabindex="-1">Cocina y gastronomía</h2>
-      <p>El curso está en preparación. Si administras EDDELI, entra con tu cuenta habitual para revisarlo.</p>
-      <button type="button" class="secondary" onclick="go('login-admin')">Acceso de administrador</button>
-      <button type="button" class="secondary" onclick="go('areas')">Volver a las áreas</button></div>`;
-    box.querySelector("h2").focus({preventScroll:true});
-    window.scrollTo({top:0,behavior:"instant"});
+    if(window.go("cocina")) renderCocinaPreview();
   }
   window.openLearningArea = function(key){
     if(key === "food"){openCocinaForAdmin();return;}
