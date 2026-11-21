@@ -261,6 +261,23 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
 
 .eddeli-course-welcome{margin:18px 0 20px;padding:clamp(16px,3vw,28px);overflow:hidden;border:1px solid #e1d7c4;background:linear-gradient(145deg,#fffdf8,#f6f8fb)}.eddeli-course-welcome-copy{max-width:760px;margin:0 auto 14px;text-align:center}.eddeli-course-welcome-copy h2{margin:10px 0 6px;color:#263d5e}.eddeli-course-welcome-copy p{margin:0;color:#647186;line-height:1.6}.eddeli-course-welcome-frame{position:relative;width:100%;max-width:960px;margin:auto;aspect-ratio:16/9;overflow:hidden;border-radius:16px;background:#14243a;box-shadow:0 12px 32px #172d4824}.eddeli-course-welcome-frame video{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:contain;background:#14243a}.eddeli-course-welcome-caption{margin:10px auto 0;text-align:center;color:#718095;font-size:12px;line-height:1.5}@media(max-width:600px){.eddeli-course-welcome{padding:14px;border-radius:15px}.eddeli-course-welcome-frame{border-radius:11px}.eddeli-course-welcome-copy h2{font-size:22px}}
 </style>
+<style>
+.cocina-preview {line-height:1.55; color:inherit}
+.cocina-preview .cocina-tabs {display:flex;gap:.6rem;flex-wrap:wrap;margin:1rem 0}
+.cocina-preview button {border:1px solid #8c7451;border-radius:.45rem;padding:.6rem .9rem;background:#fff9ee;color:#2d2317;cursor:pointer;font:inherit}
+.cocina-preview button[aria-pressed=true] {background:#62421f;color:#fff}
+.cocina-preview details,.cocina-preview article {padding:1rem;margin:.6rem 0;border:1px solid #8c7451;border-radius:.7rem}
+.cocina-preview summary {cursor:pointer;font-weight:700}
+.cocina-preview h3 {margin:1.1rem 0 .2rem}
+.cocina-preview figure {margin:.5rem 0;padding:.7rem;border-inline-start:3px solid #b68544;background:#fff9ee;color:#2d2317}
+.cocina-preview figure p {margin:.3rem 0}
+.cocina-preview figcaption {font-weight:700}
+.cocina-preview fieldset {border:1px solid #8c7451;margin:1rem 0 0}
+.cocina-preview fieldset button {margin:.2rem}
+.cocina-preview button[data-feedback=correct] {background:#165d3b;color:white}
+.cocina-preview button[data-feedback=incorrect] {background:#902c2c;color:white}
+.cocina-preview .cocina-note {font-style:italic}
+</style>
 </head>
 <body>
 
@@ -1106,7 +1123,205 @@ async function checkSystem(){const el=document.getElementById("system-status");t
     window.scrollTo({top:0,behavior:"auto"});
     return true;
   };
+
+  function renderCocinaPreview(){
+    const box = document.getElementById("area-detail");
+    if(!box) return;
+    const stages = [
+  [
+    "El cocinero y la cocina",
+    "Qué es una cocina|Una cocina es un espacio equipado para guardar, preparar y cocinar alimentos. Una cocina puede ser doméstica o profesional. Identifica dónde se almacenan los ingredientes, dónde se lavan y preparan, dónde se cocinan y dónde sale el plato.",
+    "Qué hace un cocinero|Un cocinero transforma ingredientes en alimentos listos para servir. Lee la receta, calcula porciones, organiza su trabajo, cocina, prueba y deja limpio el puesto. En un equipo, cada persona puede encargarse de una parte.",
+    "El uniforme|La filipina cubre el torso, el delantal protege la ropa, el gorro recoge el cabello y el calzado cerrado antideslizante protege los pies. Antes de empezar, comprueba que llevas ropa limpia y que puedes moverte con comodidad.",
+    "La mesa de trabajo|Prepara una superficie limpia y despejada. Coloca la tabla sobre una base estable, reúne los ingredientes medidos y deja a mano los utensilios. A esta preparación previa se le llama mise en place.",
+    "Dibuja tu cocina y señala las zonas de almacenamiento, lavado, preparación, cocción y servicio.",
+    "¿Qué se hace antes de empezar a cocinar?|Preparar el puesto y reunir lo necesario|Poner todos los ingredientes en la olla|Montar el plato"
+  ],
+  [
+    "Higiene y seguridad",
+    "Higiene personal|Identifica cuándo debes lavarte las manos durante una práctica.",
+    "Separación de alimentos|Organiza espacios y utensilios para alimentos crudos y alimentos listos para servir.",
+    "Orden y limpieza|Distingue los momentos de limpieza antes, durante y después de cada tarea.",
+    "Conservación|Aprende a leer etiquetas, fechar recipientes y organizar el frío.",
+    "Haz un esquema del recorrido de los ingredientes desde que llegan hasta que se sirven.",
+    "¿Qué debe tener su propia zona de preparación?|La carne cruda|El plato servido junto a la carne cruda|Solo los cubiertos"
+  ],
+  [
+    "Utensilios y equipos",
+    "Cuchillos y tablas|Reconoce cuchillo de chef, puntilla, cuchillo de sierra y tablas de corte.",
+    "Ollas y sartenes|Compara cazuela, sartén, olla alta, colador y olla de presión.",
+    "Medición|Practica con balanza, jarra, tazas y cucharas medidoras.",
+    "Equipos eléctricos|Identifica fogón, horno, licuadora, batidora, refrigerador y olla arrocera.",
+    "Haz un inventario de tus utensilios y anota su función.",
+    "¿Qué sirve para pesar harina?|La balanza|La tabla|El colador"
+  ],
+  [
+    "Cortes y bases de sabor",
+    "Cortes|Practica rodajas, tiras y dados de tamaño uniforme con una hortaliza.",
+    "Sofrito|Reconoce el papel de cebolla, ajo y ají y cómo se incorporan a los guisos.",
+    "Mojo y adobos|Distingue una salsa de servicio de una mezcla para sazonar antes de cocinar.",
+    "Caldos y cocción|Diferencia hervir, cocinar a fuego lento, guisar, asar y freír.",
+    "Corta una hortaliza de dos formas y compara los tiempos de cocción.",
+    "¿Qué favorece que los dados se cocinen parejos?|Que tengan tamaño parecido|Que tengan tamaños al azar|Que se corten después de servir"
+  ],
+  [
+    "Arroz, maíz y legumbres",
+    "Arroz|Empieza con arroz blanco. Continúa con arroz con maíz, arroz amarillo, arroz con pollo, arroz imperial y arroz con leche.",
+    "Maíz|Compara maíz tierno, seco y molido. Estudia tamal en hojas, tamal en cazuela, frituras y harina de maíz.",
+    "Frijoles|Identifica negro, colorado y blanco. Compara frijoles guisados, potajes, moros y cristianos y congrí.",
+    "Otras legumbres|Reconoce garbanzo, lenteja, chícharo y frijol carita. Registra diferencias entre grano seco y en conserva.",
+    "Prepara el arroz blanco del recetario y anota la medida de agua, el tiempo y la textura.",
+    "¿Qué utensilio permite repetir con precisión la medida de arroz?|Una taza medidora|Una espumadera|Una tabla"
+  ],
+  [
+    "Viandas, verduras y ensaladas",
+    "Viandas|Identifica yuca, malanga, boniato y ñame. Introducción a yuca con mojo y purés.",
+    "Plátanos|Distingue plátano verde, pintón y maduro. Relaciónalos con tostones y maduros fritos.",
+    "Ensaladas frescas|Practica ensalada de tomate, pepino, aguacate y col.",
+    "Ensaladas cocidas y frías|Estudia ensalada de remolacha, de papa y ensalada fría de pasta.",
+    "Diseña dos guarniciones para el mismo plato principal.",
+    "¿Qué plátano se usa habitualmente para tostones?|Verde|Muy maduro|Cualquiera da la misma textura"
+  ],
+  [
+    "Carnes, aves y huevos",
+    "Huevos|Introduce huevo frito, revuelto, hervido y tortilla.",
+    "Pollo|Organiza la preparación de fricasé, pollo asado y pollo guisado.",
+    "Cerdo|Estudia lechón asado, masas de cerdo y bistec de cerdo encebollado.",
+    "Res|Estudia picadillo, ropa vieja, vaca frita y bistec encebollado.",
+    "Prepara la lista de utensilios e ingredientes para un fricasé.",
+    "¿En qué plato se deshebra la carne?|Ropa vieja|Bistec encebollado|Huevo revuelto"
+  ],
+  [
+    "Pescados y mariscos",
+    "Pescado entero y filetes|Reconoce las presentaciones y selecciona la que pide la receta.",
+    "Métodos de cocción|Compara pescado frito, al horno y en escabeche.",
+    "Mariscos|Distingue camarones y otros mariscos por su presentación. Introducción al enchilado de camarones.",
+    "Menú y alérgenos|Aprende a identificar y comunicar qué ingredientes contiene cada preparación.",
+    "Planifica una guarnición para pescado y anota los ingredientes de ambos platos.",
+    "¿Qué dato debe comunicar un menú para quien tiene alergias?|Los ingredientes|Solo el precio|Solo el color"
+  ],
+  [
+    "Sopas, caldos y potajes",
+    "Caldo base|Diferencia el líquido base de una sopa lista para servir.",
+    "Sopas|Planifica sopa de pollo y sopa de fideos.",
+    "Ajiaco|Identifica sus viandas y organiza su incorporación según el tiempo de cocción.",
+    "Potajes|Compara la textura de un potaje con la de un caldo y registra cómo cambia durante la cocción.",
+    "Ordena los ingredientes de una sopa según cuándo los incorporarías.",
+    "¿Qué debes comparar al incorporar varias viandas?|Sus tiempos de cocción|El tamaño del plato servido|El color de la cuchara"
+  ],
+  [
+    "Meriendas y comida callejera",
+    "Frituras|Identifica las diferencias entre frituras de malanga y de maíz tierno.",
+    "Croquetas|Estudia el proceso de preparar el relleno, formar y empanar.",
+    "Bocaditos y panes|Compara pan con lechón, bocadito de pasta y frita cubana.",
+    "Tamales|Organiza los ingredientes y utensilios del tamal en hojas y del tamal en cazuela.",
+    "Planifica una merienda con dos preparaciones y una bebida.",
+    "¿Qué paso se hace antes de freír una croqueta empanada?|Empanarla|Servirla|Cortarla en el plato"
+  ],
+  [
+    "Dulces, repostería y bebidas",
+    "Dulces de leche|Introduce arroz con leche, flan y natilla.",
+    "Dulces de frutas|Estudia guayaba, cascos de toronja y dulce de coco.",
+    "Repostería|Reconoce ingredientes y técnicas de panetela y pastelitos de guayaba.",
+    "Bebidas|Introduce café cubano, batidos, limonada y champola.",
+    "Compón una merienda con un dulce y una bebida.",
+    "¿Qué debes medir antes de la preparación?|Los ingredientes de la receta|Solo los cubiertos|Solo el tamaño de la mesa"
+  ],
+  [
+    "Menús, organización y servicio",
+    "Porciones|Calcula cómo multiplicar cantidades para pasar de dos a cuatro comensales.",
+    "Orden de trabajo|Planea qué tareas puedes adelantar y qué platos se sirven al momento.",
+    "Mesa y emplatado|Practica la colocación de plato y cubiertos y distribuye guarnición y plato principal.",
+    "Menús cubanos|Combina un principal con guarniciones y una ensalada o postre según la ocasión.",
+    "Diseña un menú para cuatro y escribe su orden de preparación.",
+    "Si una receta para dos se prepara para cuatro, ¿qué haces con las cantidades?|Las duplicas|Las divides entre dos|Las dejas iguales"
+  ],
+  [
+    "Práctica final",
+    "Planifica|Elige un menú de tres preparaciones y escribe porciones, ingredientes y utensilios.",
+    "Organiza|Prepara la mesa y coloca ingredientes y utensilios en orden de uso.",
+    "Cocina y sirve|Ejecuta el menú, controla el tiempo de cada preparación y presenta los platos.",
+    "Evalúa|Revisa limpieza, organización, punto de cocción y presentación. Anota qué mejorarías.",
+    "Entrega el menú, el orden de trabajo y una foto de cada plato terminado.",
+    "¿Qué permite evaluar y mejorar la próxima práctica?|Registrar qué salió bien y qué ajustar|Cambiar el nombre del plato|Guardar solo los utensilios"
+  ]
+];
+    box.hidden = false;
+    box.innerHTML = `<section class="cocina-preview" aria-labelledby="cocina-titulo">
+      <span class="pill">Vista de prueba</span>
+      <h2 id="cocina-titulo" tabindex="-1">Curso de Cocina Cubana</h2>
+      <p>Para principiantes. Empieza por conocer la cocina y el oficio antes de preparar tu primer plato.</p>
+      <div class="cocina-tabs" aria-label="Contenido del curso">
+        <button type="button" data-cocina="curso" aria-pressed="true">Etapas</button>
+        <button type="button" data-cocina="recetas" aria-pressed="false">Recetario</button>
+      </div>
+      <div class="cocina-content"></div>
+    </section>`;
+    const section = box.querySelector(".cocina-preview");
+    const content = section.querySelector(".cocina-content");
+    const stageList = () => stages.map((stage, i) => {
+      const [title, ...entries] = stage;
+      const [question, correct, ...wrong] = entries[5].split("|");
+      const choices = [...wrong];
+      choices.splice(i % 3, 0, correct);
+      const diagrams = [
+        ["Zonas de una cocina", "Almacenamiento → Lavado y preparación → Cocción → Servicio"],
+        ["Tareas del cocinero", "Leer → Medir → Organizar → Cocinar → Servir → Limpiar"],
+        ["Uniforme de arriba abajo", "Cabeza: gorro · Torso: filipina · Frente: delantal · Pies: calzado cerrado"],
+        ["Mesa de preparación", "Ingredientes medidos · Tabla estable al centro · Utensilios a mano"]
+      ];
+      return `<details ${i === 0 ? "open" : ""}>
+        <summary>${i + 1}. ${title}</summary>
+        ${i > 0 ? '<p class="cocina-note">Contenido introductorio en desarrollo</p>' : ""}
+        ${entries.slice(0, 4).map((entry, j) => {
+          const [heading, body] = entry.split("|");
+          return `<h3>${heading}</h3><p>${body}</p>${i === 0 ? `<figure><figcaption>${diagrams[j][0]}</figcaption><p>${diagrams[j][1]}</p></figure>` : ""}`;
+        }).join("")}
+        <h3>Práctica</h3><p>${entries[4]}</p>
+        <fieldset><legend>${question}</legend>
+          ${choices.map(choice => `<button type="button" data-answer="${choice === correct}">${choice}</button>`).join("")}
+          <p role="status"></p>
+        </fieldset>
+      </details>`;
+    }).join("");
+    const recipe = `<article>
+      <h3>Arroz blanco</h3><p>2 a 3 porciones · Arroz blanco de grano largo</p>
+      <h4>Ingredientes</h4><ul><li>1 taza de arroz</li><li>1½ tazas de agua</li><li>1 cucharadita de aceite</li><li>¼ de cucharadita de sal, o al gusto</li></ul>
+      <h4>Utensilios</h4><p>Taza medidora, colador fino, olla con tapa y tenedor.</p>
+      <h4>Paso a paso</h4><ol>
+      <li>Mide el arroz, enjuágalo en el colador y escúrrelo bien.</li>
+      <li>Pon el arroz, el agua, el aceite y la sal en la olla. Lleva a hervor.</li>
+      <li>Tapa, baja a fuego mínimo y cocina unos 15 minutos. Sigue las indicaciones del paquete si pide otra proporción o tiempo.</li>
+      <li>Comprueba que el agua se absorbió y que el grano está tierno. Apaga el fuego, deja reposar tapado 5 minutos y separa los granos con un tenedor.</li>
+      </ol><h4>Cómo reconocer el punto</h4><p>El arroz debe estar tierno, sin un centro duro ni agua visible en el fondo. Si aún está firme y seco, añade una cucharada de agua y cocina tapado unos minutos más.</p>
+      <h4>Qué anotar en tu práctica</h4><p>Variedad de arroz, cantidad de agua, minutos de cocción y textura final.</p>
+    </article>`;
+    content.innerHTML = stageList();
+    section.addEventListener("click", (event) => {
+      const tab = event.target.closest("[data-cocina]");
+      if(tab){
+        section.querySelectorAll("[data-cocina]").forEach(button => {
+          button.setAttribute("aria-pressed", String(button === tab));
+        });
+        content.innerHTML = tab.dataset.cocina === "curso" ? stageList() : recipe;
+        return;
+      }
+      const answer = event.target.closest("[data-answer]");
+      if(!answer) return;
+      const field = answer.closest("fieldset");
+      field.querySelectorAll("[data-answer]").forEach(button => button.removeAttribute("data-feedback"));
+      const correct = answer.dataset.answer === "true";
+      answer.dataset.feedback = correct ? "correct" : "incorrect";
+      field.querySelector('[role="status"]').textContent = correct ? "Respuesta correcta." : "Vuelve a intentarlo.";
+    });
+    section.querySelector("h2").focus();
+  }
+
   window.openLearningArea = function(key){
+    if(key === "food"){
+      renderCocinaPreview();
+      return;
+    }
     if(key === "beauty"){
       window.go("academia");
       return;
