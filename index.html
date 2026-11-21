@@ -291,6 +291,10 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
 #cocina .cocina-academy-nav button[aria-pressed=true]{background:#703c32}
 #cocina .cocina-zone{padding:1rem 1.2rem;margin:1rem 0;background:#fcf2e8;color:#35241f;border:1px solid #cdab95;border-left:4px solid #975a46;border-radius:12px}
 #cocina .cocina-zone h3{margin:0}
+#cocina .cocina-photo{width:min(100%,24rem);margin:.8rem 0 1.35rem;padding:0;overflow:hidden;border:1px solid #bc9181;border-radius:.75rem}
+#cocina .cocina-photo-crop{aspect-ratio:1;background-color:#f0e0cf;background-image:var(--cocina-sheet);background-size:400% 400%;background-position:var(--cocina-x) var(--cocina-y);background-repeat:no-repeat}
+#cocina .cocina-photo figcaption{padding:.55rem .75rem;font-size:.9rem}
+
 #cocina .cocina-international{padding:clamp(1rem,3vw,1.6rem);margin:1rem 0}
 #cocina .cocina-international h4{font-size:1.3rem;margin:0 0 .6rem}
 #cocina .cocina-international dt{font-weight:700}
@@ -1598,11 +1602,24 @@ async function checkSystem(){const el=document.getElementById("system-status");t
     "Antes de hacer arroz blanco y ensalada, anota cuál preparación empieza primero y qué necesitas reservar para el servicio."
   ]
 ];
+    function cocinaPhoto(sheet, tile, caption){
+      const x = (tile % 4) * 100 / 3;
+      const y = Math.floor(tile / 4) * 100 / 3;
+      return `<figure class="cocina-photo"><div class="cocina-photo-crop" role="img" aria-label="${esc(caption)}"
+        style="--cocina-sheet:url('./cocina-fotos-${sheet}.png');--cocina-x:${x}%;--cocina-y:${y}%"></div>
+        <figcaption>${esc(caption)}</figcaption></figure>`;
+    }
     function renderInternationalLessons(){
       return internationalLessons.map(([title,intro,topics,caption,zones,exercise],index) => `
         <article class="cocina-international">
           <h4>Lección ${index+1} · ${title}</h4>
           <p>${intro}</p>
+          ${cocinaPhoto(0,[15,0,13,14][index],[
+            "Línea de cocción en una cocina profesional",
+            "Equipo de trabajo en una cocina profesional",
+            "Filipina, delantal y gorro de cocina",
+            "Ingredientes y utensilios organizados alrededor de la tabla"
+          ][index])}
           <figure class="cocina-plan"><figcaption>${caption}</figcaption>
             <ol>${zones.map(zone => {const [label,detail]=zone.split(" · ");return `<li><strong>${label}</strong><span>${detail}</span></li>`;}).join("")}</ol>
           </figure>
@@ -2033,10 +2050,13 @@ async function checkSystem(){const el=document.getElementById("system-status");t
       const back = '<button type="button" data-step="list">Volver a las etapas</button>';
       if(step === "study") return `${heading}
         <p class="cocina-objective"><strong>Al terminar</strong> · ${objective}</p>
+        ${i ? cocinaPhoto(0,i,worldChapters[i][0]) : ""}
         ${chapterMarkup(i)}
         ${i === 0 ? renderInternationalLessons() : entries.slice(0, 4).map((entry, j) => {
           const [heading, body] = entry.split("|");
-          return `<h4>Lección ${j+1} · ${heading}</h4><p>${body}</p>`;
+          const photo = (i-1)*4+j;
+          return `<h4>Lección ${j+1} · ${heading}</h4><p>${body}</p>
+            ${cocinaPhoto(1+Math.floor(photo/16),photo%16,heading)}`;
         }).join("")}
         <section class="cocina-practice"><h3>Práctica</h3><p>${i===0 ? "Diseña una cocina pequeña para preparar arroz blanco, pollo guisado y ensalada. Dibuja el plano, marca dónde entra cada ingrediente, dónde sale el plato y por dónde regresan los utensilios usados. Asigna las tareas a dos personas y anota el orden de preparación." : entries[4]}</p>
         <p><strong>Qué debes preparar</strong> · ${evidence}</p>
