@@ -1141,6 +1141,14 @@ window.renderLashStage=async function(index){
  if(next)next.textContent=getLang()==="en"?"NEXT: GO TO STAGE TEST →":"SIGUIENTE: IR AL TEST →";
  window.__lashViewState={mode:"stage",index};
 };
+function shuffleLashAnswerOptions(options){
+ const shuffled=options.slice();
+ for(let i=shuffled.length-1;i>0;i--){
+  const j=Math.floor(Math.random()*(i+1));
+  [shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];
+ }
+ return shuffled;
+}
 async function renderLashAssessmentFlow(stageIndex,isFinal){
  const panel=document.getElementById("lash-lesson-panel");if(!panel)return;
  const en=getLang()==="en",admin=!!(currentProfile&&currentProfile.role==="admin"),student=!!(currentProfile&&currentProfile.role==="student");
@@ -1178,7 +1186,7 @@ async function renderLashAssessmentFlow(stageIndex,isFinal){
    panel.innerHTML=html;window.__lashViewState={mode:isFinal?"final-db":"test-db",index:stageIndex};return;
   }
   html+='<form id="lash-db-assessment-form" class="lash-quiz">';
-  questions.forEach((q,i)=>{const opts=en&&Array.isArray(q.options_en)&&q.options_en.length?q.options_en:q.options;const question=en?(q.question_text_en||q.question_text):q.question_text;html+='<fieldset class="lash-question"><legend>'+(i+1)+'. '+escapeHTML(question)+'</legend>'+opts.map(o=>'<label class="lash-option"><input type="radio" name="'+escapeHTML(q.id)+'" value="'+escapeHTML(String(o))+'" required><span>'+escapeHTML(String(o))+'</span></label>').join("")+'</fieldset>';});
+  questions.forEach((q,i)=>{const options=en&&Array.isArray(q.options_en)&&q.options_en.length?q.options_en:q.options;const opts=shuffleLashAnswerOptions(options);const question=en?(q.question_text_en||q.question_text):q.question_text;html+='<fieldset class="lash-question"><legend>'+(i+1)+'. '+escapeHTML(question)+'</legend>'+opts.map(o=>'<label class="lash-option"><input type="radio" name="'+escapeHTML(q.id)+'" value="'+escapeHTML(String(o))+'" required><span>'+escapeHTML(String(o))+'</span></label>').join("")+'</fieldset>';});
   html+='<button class="primary" type="submit">'+(en?"SUBMIT TEST":"ENVIAR TEST")+'</button></form><div id="lash-db-assessment-result" aria-live="polite"></div>';
   panel.innerHTML=html;
   const form=document.getElementById("lash-db-assessment-form");
