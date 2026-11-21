@@ -459,7 +459,7 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
   <div class="welcome"><div><span class="eyebrow">CENTRO DE CONTROL</span><h1>Administración</h1><p>Bienvenido al panel de gestión de EDDELI.</p></div><div style="font-size:55px">⚙</div></div>
   <h2 class="section-title">Herramientas de gestión</h2>
   <div class="grid three">
-    <div class="card"><h3>Cocina y gastronomía</h3><p>Revisa el Curso de Cocina Cubana.</p><button type="button" class="secondary" onclick="openLearningArea('food')">ABRIR</button></div>
+    <div class="card"><h3>Cocina y gastronomía</h3><p>Revisa el Curso de Cocina Internacional.</p><button type="button" class="secondary" onclick="openLearningArea('food')">ABRIR</button></div>
     <div class="card"><div class="card-icon">👥</div><h3>Alumnos</h3><p>Registro y seguimiento.</p><button class="secondary" onclick="go('admin-alumnos')">ABRIR</button></div>
     <div class="card"><div class="card-icon">📚</div><h3>Cursos</h3><p>Organización académica.</p><button class="secondary" onclick="go('admin-cursos')">ABRIR</button></div>
     <div class="card"><div class="card-icon">📝</div><h3>Exámenes</h3><p>Evaluaciones y pruebas.</p><button class="secondary" onclick="go('admin-examenes')">ABRIR</button></div>
@@ -1247,7 +1247,7 @@ async function checkSystem(){const el=document.getElementById("system-status");t
     "Pollo|Organiza la preparación de fricasé, pollo asado y pollo guisado.",
     "Cerdo|Estudia lechón asado, masas de cerdo y bistec de cerdo encebollado.",
     "Res|Estudia picadillo, ropa vieja, vaca frita y bistec encebollado.",
-    "Prepara la lista de utensilios e ingredientes para un fricasé.",
+    "Prepara la lista de utensilios e ingredientes para un pollo guisado.",
     "¿En qué plato se deshebra la carne?|Ropa vieja|Bistec encebollado|Huevo revuelto"
   ],
   [
@@ -1272,7 +1272,7 @@ async function checkSystem(){const el=document.getElementById("system-status");t
     "Meriendas y comida callejera",
     "Frituras|Identifica las diferencias entre frituras de malanga y de maíz tierno.",
     "Croquetas|Estudia el proceso de preparar el relleno, formar y empanar.",
-    "Bocaditos y panes|Compara pan con lechón, bocadito de pasta y frita cubana.",
+    "Bocaditos y panes|Compara un sándwich de asado, un bocadillo vegetal y un pan plano relleno.",
     "Tamales|Organiza los ingredientes y utensilios del tamal en hojas y del tamal en cazuela.",
     "Planifica una merienda con dos preparaciones y una bebida.",
     "¿Qué paso se hace antes de freír una croqueta empanada?|Empanarla|Servirla|Cortarla en el plato"
@@ -1282,7 +1282,7 @@ async function checkSystem(){const el=document.getElementById("system-status");t
     "Dulces de leche|Introduce arroz con leche, flan y natilla.",
     "Dulces de frutas|Estudia guayaba, cascos de toronja y dulce de coco.",
     "Repostería|Reconoce ingredientes y técnicas de panetela y pastelitos de guayaba.",
-    "Bebidas|Introduce café cubano, batidos, limonada y champola.",
+    "Bebidas|Compara técnicas para café filtrado, infusiones, batidos y limonada.",
     "Compón una merienda con un dulce y una bebida.",
     "¿Qué debes medir antes de la preparación?|Los ingredientes de la receta|Solo los cubiertos|Solo el tamaño de la mesa"
   ],
@@ -1291,7 +1291,7 @@ async function checkSystem(){const el=document.getElementById("system-status");t
     "Porciones|Calcula cómo multiplicar cantidades para pasar de dos a cuatro comensales.",
     "Orden de trabajo|Planea qué tareas puedes adelantar y qué platos se sirven al momento.",
     "Mesa y emplatado|Practica la colocación de plato y cubiertos y distribuye guarnición y plato principal.",
-    "Menús cubanos|Combina un principal con guarniciones y una ensalada o postre según la ocasión.",
+    "Menús de distintas tradiciones|Combina un principal con guarniciones y una ensalada o postre según la ocasión.",
     "Diseña un menú para cuatro y escribe su orden de preparación.",
     "Si una receta para dos se prepara para cuatro, ¿qué haces con las cantidades?|Las duplicas|Las divides entre dos|Las dejas iguales"
   ],
@@ -1305,11 +1305,11 @@ async function checkSystem(){const el=document.getElementById("system-status");t
     "¿Qué permite evaluar y mejorar la próxima práctica?|Registrar qué salió bien y qué ajustar|Cambiar el nombre del plato|Guardar solo los utensilios"
   ]
 ];
-    box.innerHTML = `<section class="cocina-preview" tabindex="-1" aria-label="Curso de Cocina Cubana">
+    box.innerHTML = `<section class="cocina-preview" tabindex="-1" aria-label="Curso de Cocina Internacional">
       <header class="cocina-hero">
         <div><p class="cocina-label">EDDELI · Formación gastronómica</p>
-          <h2 id="cocina-titulo" tabindex="-1">Academia de Cocina Cubana</h2>
-          <p>Aprende a organizar tu puesto, dominar las técnicas básicas y servir un menú cubano completo.</p>
+          <h2 id="cocina-titulo" tabindex="-1">Academia de Cocina Internacional</h2>
+          <p>Aprende a organizar tu puesto, elegir las herramientas adecuadas, cocinar con distintas técnicas y servir un menú completo.</p>
           <div class="cocina-tabs"><button type="button" class="cocina-primary" data-stage="0">Entrar a la primera etapa</button>
           <button type="button" class="cocina-guide-button" data-cocina="guia" aria-pressed="false">Cómo funciona la academia</button></div>
         </div>
@@ -1388,7 +1388,7 @@ async function checkSystem(){const el=document.getElementById("system-status");t
   ],
   [
     "Organizar la preparación de huevos, aves y carnes.",
-    "Lista de trabajo para un fricasé.",
+    "Lista de trabajo para un pollo guisado.",
     "Registra ingredientes, utensilios, orden de trabajo y el control de cocción que pide la ficha.",
     "¿Dónde verificas el punto del pollo con el termómetro?",
     "En la parte más gruesa",
@@ -1414,7 +1414,7 @@ async function checkSystem(){const el=document.getElementById("system-status");t
     "El que ya está listo para servir"
   ],
   [
-    "Planificar la preparación de dos meriendas cubanas.",
+    "Planificar la preparación de dos meriendas.",
     "Ficha de producción de dos meriendas y una bebida.",
     "Anota porciones, orden de preparación y utensilios compartidos.",
     "¿Qué hace útil una ficha de producción?",
@@ -1452,7 +1452,7 @@ async function checkSystem(){const el=document.getElementById("system-status");t
 ];
     const blocks = [
       ["Fundamentos del oficio", 0, 4],
-      ["La cocina cubana en práctica", 4, 11],
+      ["Técnicas y cocinas del mundo", 4, 11],
       ["Servicio y proyecto final", 11, 13]
     ];
     let currentStage = 0, step = "list";
@@ -1518,10 +1518,10 @@ async function checkSystem(){const el=document.getElementById("system-status");t
         "En el pase se comprueba la salida de los platos. En lavado se recogen, limpian y devuelven los utensilios."
       ]
     ],
-    "Ejemplo ilustrado · Un pedido de fricasé con arroz y ensalada",
+    "Ejemplo ilustrado · Un pedido de pollo guisado con arroz y ensalada",
     [
       "Comanda · Se recibe el pedido",
-      "Cocina caliente · Fricasé y arroz",
+      "Cocina caliente · Pollo guisado y arroz",
       "Cocina fría · Ensalada",
       "Pase · Se reúne y revisa el plato",
       "Servicio · Sale el pedido"
@@ -1610,6 +1610,407 @@ async function checkSystem(){const el=document.getElementById("system-status");t
           <p><strong>Ejercicio de aplicación</strong> · ${exercise}</p>
         </article>`).join("");
     }
+    const worldChapters = [
+  [
+    "Organización de una cocina profesional",
+    "Brigada y servicio",
+    "Distingue jefatura, segundo, responsables de partida, ayudantes, personal de lavado y pase. En un restaurante pequeño varias funciones recaen en una persona. Traza una comanda desde que se recibe hasta que se entrega.",
+    "Flujo del establecimiento",
+    "Dibuja recepción, despensa, cámaras, preparación, cocción, pase, lavado y residuos. Marca por separado el camino de alimentos y el de vajilla usada.",
+    "Producción",
+    "Compara carta bajo pedido, servicio por tandas, bufé, cocina central y transporte a otro punto de servicio. El menú y el volumen determinan equipos y personal."
+  ],
+  [
+    "Seguridad alimentaria",
+    "Peligros y controles",
+    "Clasifica ejemplos biológicos, químicos y físicos. Separa higiene rutinaria y controles que el plan del establecimiento debe vigilar. Registra qué se comprueba, quién lo comprueba y qué se hace ante una desviación.",
+    "Trazabilidad y alérgenos",
+    "Relaciona proveedor, lote, fecha de recepción y destino de cada ingrediente. Consulta las etiquetas y las reglas locales para documentar alérgenos. Incluye contacto cruzado en el análisis de una estación compartida.",
+    "Buenas prácticas y HACCP",
+    "Dibuja el proceso, identifica peligros y revisa el papel de los límites, la vigilancia, las medidas correctivas y la verificación. Usa las referencias oficiales y los requisitos locales para determinar las medidas aplicables."
+  ],
+  [
+    "Utensilios, recipientes y equipos",
+    "Cómo elegir",
+    "Identifica tarea, cantidad, fuente de calor, material, mantenimiento y espacio. Para cada utensilio compara un uso adecuado y una limitación.",
+    "Capacidad de producción",
+    "Compara una olla alta para caldo, una cazuela ancha para guisos y un cazo para salsa. El diámetro afecta la superficie de evaporación y la altura influye en el espacio para el líquido.",
+    "Estaciones especializadas",
+    "Organiza equipos para preparación, cocción, repostería, conservación y servicio. Identifica qué partes se desmontan o limpian siguiendo el manual del fabricante."
+  ],
+  [
+    "Cortes, cocciones y sabor",
+    "Cortes",
+    "Compara rodajas, gajos, bastones, juliana, dados y brunoise. Corta primero una base estable, después láminas y luego bastones o dados. Compara dos tamaños en la misma cocción.",
+    "Calor y humedad",
+    "Contrasta hervor suave, vapor, salteado, fritura, asado y braseado. Observa cambios de color, textura y pérdida de líquido y anótalos por separado.",
+    "Bases aromáticas",
+    "Compara la estructura de un sofrito, un mirepoix y un tadka. Identifica los ingredientes, medio de cocción y momento en que se añaden. Ajusta sal, acidez y aromas probando por etapas."
+  ],
+  [
+    "Granos, tubérculos, pasta y legumbres",
+    "Cereales y pseudocereales",
+    "Distingue grano entero, refinado, partido, en copos y molido. Compara arroz, trigo, maíz, avena, cebada, sorgo, mijo, centeno, quinua y trigo sarraceno.",
+    "Legumbres",
+    "Diferencia frijoles, garbanzos, lentejas, chícharos, habas y soya. Para cocinar legumbres secas sigue las indicaciones específicas de la variedad y del paquete.",
+    "Pasta y tubérculos",
+    "Compara pasta fresca y seca, papa harinosa y firme, ñame y boniato. Registra cuánto pesa una porción cruda y cocida para planificar el rendimiento."
+  ],
+  [
+    "Verduras, frutas y cocina vegetal",
+    "Partes del vegetal",
+    "Clasifica ejemplos de raíces, hojas, tallos, bulbos, flores y frutos. Observa cómo cambia la textura según el corte y el método de cocción.",
+    "Ensaladas y aderezos",
+    "Practica ensaladas de hojas, de vegetales cocidos y de legumbres. Compara una vinagreta batida con un aderezo cremoso y explica cuándo incorporar cada uno.",
+    "Menú vegetal",
+    "Diseña un plato con una base de cereal o tubérculo, una legumbre y dos verduras. Añade una salsa para dar contraste de textura y sabor. Revisa etiquetas si hay necesidades dietéticas."
+  ],
+  [
+    "Carnes, aves, huevos y lácteos",
+    "Carne y cortes",
+    "Compara cortes tiernos y cortes con más tejido conectivo. Incluye res, ternera, cordero, cerdo y caza en tu mapa de cortes y métodos.",
+    "Aves y huevos",
+    "Distingue piezas enteras, muslos, pechugas y alas. En huevos, compara el batido, la coagulación y el uso de la yema en emulsiones. Usa la guía de cocción aplicable al producto.",
+    "Lácteos",
+    "Distingue leche, nata, mantequilla, yogur y quesos frescos y curados. Indica qué función cumplen en una masa, salsa o guarnición."
+  ],
+  [
+    "Pescado y marisco",
+    "Identificación",
+    "Compara pescado entero, rodajas, filetes y lomos. Clasifica crustáceos y moluscos y observa qué partes corresponden a cada presentación.",
+    "Métodos y rendimiento",
+    "Compara plancha, horno, vapor y cocción en caldo. Registra el peso de compra y el rendimiento aprovechable. Fórmula de rendimiento: peso aprovechable dividido por peso de compra.",
+    "Organización del servicio",
+    "Planifica refrigeración, utensilios y preparación de acuerdo con las indicaciones oficiales y del proveedor. En la ficha del plato conserva especie e ingredientes para comunicar alérgenos."
+  ],
+  [
+    "Fondos, sopas y salsas",
+    "Fondos",
+    "Distingue fondo claro, oscuro y vegetal. Anota cómo cambia el sabor si asas los ingredientes antes de añadir el líquido. Prueba sin corregir la sal hasta que conozcas la concentración final.",
+    "Sopas",
+    "Compara una sopa clara, un puré y una crema. Usa una cuchara para describir si el líquido es fluido, cubre la superficie o conserva un surco.",
+    "Salsas",
+    "Compara reducción, espesado con almidón, roux y emulsión. Prepara una ficha de corrección para una salsa aguada, demasiado espesa o separada."
+  ],
+  [
+    "Cocina fría, bocados y panificación",
+    "Cocina fría",
+    "Organiza ensaladas compuestas, sándwiches, entrantes y bocados. Define contraste de texturas y porciones dentro de un menú.",
+    "Charcutería",
+    "Reconoce embutidos, terrinas y curados como familias. Practica el montaje con productos comerciales listos para servir. El curado y la conservación profesional requieren procesos validados.",
+    "Masas",
+    "Compara pan rápido con impulsor y pan fermentado con levadura. Registra pesos, reposos y cambios de volumen. Distingue batir, mezclar, amasar, doblar y formar."
+  ],
+  [
+    "Pastelería, postres y bebidas",
+    "Medición y masas",
+    "Pesa ingredientes antes de empezar. Compara masa quebrada, masa hojaldrada, batidos de bizcocho y masa para galletas. Relaciona el método de mezcla con el resultado.",
+    "Cremas y postres",
+    "Distingue cremas espesadas con huevo y con almidón. Compara almíbares, salsas de postre y preparaciones congeladas según el servicio.",
+    "Bebidas",
+    "Compara infusión, filtrado y licuado. Registra proporciones, tiempo y temperatura según el método y describe el sabor sin depender solo del dulzor."
+  ],
+  [
+    "Menús, rendimiento y servicio",
+    "Fichas de producción",
+    "Anota raciones originales, peso de compra, rendimiento y coste. Ajusta cada ingrediente por el factor raciones deseadas dividido por raciones originales.",
+    "Presentación",
+    "Compara servicio a la carta, emplatado en serie y bufé. Define porción, distribución y orden de salida. Usa contraste de textura y altura sin impedir que el plato se coma con facilidad.",
+    "Gestión",
+    "Prepara lista de compra, calendario, inventario, registro de pérdidas y lista de cierre. Compara coste por ración proyectado con coste real."
+  ],
+  [
+    "Proyecto de cocina internacional",
+    "Diseño",
+    "Elige un menú de tres preparaciones de una tradición culinaria o de tradiciones compatibles. Explica su contexto y documenta cada técnica elegida.",
+    "Producción",
+    "Presenta planos del puesto, lista de compra, cronograma, rendimiento y registros de cocción pertinentes. Organiza el servicio y registra porciones reales.",
+    "Evaluación",
+    "Compara el plan con la ejecución. Evalúa organización, consistencia, equilibrio, presentación y claridad de los registros. Documenta al menos dos mejoras."
+  ]
+];
+    const equipmentAtlas = [
+  [
+    "Cuchillos",
+    [
+      [
+        "Chef",
+        "Picar y cortar hortalizas y porcionar alimentos sin hueso."
+      ],
+      [
+        "Santoku",
+        "Cortar verduras y proteínas sin hueso con movimientos cortos."
+      ],
+      [
+        "Nakiri",
+        "Cortar verduras con una hoja recta y ancha."
+      ],
+      [
+        "Usuba",
+        "Hacer cortes finos de verduras en la cocina japonesa."
+      ],
+      [
+        "Puntilla",
+        "Pelar y limpiar piezas pequeñas."
+      ],
+      [
+        "Pico de loro",
+        "Tornear y pelar superficies curvas."
+      ],
+      [
+        "Sierra",
+        "Cortar pan y productos con corteza."
+      ],
+      [
+        "Deshuesador",
+        "Separar carne del hueso siguiendo sus contornos."
+      ],
+      [
+        "Fileteador",
+        "Separar piel y filetes con una hoja flexible."
+      ],
+      [
+        "Trinchante",
+        "Cortar lonchas de asados."
+      ],
+      [
+        "Cuchillo jamonero",
+        "Cortar lonchas largas y finas de jamón."
+      ],
+      [
+        "Hachuela",
+        "Dividir piezas con hueso cuando la hoja está diseñada para ello."
+      ],
+      [
+        "Cuchillo chino para verduras",
+        "Cortar y recoger ingredientes con la hoja ancha."
+      ],
+      [
+        "Yanagiba",
+        "Rebanar pescado con pasadas largas en la cocina japonesa."
+      ],
+      [
+        "Deba",
+        "Despiece de pescado según el tamaño y diseño de la hoja."
+      ],
+      [
+        "Cuchillo para queso",
+        "Cortar quesos según la firmeza y adherencia."
+      ],
+      [
+        "Cuchillo para ostras",
+        "Abrir ostras con una hoja corta diseñada para esa tarea. Practica bajo supervisión."
+      ],
+      [
+        "Mezzaluna",
+        "Picar hierbas con una hoja curva y un movimiento de balanceo."
+      ]
+    ]
+  ],
+  [
+    "Ollas y recipientes",
+    [
+      [
+        "Olla alta",
+        "Preparar caldos y cocer grandes volúmenes."
+      ],
+      [
+        "Cazo",
+        "Preparar salsas o calentar porciones pequeñas."
+      ],
+      [
+        "Cazuela",
+        "Guisar y repartir el calor en una superficie amplia."
+      ],
+      [
+        "Cocotte",
+        "Brasear y cocinar lentamente con tapa."
+      ],
+      [
+        "Olla a presión",
+        "Cocinar bajo presión siguiendo el manual y sus límites."
+      ],
+      [
+        "Olla con cestillo",
+        "Cocer y escurrir pasta o verduras en el mismo conjunto."
+      ],
+      [
+        "Vaporera",
+        "Cocinar con vapor utilizando uno o varios niveles."
+      ],
+      [
+        "Vaporera de bambú",
+        "Cocer al vapor en bandejas apilables."
+      ],
+      [
+        "Baño María",
+        "Transmitir calor indirecto a cremas o preparaciones delicadas."
+      ],
+      [
+        "Sartén",
+        "Dorar y saltear porciones pequeñas."
+      ],
+      [
+        "Sartén de paredes rectas",
+        "Saltear o cocinar con líquido y tapa."
+      ],
+      [
+        "Wok",
+        "Saltear ingredientes en tandas con calor concentrado."
+      ],
+      [
+        "Tajín",
+        "Cocinar guisos en un recipiente con tapa cónica compatible con la fuente de calor."
+      ],
+      [
+        "Paellera",
+        "Extender una capa de arroz en un recipiente ancho y bajo."
+      ],
+      [
+        "Comal",
+        "Cocer o calentar tortillas y tostar ingredientes."
+      ],
+      [
+        "Tawa",
+        "Cocer panes planos sobre una superficie de calor directo."
+      ],
+      [
+        "Crepera",
+        "Extender masas fluidas en una superficie baja y regular."
+      ],
+      [
+        "Rustidera",
+        "Asar piezas en el horno y recoger sus jugos."
+      ],
+      [
+        "Molde desmontable",
+        "Hornear preparaciones que conviene desmoldar por los lados."
+      ]
+    ]
+  ],
+  [
+    "Preparación y repostería",
+    [
+      [
+        "Mandolina",
+        "Cortar láminas uniformes usando el protector del equipo."
+      ],
+      [
+        "Colador cónico",
+        "Filtrar fondos y salsas."
+      ],
+      [
+        "Estameña",
+        "Filtrar partículas finas según el tejido y la preparación."
+      ],
+      [
+        "Pasapurés",
+        "Triturar y separar pieles o fibras mediante un disco perforado."
+      ],
+      [
+        "Mortero",
+        "Machacar hierbas, especias y aromáticos."
+      ],
+      [
+        "Suribachi",
+        "Moler semillas y pastas en un cuenco japonés estriado."
+      ],
+      [
+        "Prensa de tortillas",
+        "Aplanar porciones de masa con un grosor regular."
+      ],
+      [
+        "Rasqueta",
+        "Dividir masa y recogerla de la superficie."
+      ],
+      [
+        "Espátula acodada",
+        "Extender coberturas y alisar superficies."
+      ],
+      [
+        "Manga y boquillas",
+        "Dosificar cremas y darles forma."
+      ],
+      [
+        "Aro de emplatar",
+        "Formar una porción con contorno regular."
+      ],
+      [
+        "Termómetro de sonda",
+        "Verificar la temperatura interna según el producto."
+      ]
+    ]
+  ],
+  [
+    "Equipos profesionales",
+    [
+      [
+        "Horno combinado",
+        "Usar aire caliente, vapor o una combinación según el programa."
+      ],
+      [
+        "Salamandra",
+        "Gratinar o dorar la superficie desde arriba."
+      ],
+      [
+        "Inducción",
+        "Calentar recipientes compatibles mediante un campo electromagnético."
+      ],
+      [
+        "Abatidor",
+        "Reducir con rapidez la temperatura dentro de un proceso controlado."
+      ],
+      [
+        "Envasadora al vacío",
+        "Retirar aire y sellar un envase según un proceso autorizado."
+      ],
+      [
+        "Circulador térmico",
+        "Mantener un baño a temperatura controlada dentro de un proceso validado."
+      ],
+      [
+        "Amasadora",
+        "Mezclar y desarrollar masas con el accesorio indicado."
+      ],
+      [
+        "Laminadora",
+        "Extender masas a un grosor repetible."
+      ],
+      [
+        "Procesador de alimentos",
+        "Picar, triturar o rebanar según el accesorio."
+      ],
+      [
+        "Batidora planetaria",
+        "Batir, mezclar o amasar según el accesorio."
+      ],
+      [
+        "Freidora profesional",
+        "Freír lotes con control de temperatura del aceite."
+      ],
+      [
+        "Lavavajillas industrial",
+        "Lavar vajilla y utensilios según programa y procedimiento del establecimiento."
+      ]
+    ]
+  ]
+];
+    const bookReference = "https://www.pearson.com/en-us/subject-catalog/p/on-cooking-a-textbook-of-culinary-fundamentals/P200000010329?view=educator";
+    function equipmentMarkup(){
+      return `<section class="cocina-zone"><h4>Atlas de utensilios y equipos</h4>
+        <p>El catálogo reúne ${equipmentAtlas.reduce((sum,[,items])=>sum+items.length,0)} fichas por familias. Compara la forma, la tarea, la capacidad y las instrucciones de cada modelo antes de elegir.</p>
+        ${equipmentAtlas.map(([family,items])=>`<details><summary>${family} · ${items.length} fichas</summary>
+          <dl class="cocina-international">${items.map(([name,usage])=>`<dt>${name}</dt><dd>${usage}</dd>`).join("")}</dl></details>`).join("")}
+      </section>`;
+    }
+    function chapterMarkup(index){
+      const [title,...topics] = worldChapters[index];
+      return `<article class="cocina-international"><h4>${title}</h4><dl>
+        ${topics.map((topic,i)=>i%2===0?`<dt>${topic}</dt><dd>${topics[i+1]}</dd>`:"").join("")}</dl>
+        ${index===1?`<p><a href="https://www.fao.org/fao-who-codexalimentarius/codex-texts/codes-of-practice/es/">Codex Alimentarius · Principios generales de higiene de los alimentos</a></p>`:""}
+        ${index===6||index===7?`<p><a href="https://www.foodsafety.gov/food-safety-charts/safe-minimum-internal-temperatures">FoodSafety.gov · Referencia de temperaturas internas</a></p>`:""}
+      </article>${index===2?equipmentMarkup():""}`;
+    }
     function stageList(){
       if(step === "list") return `<section class="cocina-zone"><h3 tabindex="-1">Tu zona de estudio</h3>
         <p>Entra en una etapa, estudia sus cuatro lecciones, haz la práctica y responde el test. Usa el recetario y la biblioteca para preparar tus ejercicios.</p></section>
@@ -1618,7 +2019,7 @@ async function checkSystem(){const el=document.getElementById("system-status");t
           const index = start + offset;
           return `<li><article class="cocina-stage-card">
             <p class="cocina-card-meta">Etapa ${String(index+1).padStart(2,"0")} · ${index < 4 ? "Fundamentos" : index < 11 ? "Técnica y cocina" : "Servicio"}</p>
-            <h5>${title}</h5><p>${learning[index][0]}</p>
+            <h5>${worldChapters[index][0]}</h5><p>${learning[index][0]}</p>
             <p class="cocina-card-meta">4 lecciones · Práctica · Test</p>
             <button type="button" data-stage="${index}">Entrar a la etapa <span class="cocina-sr-only">${index+1}</span> →</button>
           </article></li>`;
@@ -1628,16 +2029,16 @@ async function checkSystem(){const el=document.getElementById("system-status");t
       const [title, ...entries] = stage;
       const [objective, evidence, criteria, scenario, response, ...distractors] = learning[i];
       const questions = [entries[5].split("|"), [scenario,response,...distractors]];
-      const heading = `<h3 tabindex="-1">Etapa ${i+1} de ${stages.length} · ${title}${step === "test" ? " · Test" : ""}</h3>`;
+      const heading = `<h3 tabindex="-1">Etapa ${i+1} de ${stages.length} · ${worldChapters[i][0]}${step === "test" ? " · Test" : ""}</h3>`;
       const back = '<button type="button" data-step="list">Volver a las etapas</button>';
       if(step === "study") return `${heading}
         <p class="cocina-objective"><strong>Al terminar</strong> · ${objective}</p>
-        ${i > 1 ? '<p class="cocina-note">Lecciones introductorias en desarrollo</p>' : ""}
+        ${chapterMarkup(i)}
         ${i === 0 ? renderInternationalLessons() : entries.slice(0, 4).map((entry, j) => {
           const [heading, body] = entry.split("|");
           return `<h4>Lección ${j+1} · ${heading}</h4><p>${body}</p>`;
         }).join("")}
-        <section class="cocina-practice"><h3>Práctica</h3><p>${i===0 ? "Diseña una cocina pequeña para preparar arroz blanco, fricasé y ensalada. Dibuja el plano, marca dónde entra cada ingrediente, dónde sale el plato y por dónde regresan los utensilios usados. Asigna las tareas a dos personas y anota el orden de preparación." : entries[4]}</p>
+        <section class="cocina-practice"><h3>Práctica</h3><p>${i===0 ? "Diseña una cocina pequeña para preparar arroz blanco, pollo guisado y ensalada. Dibuja el plano, marca dónde entra cada ingrediente, dónde sale el plato y por dónde regresan los utensilios usados. Asigna las tareas a dos personas y anota el orden de preparación." : entries[4]}</p>
         <p><strong>Qué debes preparar</strong> · ${evidence}</p>
         <p><strong>Cómo revisar tu trabajo</strong> · ${criteria}</p></section>
         <div class="cocina-tabs">${back}<button type="button" data-step="test">Siguiente · Test</button></div>`;
@@ -1673,17 +2074,18 @@ async function checkSystem(){const el=document.getElementById("system-status");t
     const fichas = {"Granos y harinas":[["Arroz","Compara grano largo, corto, integral y precocido. Mide el agua según la variedad.","Arroz blanco, moros y cristianos, arroz con leche"],["Maíz","Identifica mazorca tierna, grano seco, harina y masa.","Tamal, harina de maíz cocida, arroz con maíz"],["Frijol negro","Reconoce grano seco y cocido. Observa el color que aporta su caldo.","Frijoles negros guisados, moros y cristianos"],["Frijol colorado","Compara el tamaño, el caldo y la textura con el frijol negro.","Congrí, potaje"],["Frijol blanco","Compara las variedades pequeñas y grandes.","Potaje de frijoles blancos"],["Frijol carita","Reconócelo por la mancha alrededor del ojo del grano.","Ensaladas y guisos"],["Garbanzo","Identifica las presentaciones seca, cocida y en conserva.","Garbanzos fritos, potaje"],["Chícharo","Distingue entero y partido. El partido aporta cuerpo a los potajes.","Potaje y puré"],["Lenteja","Compara pardina, verde y roja. Observa cuáles mantienen la forma.","Lentejas guisadas"],["Trigo","Reconoce harina, sémola y pasta como presentaciones del trigo.","Panes, croquetas y ensalada fría de pasta"],["Avena","Distingue hojuelas y harina.","Atole, bebidas y galletas"],["Cebada","Reconoce cebada perlada y hojuelas.","Sopas y guarniciones"],["Sorgo","Identifica el grano entero y la harina.","Ficha comparativa de cereales"],["Mijo","Reconoce el grano pequeño y su uso como guarnición.","Ficha comparativa de cereales"],["Centeno","Identifica el grano y la harina para panificación.","Ficha comparativa de cereales"],["Soya","Compara grano entero, harina y proteína texturizada.","Rellenos y guisos"],["Haba","Distingue la fresca de la seca.","Guisos y purés"],["Quinua","Identifica este pseudocereal al comparar granos de otras cocinas.","Guarniciones"],["Trigo sarraceno","Identifica este pseudocereal en grano y harina.","Ficha comparativa de cereales"]],"Viandas, verduras y frutas":[["Yuca","Raíz rica en almidón. Compra yuca dulce destinada a consumo y usa una preparación que incluya cocción.","Yuca con mojo"],["Malanga","Vianda de pulpa firme usada en purés y frituras.","Frituras de malanga"],["Boniato","Raíz dulce de pulpa clara o naranja.","Boniato asado"],["Ñame","Vianda empleada en preparaciones de cuchara.","Ajiaco"],["Papa","Compara cómo queda entera, en dados y aplastada.","Potaje y puré"],["Plátano verde","Firme y con poca dulzura.","Tostones"],["Plátano maduro","Más dulce y blando.","Maduros fritos"],["Tomate","Escoge tomate firme para rodajas y más maduro para salsas.","Ensalada"],["Aguacate","Busca pulpa que ceda ligeramente al presionar la fruta.","Ensalada"],["Calabaza","Aporta dulzor y cuerpo a guisos.","Potaje de chícharos"],["Ají","Compara ají dulce y picante antes de incorporar al sofrito.","Sofrito"],["Cebolla","Practica corte en tiras para ensaladas y fino para sofrito.","Ensalada y guisos"],["Ajo","Identifica cuándo conviene picarlo, machacarlo o dejarlo entero.","Mojo"],["Naranja agria","Su jugo aporta acidez al mojo y a los adobos.","Mojo"],["Guayaba","Observa cómo cambian pulpa y semillas según la variedad.","Dulce de guayaba"],["Coco","Distingue pulpa, leche y coco rallado.","Dulce de coco"],["Pepino","Córtalo en rodajas o medias lunas.","Ensaladas"],["Col","Practica el corte en tiras finas.","Ensalada de col"],["Zanahoria","Compárala rallada, en rodajas y en dados.","Ensaladas y potajes"],["Remolacha","Distingue su uso en rodajas, dados o rallada.","Ensaladas"],["Limón","Emplea su jugo en aliños y bebidas y la piel para perfumar.","Limonada"]],"Proteínas y despensa":[["Huevo","Aprende a quebrarlo en un cuenco y a medir cuántos necesitas.","Revuelto y tortilla"],["Pollo","Reconoce pechuga, muslo, contramuslo y alas.","Fricasé"],["Cerdo","Distingue paleta, lomo y costillas.","Lechón y masas de cerdo"],["Res","Relaciona carne picada, bistec y cortes para guisar.","Picadillo y ropa vieja"],["Pescado","Compara entero, rodaja y filete.","Pescado frito y escabeche"],["Camarón","Identifica las presentaciones entero, pelado y limpio.","Enchilado de camarones"],["Leche","Distingue leche líquida, evaporada y condensada.","Arroz con leche y flan"],["Comino","Compara su aroma molido y en semilla.","Frijoles guisados"],["Orégano","Úsalo para aromatizar adobos y guisos.","Adobos"],["Laurel","Aporta aroma a caldos y guisos durante la cocción.","Potajes"],["Aceite","Distingue su uso en sofrito, aliño y fritura.","Mojo, tostones"],["Vinagre","Úsalo para ajustar la acidez de un aderezo.","Ensaladas"],["Azúcar","Compara granulada y caramelizada en el recetario.","Café y dulces"],["Sal","Mide al empezar y ajusta al final según el plato.","Arroz y guisos"],["Café","Compara café molido según el método de preparación.","Café cubano"]],"Uniforme y puestos":[["Filipina","Prenda de trabajo que cubre el torso.","Oficio y uniforme"],["Delantal","Protege la ropa durante la preparación.","Oficio y uniforme"],["Gorro o redecilla","Mantiene el cabello recogido durante el trabajo.","Oficio y uniforme"],["Calzado de cocina","Zapato cerrado y antideslizante para moverse entre puestos.","Oficio y uniforme"],["Mesa de preparación","Superficie estable para pesar, cortar y organizar ingredientes.","Puesto de trabajo"],["Mesa de emplatado","Superficie de salida donde se revisa la presentación y la porción.","Servicio"],["Mesa de servicio","Espacio para montar platos, cubiertos, vasos y servilletas.","Servicio"],["Zona de lavado","Punto dedicado al lavado y a la recogida de utensilios usados.","Organización"],["Despensa","Lugar para clasificar y rotar productos secos.","Organización"],["Puesto de cocción","Área de fogón y horno con sitio para dejar utensilios y recipientes.","Organización"]],"Utensilios manuales":[["Cuchillo de chef","Hoja ancha para picar y cortar ingredientes en la tabla.","Cortes"],["Puntilla","Hoja corta para pelar y hacer cortes pequeños.","Cortes"],["Cuchillo de sierra","Hoja dentada para pan y alimentos de corteza firme.","Cortes"],["Tabla de corte","Superficie estable para cortar. Ten tablas separadas para crudos y alimentos de consumo directo.","Preparación"],["Pelador","Retira capas finas de piel.","Preparación"],["Rallador","Da distintos grosores a quesos, vegetales o cítricos.","Preparación"],["Mortero","Machaca ajo, especias y otros ingredientes.","Mojo"],["Colador","Separa sólidos de líquidos o escurre ingredientes.","Escurrido"],["Tamiz","Separa grumos y airea harinas.","Repostería"],["Espumadera","Recoge sólidos o espuma de un líquido.","Cocción"],["Cucharón","Sirve caldos, sopas y potajes.","Servicio"],["Espátula","Levanta, mezcla o da vuelta a los alimentos.","Cocción"],["Pinzas","Voltean o sujetan piezas durante la cocción o el servicio.","Cocción"],["Batidor manual","Mezcla y puede incorporar aire.","Preparación"],["Rodillo","Estira masas al grosor deseado.","Repostería"],["Tazas y cucharas medidoras","Miden el volumen de ingredientes.","Medición"],["Jarra medidora","Mide volúmenes de líquidos.","Medición"],["Balanza","Mide masa en gramos.","Medición"],["Termómetro de cocina","Mide temperatura interna siguiendo las instrucciones del instrumento.","Cocción"],["Cazuela","Sirve para guisos y preparaciones que se cocinan tapadas.","Cocción"],["Sartén","Sirve para saltear, dorar y hacer tortillas.","Cocción"],["Olla alta","Deja espacio para cocer caldos y preparaciones con abundante líquido.","Cocción"],["Olla de presión","Cocina bajo presión. Antes de usar tu equipo, revisa el manual y sus límites de llenado.","Cocción"],["Bandeja y molde","Sostienen o dan forma a la preparación durante el horneado.","Horno"]],"Equipos":[["Fogón","Aplica calor directo al recipiente. Reconoce hornillas, mandos y zonas de calor.","Cocción"],["Horno","Cocina en un espacio cerrado. Practica precalentar y elegir la altura de la bandeja.","Horneado"],["Refrigerador","Mantiene alimentos en frío. Organiza los recipientes por tipo y según cuándo se usarán.","Conservación"],["Congelador","Permite conservar alimentos congelados en recipientes adecuados.","Conservación"],["Licuadora","Tritura alimentos con líquido. Sigue las indicaciones del fabricante para mezclas calientes.","Preparación"],["Batidora eléctrica","Bate o mezcla usando el accesorio indicado para cada tarea.","Repostería"],["Procesador","Pica, ralla o tritura según la cuchilla instalada.","Preparación"],["Arrocera","Automatiza la cocción del arroz según su programa y medida de agua.","Arroces"],["Multicocina","Reúne programas de cocción en un equipo. Identifica los que usa tu modelo.","Cocción"],["Microondas","Calienta alimentos en recipientes aptos. Lee los programas y tiempos de tu equipo.","Cocción"],["Freidora de aire","Cocina con circulación de aire caliente.","Cocción"],["Extractor","Retira parte de los vapores y olores del área de cocción.","Puesto de cocina"],["Plancha","Dora por contacto sobre una superficie lisa.","Cocción"],["Cafetera","Prepara café por el método de su modelo.","Bebidas"]],"Técnicas y servicio":[["Mise en place","Lee la receta y reúne ingredientes medidos y utensilios antes de empezar.","Organización"],["Cortar en dados","Haz cortes de tamaño similar para una cocción pareja.","Preparación"],["Cortar en juliana","Forma tiras finas y parejas.","Preparación"],["Sofreír","Cocina aromáticos en grasa a fuego moderado hasta desarrollar aroma.","Cebolla, ajo y ají"],["Machacar","Rompe y mezcla ingredientes con un mortero.","Mojo"],["Hervir","Cocina en líquido con burbujas continuas.","Pasta y caldos"],["Cocer a fuego lento","Mantén burbujas suaves para cocinar sin hervor violento.","Potajes"],["Guisar","Cocina con líquido y aromáticos hasta integrar sabores.","Fricasé y potajes"],["Saltear","Cocina piezas pequeñas con poca grasa y movimiento.","Vegetales y garbanzos"],["Freír","Cocina en aceite caliente y escurre al terminar.","Tostones y frituras"],["Asar","Cocina con calor seco para desarrollar color y sabor.","Viandas, carnes y verduras"],["Hornear","Usa calor del horno y controla tiempo y temperatura.","Panetela y pasteles"],["Baño María","Rodea el molde con agua caliente para transmitir calor de forma gradual.","Flan"],["Reducir","Evapora parte del líquido para concentrar una salsa.","Guisos y salsas"],["Deshebrar","Separa la carne cocida en fibras.","Ropa vieja"],["Rectificar","Prueba y ajusta sal, acidez o consistencia antes de servir.","Salsas y guisos"],["Porcionar","Divide una preparación según el número de comensales.","Menús"],["Emplatar","Distribuye cada componente en el plato antes de servir.","Servicio"],["Rotación de despensa","Ordena por fechas e identifica qué productos deben utilizarse primero.","Organización"],["Costear","Suma el coste de las cantidades usadas y divide entre las porciones obtenidas.","Gestión"],["Planificar un menú","Anota platos, porciones, equipo y orden de preparación.","Servicio"]]};
     const normalize = (value) => value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
     const ingredients = (tags) => tags.split(", ").map(normalize);
-    const available = [["Arroz blanco","Arroz"], ...recipes];
+    const available = [["Arroz blanco","Arroz"], ...recipes.filter(([title]) =>
+      !["Moros y cristianos","Congrí con frijoles colorados","Café cubano","Picadillo a la cubana","Fricasé de pollo","Tamal en cazuela","Yuca con mojo","Ropa vieja","Enchilado de camarones","Frituras de malanga","Bistec de cerdo encebollado"].includes(title))];
     section.querySelector("[data-cocina-recipes]").textContent = available.length;
     section.querySelector("[data-cocina-cards]").textContent = Object.values(fichas).reduce((total,group) => total+group.length,0);
     let view = "curso";
     let selection = "";
     let query = "";
-    const menu = `<article><h3>Tu primer menú cubano</h3>
-      <p>Menú para cuatro. Fricasé de pollo, arroz blanco y ensalada de pepino.</p>
+    const menu = `<article><h3>Tu primer menú de tres platos</h3>
+      <p>Menú para cuatro. Pollo guisado, arroz blanco y ensalada de pepino.</p>
       <ol><li>Lee las tres recetas. Prepara una lista de compra y ajusta el arroz y la ensalada a cuatro porciones.</li>
       <li>Reúne ingredientes, termómetro, ollas, tabla y utensilios. Separa la tabla del pollo crudo de la que usarás con el pepino.</li>
-      <li>Empieza por el fricasé. Mientras se cocina, haz el arroz y déjalo reposar tapado. Prepara y aliña la ensalada al final.</li>
+      <li>Empieza por el pollo guisado. Mientras se cocina, haz el arroz y déjalo reposar tapado. Prepara y aliña la ensalada al final.</li>
       <li>Sirve y evalúa el menú. Revisa si el arroz quedó suelto, el pollo alcanzó la temperatura indicada y las cuatro porciones son similares.</li></ol>
       <h4>Control de la práctica</h4><p>Entrega tu lista de compra, orden de trabajo, porciones obtenidas y una foto de cada plato. Anota un acierto y un ajuste para la próxima vez.</p>
       <h4>Higiene y conservación</h4><p>Lava manos y superficies, separa los alimentos crudos de los listos para comer, verifica la cocción y refrigera las sobras sin demora.</p>
@@ -1725,6 +2127,7 @@ async function checkSystem(){const el=document.getElementById("system-status");t
           <li>En cada etapa, estudia las lecciones y reúne la evidencia que pide la práctica.</li>
           <li>Completa el test y continúa a la siguiente etapa.</li>
           <li>Consulta las fichas y recetas cuando prepares el menú final.</li></ol>
+          <p>Referencia del temario: <a href="${bookReference}"><cite>On Cooking: A Textbook of Culinary Fundamentals</cite>, 7.ª edición, Pearson</a>.</p>
           <button type="button" data-cocina="curso">Volver al itinerario</button>
         </article>`;
         return;
