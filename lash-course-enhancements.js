@@ -1190,7 +1190,47 @@ async function renderLashAssessmentFlow(stageIndex,isFinal){
     const result=await supabaseClient.rpc("eddeli_submit_assessment",{p_assessment_id:assessment.id,p_answers:answers});
     if(result.error)throw result.error;const outcome=result.data&&result.data[0];if(!outcome)throw new Error("No se recibió el resultado de la evaluación.");
     form.remove();const box=document.getElementById("lash-db-assessment-result");
-    box.innerHTML='<div class="lash-result"><h2>'+(en?"Score: ":"Resultado: ")+Number(outcome.score).toFixed(2)+'%</h2><p>'+(outcome.passed?(en?"Stage test passed. The next stage is now unlocked.":"¡Test aprobado! La etapa siguiente ya está desbloqueada."):(en?"Not passed. Review the study material and try again.":"Test no aprobado. Repasa el contenido de estudio y vuelve a intentarlo."))+'</p><p>'+(en?"Passing score: ":"Nota mínima: ")+assessment.passing_score+'%</p></div>';
+    const heading=document.createElement("h2");
+    heading.textContent=outcome.passed?(en?"Passed":"Aprobado"):(en?"Not passed":"Desaprobado");
+    const details=document.createElement("p");
+    details.textContent=(en?"Score: ":"Resultado: ")+Number(outcome.score).toFixed(2)+"% · "+(en?"Passing score: ":"Nota mínima: ")+assessment.passing_score+"%";
+    const summary=document.createElement("div");
+    summary.className="lash-result";
+    summary.append(heading,details);
+    box.append(summary);
+    if(!outcome.passed){
+     const guidance=document.createElement("p");
+     guidance.textContent=en?"Review the study material and try again.":"Repasa el contenido de estudio y vuelve a intentarlo.";
+     summary.append(guidance);
+    }
+    if(!isFinal){
+     if(outcome.passed){
+      const nextIndex=stageIndex+1;
+      let progress;
+      try{progress=await getLashProgressState();}
+      catch(err){console.warn("No se pudo confirmar el avance de la etapa:",err);}
+      const nextModule=progress?.modules[nextIndex];
+      const canAdvance=nextModule?lashStageCanOpen(progress,nextIndex):progress?.allComplete;
+      if(canAdvance){
+       const next=document.createElement("button");
+       next.className="primary";
+       next.textContent=nextModule
+        ?(en?"Go to stage ":"Ir a la etapa ")+nextModule.module_number
+        :(en?"Go to the final exam":"Ir al examen final");
+       next.onclick=nextModule?()=>window.openModule(nextIndex):()=>window.renderLashFinalExam();
+       box.append(next);
+      }else{
+       const note=document.createElement("p");
+       note.textContent=en?"Your test was recorded. Return to all stages to check your progress.":"Tu test quedó registrado. Vuelve a todas las etapas para consultar tu avance.";
+       summary.append(note);
+      }
+     }
+     const review=document.createElement("button");
+     review.className="secondary";
+     review.textContent=(en?"Back to stage ":"Volver a la etapa ")+(stageIndex+1);
+     review.onclick=()=>window.openModule(stageIndex);
+     box.append(review);
+    }
     if(isFinal&&outcome.passed){
      const cert=await supabaseClient.from("certificates").select("certificate_code,issued_at").eq("student_id",currentUser.id).eq("course_id",LASH_COURSE_ID).maybeSingle();
      if(!cert.error&&cert.data)box.insertAdjacentHTML("beforeend",'<div class="lash-result"><h2>'+(en?"Certificate issued":"Certificado emitido")+'</h2><p>'+escapeHTML(cert.data.certificate_code)+'</p></div>');
