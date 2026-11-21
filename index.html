@@ -264,6 +264,23 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
 <style>
 #cocina[hidden]{display:none!important}
 #cocina.view{animation:none}
+#cocina .cocina-hero[hidden]{display:none}
+#cocina .cocina-hero{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:1.75rem;background:#222e27;color:#fff8ed;border-radius:20px;padding:clamp(1.3rem,4vw,3rem);border:1px solid #54675b}
+#cocina .cocina-hero h2{color:inherit;font-family:Georgia,serif;font-size:clamp(2.5rem,6vw,5rem);line-height:1.05;margin:.3rem 0 .65rem}
+#cocina .cocina-hero p{max-width:44ch;color:#eef1e8}
+#cocina .cocina-label{font-size:.86rem;letter-spacing:.05em;font-weight:700}
+#cocina .cocina-primary{margin-top:1rem;background:#f0ce9b;color:#222e27;font-weight:700}
+#cocina .cocina-overview{display:flex;gap:1.25rem;flex-wrap:wrap;margin:0;padding-top:.7rem;border-top:1px solid #819287}
+#cocina .cocina-overview dt{font-size:.9rem}
+#cocina .cocina-overview dd{font-weight:700;font-size:1.55rem;margin:0}
+#cocina .cocina-block{margin:1.15rem 0}
+#cocina .cocina-block h4{margin:.2rem 0 .65rem}
+#cocina .cocina-stage-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));column-gap:1.75rem;padding-left:1.6rem}
+#cocina .cocina-stage-list button{height:100%;padding:.7rem .85rem}
+#cocina .cocina-stage-list span{display:block;margin-top:.3rem;font-size:.9rem}
+#cocina .cocina-objective,#cocina .cocina-practice{padding:.75rem 1rem;border-left:4px solid #ad7d48;background:#f7ecd9;color:#292117;border-radius:.4rem;margin:1rem 0}
+#cocina .cocina-practice h3{margin:0}
+@media(max-width:650px){#cocina .cocina-hero{grid-template-columns:1fr}}
 .cocina-preview {line-height:1.55; color:inherit}
 .cocina-preview .cocina-tabs {display:flex;gap:.6rem;flex-wrap:wrap;margin:1rem 0}
 .cocina-preview button {border:1px solid #8c7451;border-radius:.45rem;padding:.6rem .9rem;background:#fff9ee;color:#2d2317;cursor:pointer;font:inherit}
@@ -1261,10 +1278,19 @@ async function checkSystem(){const el=document.getElementById("system-status");t
     "¿Qué permite evaluar y mejorar la próxima práctica?|Registrar qué salió bien y qué ajustar|Cambiar el nombre del plato|Guardar solo los utensilios"
   ]
 ];
-    box.innerHTML = `<section class="cocina-preview" aria-labelledby="cocina-titulo">
-      <span class="pill">Vista de prueba</span>
-      <h2 id="cocina-titulo" tabindex="-1">Curso de Cocina Cubana</h2>
-      <p>Para principiantes. Empieza por conocer la cocina y el oficio antes de preparar tu primer plato.</p>
+    box.innerHTML = `<section class="cocina-preview" tabindex="-1" aria-label="Curso de Cocina Cubana">
+      <header class="cocina-hero">
+        <div><p class="cocina-label">Formación práctica · Nivel inicial</p>
+          <h2 id="cocina-titulo" tabindex="-1">Cocina cubana</h2>
+          <p>Aprende a organizar tu puesto, dominar las técnicas básicas y servir un menú cubano completo.</p>
+          <button type="button" class="cocina-primary" data-stage="0">Empezar por la etapa 1</button>
+        </div>
+        <dl class="cocina-overview">
+          <div><dt>Etapas</dt><dd>${stages.length}</dd></div>
+          <div><dt>Recetas</dt><dd data-cocina-recipes></dd></div>
+          <div><dt>Fichas</dt><dd data-cocina-cards></dd></div>
+        </dl>
+      </header>
       <div class="cocina-tabs" aria-label="Contenido del curso">
         <button type="button" data-cocina="curso" aria-pressed="true">Etapas</button>
         <button type="button" data-cocina="recetas" aria-pressed="false">Recetario</button>
@@ -1276,15 +1302,142 @@ async function checkSystem(){const el=document.getElementById("system-status");t
     </section>`;
     const section = box.querySelector(".cocina-preview");
     const content = section.querySelector(".cocina-content");
+    const learning = [
+  [
+    "Organizar una cocina antes de preparar un plato.",
+    "Plano de trabajo con el recorrido desde el almacenamiento hasta el servicio.",
+    "Señala las cinco zonas, coloca el equipo en la zona correcta y explica en qué orden lo usarías.",
+    "En una cocina pequeña, ¿cómo organizas la mesa antes de empezar?",
+    "Despejas la superficie y reúnes lo que usarás en orden",
+    "Sacas todos los utensilios de la despensa",
+    "Pones el plato servido junto a los envases sucios"
+  ],
+  [
+    "Preparar un puesto limpio y separar tareas de preparación.",
+    "Plan de trabajo para una ensalada y un plato cocinado.",
+    "Marca dónde lavas las manos, qué tabla usas en cada tarea y cómo limpiarás el puesto al terminar.",
+    "¿Qué haces con la tabla que acabas de usar para pollo crudo?",
+    "La retiras para limpiarla y usas otra limpia para la ensalada",
+    "La secas y sigues cortando",
+    "Le das la vuelta y la usas enseguida"
+  ],
+  [
+    "Elegir la herramienta adecuada para cada trabajo.",
+    "Ficha con herramienta, tarea y motivo.",
+    "Distingue herramientas manuales y eléctricas y explica qué medirías con una taza y qué pesarías con una balanza.",
+    "¿Qué usarías para pesar 150 gramos?",
+    "Balanza",
+    "Taza medidora",
+    "Colador"
+  ],
+  [
+    "Cortar de forma uniforme y reconocer los métodos de cocción.",
+    "Comparación de dos cortes de la misma hortaliza.",
+    "Compara tamaño, tiempo y textura con notas de tu práctica.",
+    "¿Qué describe una cocción suave?",
+    "Burbujas pequeñas y regulares",
+    "Agitación fuerte constante",
+    "Líquido frío sin calor"
+  ],
+  [
+    "Identificar cereales y legumbres y preparar arroz blanco.",
+    "Registro de tu primera cocción de arroz.",
+    "Anota la variedad, la proporción, el tiempo y cómo quedó el grano.",
+    "¿Qué te permite comparar dos intentos de arroz?",
+    "Registrar la misma medida y anotar los cambios",
+    "Cambiar todas las cantidades sin anotarlas",
+    "Juzgarlo solo por el color de la olla"
+  ],
+  [
+    "Combinar viandas y ensaladas según textura y sabor.",
+    "Dos propuestas de guarnición para el mismo plato.",
+    "Justifica las dos combinaciones y describe la textura que buscas en cada una.",
+    "¿Cuándo aliñarías la ensalada para conservar su textura?",
+    "Justo antes de servir",
+    "Antes de comprar los ingredientes",
+    "Después de retirar el plato"
+  ],
+  [
+    "Organizar la preparación de huevos, aves y carnes.",
+    "Lista de trabajo para un fricasé.",
+    "Registra ingredientes, utensilios, orden de trabajo y el control de cocción que pide la ficha.",
+    "¿Dónde verificas el punto del pollo con el termómetro?",
+    "En la parte más gruesa",
+    "En el borde de la sartén",
+    "En la superficie de la salsa"
+  ],
+  [
+    "Elegir una preparación según el corte de pescado o marisco.",
+    "Propuesta de plato de pescado con guarnición.",
+    "Indica qué presentación compras, cómo la cocinas y qué ingredientes lleva el plato completo.",
+    "¿Qué debes informar si un plato incluye camarones?",
+    "Que contiene camarones",
+    "Solo que lleva tomate",
+    "Solo cómo lo decoraste"
+  ],
+  [
+    "Organizar distintos tiempos de cocción en un plato de cuchara.",
+    "Orden de incorporación de las verduras de una sopa.",
+    "Justifica el orden según el tamaño y la firmeza y explica qué textura buscas al final.",
+    "¿Qué ingrediente pondrías antes si necesita más cocción?",
+    "El que tarda más en ablandarse",
+    "El que sirve de adorno",
+    "El que ya está listo para servir"
+  ],
+  [
+    "Planificar la preparación de dos meriendas cubanas.",
+    "Ficha de producción de dos meriendas y una bebida.",
+    "Anota porciones, orden de preparación y utensilios compartidos.",
+    "¿Qué hace útil una ficha de producción?",
+    "Indicar cantidades y un orden que otra persona pueda repetir",
+    "Describir solo el plato terminado",
+    "Anotar únicamente cuántos platos hay"
+  ],
+  [
+    "Reconocer las técnicas de dulces y bebidas.",
+    "Menú de merienda con una bebida y un dulce.",
+    "Explica cómo identificar el punto del dulce y cuándo servirías cada preparación.",
+    "¿Qué debes anotar al comprobar una natilla?",
+    "Cómo cambia su consistencia al enfriarse",
+    "El color de la olla",
+    "El tamaño del mantel"
+  ],
+  [
+    "Ajustar porciones y coordinar un menú de varios platos.",
+    "Plan de compra y servicio para cuatro comensales.",
+    "Recalcula cantidades y programa las tareas para servir los platos en el orden previsto.",
+    "¿Qué tarea dejas para el final en una ensalada fresca?",
+    "Aliñarla y servirla",
+    "Contar los comensales",
+    "Escribir la lista de compra"
+  ],
+  [
+    "Demostrar que puedes organizar, cocinar y servir un menú.",
+    "Menú de tres preparaciones con fotos y autoevaluación.",
+    "Entrega los platos, registra el orden de trabajo y explica un ajuste para repetir la práctica.",
+    "¿Qué evidencia te ayuda a mejorar el siguiente menú?",
+    "Fotos, tiempos reales y observaciones de la preparación",
+    "Solo el nombre de la receta",
+    "Solo la lista de cubiertos"
+  ]
+];
+    const blocks = [
+      ["Fundamentos del oficio", 0, 4],
+      ["La cocina cubana en práctica", 4, 11],
+      ["Servicio y proyecto final", 11, 13]
+    ];
     let currentStage = 0, step = "list";
     function stageList(){
-      if(step === "list") return `<h3 tabindex="-1">Etapas del curso</h3><ol class="cocina-stage-list">${stages.map(([title],i) => `<li><button type="button" data-stage="${i}">${title}</button></li>`).join("")}</ol>`;
+      if(step === "list") return `<h3 tabindex="-1">Itinerario de aprendizaje</h3>${blocks.map(([name,start,end]) =>
+        `<section class="cocina-block"><h4>${name}</h4><ol start="${start+1}" class="cocina-stage-list">${stages.slice(start,end).map(([title],offset) => {
+          const index = start + offset;
+          return `<li><button type="button" data-stage="${index}"><strong>${title}</strong><span>${learning[index][0]}</span></button></li>`;
+        }).join("")}</ol></section>`).join("")}`;
       const i = currentStage;
       const stage = stages[i];
       const [title, ...entries] = stage;
-      const [question, correct, ...wrong] = entries[5].split("|");
-      const choices = [...wrong];
-      choices.splice(i % 3, 0, correct);
+      const [objective, evidence, criteria, scenario, response, ...distractors] = learning[i];
+      const questions = [entries[5].split("|"), [scenario,response,...distractors]];
       const diagrams = [
         ["Zonas de una cocina", "Almacenamiento → Lavado y preparación → Cocción → Servicio"],
         ["Tareas del cocinero", "Leer → Medir → Organizar → Cocinar → Servir → Limpiar"],
@@ -1294,22 +1447,29 @@ async function checkSystem(){const el=document.getElementById("system-status");t
       const heading = `<h3 tabindex="-1">Etapa ${i+1} de ${stages.length} · ${title}${step === "test" ? " · Test" : ""}</h3>`;
       const back = '<button type="button" data-step="list">Volver a las etapas</button>';
       if(step === "study") return `${heading}
-        ${i > 1 ? '<p class="cocina-note">Contenido introductorio en desarrollo</p>' : ""}
+        <p class="cocina-objective"><strong>Al terminar</strong> · ${objective}</p>
+        ${i > 1 ? '<p class="cocina-note">Lecciones introductorias en desarrollo</p>' : ""}
         ${entries.slice(0, 4).map((entry, j) => {
           const [heading, body] = entry.split("|");
           return `<h3>${heading}</h3><p>${body}</p>${i === 0 ? `<figure><figcaption>${diagrams[j][0]}</figcaption><p>${diagrams[j][1]}</p></figure>` : ""}`;
         }).join("")}
-        <h3>Práctica</h3><p>${entries[4]}</p>
+        <section class="cocina-practice"><h3>Práctica</h3><p>${entries[4]}</p>
+        <p><strong>Qué debes preparar</strong> · ${evidence}</p>
+        <p><strong>Cómo revisar tu trabajo</strong> · ${criteria}</p></section>
         <div class="cocina-tabs">${back}<button type="button" data-step="test">Siguiente · Test</button></div>`;
-      return `${heading}<fieldset><legend>${question}</legend>
-          ${choices.map(choice => `<button type="button" data-answer="${choice === correct}">${choice}</button>`).join("")}
-          <p role="status"></p>
-        </fieldset><div class="cocina-tabs">
+      return `${heading}<p>Responde correctamente las dos preguntas para continuar.</p>
+        ${questions.map(([question,correct,...wrong],index) => {
+          const choices = [...wrong];
+          choices.splice((i+index)%3,0,correct);
+          return `<fieldset data-question><legend>${question}</legend>
+            ${choices.map(choice => `<button type="button" data-answer="${choice === correct}">${choice}</button>`).join("")}
+            <p role="status"></p></fieldset>`;
+        }).join("")}<div class="cocina-tabs">
         <button type="button" data-step="study">Anterior · Estudiar</button>${back}
         <button type="button" data-step="next" disabled>${i < stages.length-1 ? "Siguiente etapa" : "Terminar"}</button></div>`;
     }
     function focusCocina(){
-      (content.querySelector("h3[tabindex]") || section.querySelector("h2")).focus({preventScroll:true});
+      (content.querySelector("h3[tabindex]") || section).focus({preventScroll:true});
       window.scrollTo({top:0,behavior:"instant"});
     }
     const recipe = `<article>
@@ -1330,6 +1490,8 @@ async function checkSystem(){const el=document.getElementById("system-status");t
     const normalize = (value) => value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
     const ingredients = (tags) => tags.split(", ").map(normalize);
     const available = [["Arroz blanco","Arroz"], ...recipes];
+    section.querySelector("[data-cocina-recipes]").textContent = available.length;
+    section.querySelector("[data-cocina-cards]").textContent = Object.values(fichas).reduce((total,group) => total+group.length,0);
     let view = "curso";
     let selection = "";
     let query = "";
@@ -1368,6 +1530,7 @@ async function checkSystem(){const el=document.getElementById("system-status");t
       return "";
     }
     function renderView(){
+      section.querySelector(".cocina-hero").hidden = view !== "curso" || step !== "list";
       section.querySelectorAll("[data-cocina]").forEach(button => button.setAttribute("aria-pressed", String(button.dataset.cocina === view)));
       if(view === "curso"){content.innerHTML = stageList();return;}
       if(view === "menu"){content.innerHTML = menu;return;}
@@ -1414,6 +1577,7 @@ async function checkSystem(){const el=document.getElementById("system-status");t
         if(stepButton?.disabled) return;
         if(stageButton){
           currentStage = Number(stageButton.dataset.stage);
+          view = "curso";
           step = "study";
         }else if(stepButton.dataset.step === "next"){
           if(currentStage < stages.length-1){currentStage++;step = "study";}
@@ -1428,7 +1592,8 @@ async function checkSystem(){const el=document.getElementById("system-status");t
       const field = answer.closest("fieldset");
       field.querySelectorAll("[data-answer]").forEach(button => button.removeAttribute("data-feedback"));
       const correct = answer.dataset.answer === "true";
-      if(correct) content.querySelector('[data-step="next"]').disabled = false;
+      field.dataset.passed = String(correct);
+      content.querySelector('[data-step="next"]').disabled = Array.from(content.querySelectorAll("[data-question]")).some(item => item.dataset.passed !== "true");
       answer.dataset.feedback = correct ? "correct" : "incorrect";
       field.querySelector('[role="status"]').textContent = correct ? "Respuesta correcta." : "Vuelve a intentarlo.";
     });
