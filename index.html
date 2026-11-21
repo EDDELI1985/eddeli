@@ -399,7 +399,7 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
   <button class="secondary back" onclick="go('inicio')">SALIR</button>
 </section>
 
-<section id="admin-alumnos" class="view"><div class="card"><h2>Gestión de alumnos</h2><p>Revisa solicitudes y aprueba o rechaza el acceso de los estudiantes.</p><div id="students-list">Cargando solicitudes...</div><button class="secondary" onclick="loadStudents()">ACTUALIZAR</button> <button class="secondary" onclick="go('admin')">VOLVER</button></div></section>
+<section id="admin-alumnos" class="view"><div class="card"><h2>Gestión de alumnos</h2><p>Revisa solicitudes y aprueba o rechaza el acceso de los estudiantes.</p><div id="eddeli-admin-pending" hidden></div><div id="students-list">Cargando solicitudes...</div><button class="secondary" onclick="loadStudents()">ACTUALIZAR</button> <button class="secondary" onclick="go('admin')">VOLVER</button></div></section>
 <section id="admin-cursos" class="view">
  <div class="card"><h2>Gestión académica</h2><p>Administra cursos, módulos y evaluaciones de ELI BEAUTY ACADEMY.</p>
  <div class="form-grid">
@@ -421,7 +421,7 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
   <div class="welcome"><div><span class="eyebrow">TU ESPACIO DE APRENDIZAJE</span><h1>Hola, estudiante</h1><p>Continúa tu formación y descubre tus próximos retos.</p></div><div style="font-size:55px">🎓</div></div>
   <h2 class="section-title">Mi espacio académico</h2>
   <div class="grid">
-    <div class="card"><div class="card-icon">✿</div><h3>Mi formación</h3><p>Accede directamente al Curso de Formación Complementaria en Extensiones de Pestañas de ELI BEAUTY ACADEMY.</p><button class="primary" onclick="openStudentAcademy()">CONTINUAR MI FORMACIÓN</button></div><div class="card"><h3>Mis cursos</h3><p>Consulta tus formaciones disponibles.</p><button class="secondary" onclick="go('cursos')">VER CURSOS</button></div>
+    <div class="card"><div class="card-icon">✿</div><h3 id="eddeli-next-title">Mi formación</h3><p id="eddeli-next-copy">Accede directamente al Curso de Formación Complementaria en Extensiones de Pestañas de ELI BEAUTY ACADEMY.</p><button class="primary" id="eddeli-next-button" onclick="openStudentAcademy()">CONTINUAR MI FORMACIÓN</button></div><div class="card"><h3>Mis cursos</h3><p>Consulta tus formaciones disponibles.</p><button class="secondary" onclick="go('cursos')">VER CURSOS</button></div>
     <div class="card"><h3>Mi progreso</h3><p id="student-progress-overview">Cargando tu progreso académico…</p><button class="secondary" onclick="go('cursos')">VER MI PROGRESO</button></div>
     <div class="card"><h3>Mis exámenes</h3><p>Historial de tus evaluaciones y calificaciones.</p><div id="student-exam-history">Cargando tus resultados…</div></div>
     <div class="card"><h3>Mis certificados</h3><p>Consulta tus acreditaciones.</p><button class="secondary" onclick="go('perfil')">VER MIS CERTIFICADOS</button></div>
@@ -819,6 +819,7 @@ async function loadStudents(){
   });
   if(document.getElementById("admin-alumnos")?.classList.contains("active"))void refreshStudentPresence();
   void window.eddeliRefreshAcademyCertificates?.();
+  void window.eddeliLoadAdminPending?.();
  }catch(err){box.textContent="No se pudo cargar la lista: "+(err.message||"Error desconocido");}
 }
 async function setApproval(id,status,button){
@@ -1364,7 +1365,7 @@ if (typeof window.renderLashCurriculum === "function") {
   }
  }
 
- window.showEddeliStudentTracking=async function(studentId,name){
+ window.showEddeliStudentTracking=async function(studentId,name,practiceStage){
   if(currentProfile?.role!=="admin"||currentProfile.approval_status!=="approved")return;
   const dialog=document.createElement("dialog");dialog.className="student-tracking-dialog";
   dialog.setAttribute("aria-label","Seguimiento de "+name);
@@ -1376,7 +1377,7 @@ if (typeof window.renderLashCurriculum === "function") {
   document.body.append(dialog);
   dialog.addEventListener("close",()=>dialog.remove(),{once:true});
   dialog.showModal();
-  window.eddeliRenderPracticeReview?.(dialog,studentId);
+  window.eddeliRenderPracticeReview?.(dialog,studentId,practiceStage);
   try{
    const seenSince=new Date(Date.now()-STUDENT_PRESENCE_STALE_MS).toISOString();
    const responses=await Promise.all([
@@ -1628,6 +1629,7 @@ if (typeof window.renderLashCurriculum === "function") {
       form.replaceChildren();
       add(form,"p",lang("Revisión guardada.","Review saved."));
       void window.eddeliRefreshAcademyCertificates?.();
+      void window.eddeliLoadAdminPending?.();
       await refresh();
      }catch(error){status.textContent=lang("No se pudo guardar. Actualiza la ficha y vuelve a intentarlo.","Could not save. Refresh and try again.");approve.disabled=revise.disabled=false;}
     };
@@ -1725,7 +1727,7 @@ if (typeof window.renderLashCurriculum === "function") {
   };
   await load();
  }
- window.eddeliRenderPracticeReview=function(dialog,studentId){
+ window.eddeliRenderPracticeReview=function(dialog,studentId,practiceStage){
   if(!admin())return;
   const entry=add(dialog,"section",null,"eddeli-practice-review");
   const toggle=button(entry,lang("Prácticas","Practices"),()=>{}, "secondary");
@@ -1738,6 +1740,7 @@ if (typeof window.renderLashCurriculum === "function") {
     body.replaceChildren();
     for(const stage of stages){
      const section=add(body,"section",null,"eddeli-practice-entry");
+     section.dataset.practiceStage=stage;
      const assignment=assignments[stage];
      add(section,"h3",lang("Etapa ","Stage ")+stage+" · "+assignment.title());
      add(section,"p",lang("Criterios: ","Criteria: ")+assignment.criteria());
@@ -1754,6 +1757,10 @@ if (typeof window.renderLashCurriculum === "function") {
    if(!body.hidden)void refresh();
   };
   dialog.insertBefore(entry,dialog.lastElementChild);
+  if(stages.includes(practiceStage)){
+   body.hidden=false;toggle.setAttribute("aria-expanded","true");
+   void refresh().then(()=>body.querySelector("[data-practice-stage='"+practiceStage+"']")?.scrollIntoView({block:"nearest"}));
+  }
  };
  function refreshCard(){
   intro.hidden=!student();
@@ -1763,6 +1770,7 @@ if (typeof window.renderLashCurriculum === "function") {
   mine.textContent=lang("Mis prácticas","My practice submissions");
  }
  guide.onclick=showGuide;mine.onclick=()=>showStudentPractices();
+ window.eddeliOpenStudentPractices=showStudentPractices;
  const originalGo=window.go;
  window.go=function(...args){const value=originalGo.apply(this,args);refreshCard();return value;};
  function addStageButton(index){
@@ -1789,5 +1797,151 @@ if (typeof window.renderLashCurriculum === "function") {
 .eddeli-certificate-preview p{white-space:pre-line}
 </style>
 <script src="./eddeli-certificates.js?v=3"></script>
+
+<style>
+#eddeli-admin-pending{margin:.8rem 0 1rem}
+#eddeli-admin-pending details{padding:.8rem 1rem;border:1px solid #dfd5e7;border-radius:10px;background:#fbf8fd}
+#eddeli-admin-pending summary{font-weight:700;cursor:pointer}
+#eddeli-admin-pending ul{list-style:none;padding:0;margin:.4rem 0}
+.eddeli-pending-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.6rem;padding:.45rem 0;border-top:1px solid #ece4f0}
+</style>
+<script>
+(function(){
+ const course="8b097e3a-4a76-4896-a79f-e4097c1b68dc";
+ const requiredPractices=[8,9,13];
+ const pending=document.getElementById("eddeli-admin-pending");
+ const copy=document.getElementById("eddeli-next-copy");
+ const nextButton=document.getElementById("eddeli-next-button");
+ const nextTitle=document.getElementById("eddeli-next-title");
+ const original={title:nextTitle.textContent,copy:copy.textContent,button:nextButton.textContent,action:nextButton.onclick};
+ const t=(es,en)=>typeof getLang==="function"&&getLang()==="en"?en:es;
+ let pendingRequest=0,nextRequest=0;
+ function add(parent,tag,text){
+  const element=document.createElement(tag);
+  if(text!=null)element.textContent=text;
+  parent.append(element);return element;
+ }
+ function checked(response){
+  if(response.error)throw response.error;
+  return response.data;
+ }
+ function row(holder,text,label,action){
+  const item=add(holder,"li");item.className="eddeli-pending-row";
+  add(item,"span",text);
+  const b=add(item,"button",label);b.type="button";b.className="secondary";b.onclick=action;
+ }
+ window.eddeliLoadAdminPending=async function(){
+  if(!currentUser||currentProfile?.role!=="admin"||currentProfile.approval_status!=="approved"||!document.getElementById("admin-alumnos")?.classList.contains("active"))return;
+  const id=currentUser.id,request=++pendingRequest;
+  try{
+   const [practices,certs,students]=await Promise.all([
+    supabaseClient.from("eddeli_practice_submissions").select("student_id,stage_number,submitted_at").eq("status","submitted").order("submitted_at",{ascending:true}),
+    supabaseClient.rpc("eddeli_admin_academy_certificate_status"),
+    supabaseClient.from("profiles").select("id,full_name").eq("role","student").order("full_name")
+   ]).then(results=>results.map(checked));
+   if(request!==pendingRequest||currentUser?.id!==id)return;
+   const names=new Map(students.map(s=>[s.id,s.full_name||t("Sin nombre","Unnamed student")]));
+   const ready=certs.filter(c=>c.ready&&!c.certificate_code);
+   const wasOpen=!!pending.querySelector("details")?.open;
+   pending.replaceChildren();
+   const section=add(pending,"details");section.open=wasOpen;
+   const total=practices.length+ready.length;
+   add(section,"summary",t("Pendientes de revisión","Pending review")+" ("+total+")");
+   if(total){
+    if(practices.length){
+     add(section,"h3",t("Prácticas por revisar","Practices to review")+" ("+practices.length+")");
+     const list=add(section,"ul");
+     for(const p of practices){
+      const name=names.get(p.student_id)||t("Alumno","Student");
+      const elapsed=Math.max(0,Math.floor((Date.now()-Date.parse(p.submitted_at))/60000));
+      const wait=elapsed<1?t("hace menos de un minuto","less than a minute ago"):elapsed<60?t("hace "+elapsed+" min",elapsed+" min ago"):elapsed<1440?t("hace "+Math.floor(elapsed/60)+" h",Math.floor(elapsed/60)+" h ago"):t("hace "+Math.floor(elapsed/1440)+" d",Math.floor(elapsed/1440)+" d ago");
+      row(list,name+t(" · Etapa "," · Stage ")+p.stage_number+" · "+wait,t("Revisar","Review"),()=>window.showEddeliStudentTracking(p.student_id,name,p.stage_number));
+     }
+    }
+    if(ready.length){
+     add(section,"h3",t("Certificados listos","Certificates ready")+" ("+ready.length+")");
+     const list=add(section,"ul");
+     for(const c of ready){
+      const name=names.get(c.student_id)||t("Alumno","Student");
+      row(list,name,t("Vista previa","Preview"),()=>window.eddeliPreviewAcademyCertificate(c.student_id,name));
+     }
+    }
+   }else add(section,"p",t("No hay prácticas ni certificados pendientes.","No practices or certificates are pending."));
+   pending.hidden=false;
+  }catch(error){console.warn("EDDELI: no se pudo consultar la bandeja de pendientes.",error);}
+ };
+ function showNext(message,label,action){
+  nextTitle.textContent=t("Mi próximo paso","My next step");
+  copy.textContent=message;nextButton.textContent=label;nextButton.onclick=action;
+ }
+ function resetNext(){
+  nextTitle.textContent=original.title;copy.textContent=original.copy;nextButton.textContent=original.button;nextButton.onclick=original.action;
+ }
+ async function loadNext(){
+  if(!currentUser||currentProfile?.role!=="student"||currentProfile.approval_status!=="approved")return;
+  const id=currentUser.id,request=++nextRequest;
+  resetNext();
+  try{
+   const [enrollment,modules,progress,practices,final,certificate]=await Promise.all([
+    supabaseClient.from("enrollments").select("status").eq("student_id",id).eq("course_id",course).maybeSingle(),
+    supabaseClient.from("academy_modules").select("id,module_number").eq("course_id",course).eq("published",true).order("module_number"),
+    supabaseClient.from("module_progress").select("module_id").eq("student_id",id).eq("completed",true),
+    supabaseClient.from("eddeli_practice_submissions").select("stage_number,status").eq("student_id",id).order("submitted_at",{ascending:false}).order("id",{ascending:false}),
+    supabaseClient.from("assessments").select("id").eq("course_id",course).eq("is_final",true).maybeSingle(),
+    supabaseClient.from("certificates").select("certificate_code").eq("student_id",id).eq("course_id",course).maybeSingle()
+   ]).then(results=>results.map(checked));
+   if(request!==nextRequest||currentUser?.id!==id)return;
+   const latest=new Map();
+   for(const p of practices)if(!latest.has(p.stage_number))latest.set(p.stage_number,p.status);
+   const practice=stage=>()=>window.eddeliOpenStudentPractices(stage);
+   if(certificate){showNext(t("Tu certificado está disponible.","Your certificate is available."),t("Ver mi certificado","View my certificate"),()=>window.go("perfil"));return;}
+   if(enrollment?.status!=="approved"){
+    showNext(t("Tu matrícula está pendiente de aprobación.","Your enrolment is awaiting approval."),t("Ver mis cursos","View my courses"),()=>window.go("cursos"));return;
+   }
+   const correction=requiredPractices.find(n=>latest.get(n)==="changes_requested");
+   if(correction){showNext(t("Corrige tu práctica de la etapa "+correction+".","Revise your stage "+correction+" practice."),t("Ver observaciones","View feedback"),practice(correction));return;}
+   const complete=new Set(progress.map(item=>item.module_id));
+   const nextIndex=modules.findIndex(module=>!complete.has(module.id));
+   if(nextIndex>=0){
+    const number=modules[nextIndex].module_number;
+    showNext(t("Continúa con la etapa "+number+".","Continue with stage "+number+"."),t("Ir a la etapa "+number,"Go to stage "+number),()=>{
+     if(window.go("academia"))void window.openModule(nextIndex);
+    });
+    return;
+   }
+   if(modules.length!==13||!final)return;
+   const finalPassed=checked(await supabaseClient.from("assessment_attempts").select("id").eq("student_id",id).eq("assessment_id",final.id).eq("passed",true).limit(1));
+   if(request!==nextRequest||currentUser?.id!==id)return;
+   if(!finalPassed.length){
+    showNext(t("Ya puedes realizar la prueba final.","You can take the final exam."),t("Ir a la prueba final","Go to the final exam"),()=>{
+     if(window.go("academia"))void window.renderLashFinalExam();
+    });
+    return;
+   }
+   const missing=requiredPractices.find(n=>!latest.has(n));
+   if(missing){showNext(t("Entrega la práctica de la etapa "+missing+".","Submit your stage "+missing+" practice."),t("Entregar práctica","Submit practice"),practice(missing));return;}
+   if(requiredPractices.some(n=>latest.get(n)==="submitted")){
+    showNext(t("Tus prácticas están en revisión.","Your practices are under review."),t("Ver mis prácticas","View my practice submissions"),practice());return;
+   }
+   showNext(t("Ya completaste el curso. El certificado está pendiente de emisión.","You completed the course. Your certificate is awaiting issue."),t("Ver mis certificados","View my certificates"),()=>window.go("perfil"));
+  }catch(error){console.warn("EDDELI: no se pudo consultar el próximo paso.",error);}
+ }
+ const certificateAction=window.eddeliAcademyCertificateAction;
+ if(typeof certificateAction==="function"){
+  window.eddeliAcademyCertificateAction=async function(...args){
+   try{return await certificateAction.apply(this,args);}
+   finally{void window.eddeliLoadAdminPending();}
+  };
+ }
+ const go=window.go;
+ window.go=function(page){
+  const result=go.apply(this,arguments);
+  if(result&&page==="estudiante")void loadNext();
+  return result;
+ };
+ if(document.getElementById("estudiante")?.classList.contains("active"))void loadNext();
+})();
+</script>
+
 </body>
 </html>
