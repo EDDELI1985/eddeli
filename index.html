@@ -746,6 +746,13 @@ async function loadStudents(){
    info.textContent=(s.email||"Sin correo")+" · "+s.role+" · Estado: "+(state==="approved"?"APROBADO":state==="rejected"?"RECHAZADO":"PENDIENTE");
    item.append(title,info);
    if(s.role==="student"){
+    const tracking=document.createElement("button");
+    tracking.type="button";
+    tracking.className="student-tracking-button";
+    tracking.textContent="Ver seguimiento";
+    tracking.setAttribute("aria-label","Ver seguimiento de "+title.textContent);
+    tracking.onclick=()=>window.showEddeliStudentTracking(s.id,title.textContent);
+    title.after(tracking);
     const approve=document.createElement("button");approve.className="secondary";
     approve.textContent=state==="approved"?"APROBADO":"APROBAR";
     approve.disabled=state==="approved";
@@ -1076,5 +1083,188 @@ if (typeof window.renderLashCurriculum === "function") {
 }
 </script>
 
+<style>
+.student-tracking-button{margin-inline-start:.65rem;background:#6d28d9;color:#fff;border:0;border-radius:8px;padding:.5rem .8rem;font-weight:700;cursor:pointer}
+.student-tracking-button:hover{background:#5b21b6}
+.student-tracking-dialog{width:min(760px,calc(100% - 2rem));max-height:85vh;overflow:auto;padding:1.35rem;border:1px solid #ddd6fe;border-radius:16px;background:#fff;color:#172033}
+.student-tracking-dialog::backdrop{background:#0f172a99}
+.student-tracking-dialog h2,.student-tracking-dialog h3{margin:.85rem 0 .4rem}
+.student-tracking-dialog p,.student-tracking-dialog li{margin:.38rem 0}
+.student-tracking-dialog form{float:right;margin-inline-start:.8rem}
+.student-tracking-status{padding:.75rem;border-radius:8px;background:#f3ecff}
+</style>
+<script>
+(function(){
+ const courseId="8b097e3a-4a76-4896-a79f-e4097c1b68dc";
+ let lastScreen="",queue=Promise.resolve();
+ function record(screen,stage=null,lesson=null){
+  if(currentProfile?.role!=="student"||currentProfile.approval_status!=="approved"||!currentUser?.email_confirmed_at)return;
+  const key=[screen,stage,lesson].join("/");
+  if(key===lastScreen||(screen==="exit"&&!lastScreen))return;
+  lastScreen=key;
+  const userId=currentUser.id;
+  const event={session_id:getStudentPresenceSessionId(),screen,stage_number:stage,lesson_number:lesson};
+  queue=queue.then(async()=>{
+   if(currentUser?.id!==userId)return;
+   const result=await supabaseClient.from("eddeli_study_events").insert(event);
+   if(result.error)throw result.error;
+  }).catch(error=>{
+   if(lastScreen===key)lastScreen="";
+   console.warn("No se pudo registrar la actividad de estudio.",error);
+  });
+ }
+ function studying(){
+  return document.getElementById("academia")?.classList.contains("active")&&
+   document.getElementById("lash-lesson-panel")?.hidden===false;
+ }
+ function observe(name,after){
+  const original=window[name];
+  window[name]=function(...args){
+   const result=original.apply(this,args);
+   if(result?.then)return result.then(value=>{after(...args);return value;});
+   after(...args);return result;
+  };
+ }
+ function rendered(mode,index,lesson){
+  const view=window.__lashViewState;
+  return studying()&&view?.mode===mode&&view.index===index&&(lesson===undefined||view.lesson===lesson);
+ }
+ observe("renderLashStage",index=>{if(rendered("stage",index))record("stage",index+1);});
+ observe("renderLashLesson",(index,lesson)=>{if(rendered("lesson",index,lesson))record("lesson",index+1,lesson+1);});
+ observe("renderLashTest",index=>{
+  if(rendered("test-db",index)&&document.getElementById("lash-db-assessment-form")){
+   lastScreen="";
+   record("test",index+1);
+  }
+ });
+ observe("renderLashFinalExam",()=>{
+  if(rendered("final-db",12)&&document.getElementById("lash-db-assessment-form")){
+   lastScreen="";
+   record("final");
+  }
+ });
+ observe("go",()=>{if(!studying())record("exit");});
+ observe("closeLashPanel",()=>record("exit"));
+ supabaseClient.auth.onAuthStateChange(event=>{if(event==="SIGNED_OUT")lastScreen="";});
+
+ const relative=new Intl.RelativeTimeFormat("es",{numeric:"always"});
+ function ago(timestamp){
+  const minutes=Math.max(0,Math.floor((Date.now()-Date.parse(timestamp))/60000));
+  if(minutes<1)return "hace menos de un minuto";
+  if(minutes<60)return relative.format(-minutes,"minute");
+  if(minutes<1440)return relative.format(-Math.floor(minutes/60),"hour");
+  return relative.format(-Math.floor(minutes/1440),"day");
+ }
+ function label(event,active=false){
+  if(event.screen==="final")return active?"Respondiendo la prueba final":"Abrió la prueba final";
+  if(event.screen==="test")return (active?"Respondiendo el test de la etapa ":"Abrió el test de la etapa ")+event.stage_number;
+  return (active?"Estudiando la etapa ":"Abrió la etapa ")+event.stage_number+(event.lesson_number?" · Lección "+event.lesson_number:"");
+ }
+ function add(parent,tag,text){
+  const element=document.createElement(tag);element.textContent=text;parent.append(element);return element;
+ }
+ function result(attempt){
+  return (attempt.passed?"Aprobado":"Desaprobado")+" · "+Number(attempt.score).toFixed(1)+" %";
+ }
+ async function readAttempts(studentId,ids){
+  const attempts=[];
+  if(!ids.length)return attempts;
+  const size=250;
+  for(let offset=0;;offset+=size){
+   const response=await supabaseClient.from("assessment_attempts").select("assessment_id,score,passed,completed_at")
+    .eq("student_id",studentId).in("assessment_id",ids).not("completed_at","is",null)
+    .order("completed_at",{ascending:false}).order("id",{ascending:false}).range(offset,offset+size-1);
+   if(response.error)throw response.error;
+   attempts.push(...response.data);
+   if(response.data.length<size)return attempts;
+  }
+ }
+
+ window.showEddeliStudentTracking=async function(studentId,name){
+  if(currentProfile?.role!=="admin"||currentProfile.approval_status!=="approved")return;
+  const dialog=document.createElement("dialog");dialog.className="student-tracking-dialog";
+  dialog.setAttribute("aria-label","Seguimiento de "+name);
+  const form=add(dialog,"form","");form.method="dialog";
+  add(form,"button","Cerrar").className="secondary";
+  add(dialog,"h2","Seguimiento · "+name);
+  const body=add(dialog,"div","");
+  add(body,"p","Cargando el seguimiento…").setAttribute("role","status");
+  document.body.append(dialog);
+  dialog.addEventListener("close",()=>dialog.remove(),{once:true});
+  dialog.showModal();
+  try{
+   const seenSince=new Date(Date.now()-STUDENT_PRESENCE_STALE_MS).toISOString();
+   const responses=await Promise.all([
+    supabaseClient.from("academy_modules").select("id,module_number").eq("course_id",courseId).eq("published",true).order("module_number"),
+    supabaseClient.from("assessments").select("id,module_id,is_final").eq("course_id",courseId),
+    supabaseClient.from("module_progress").select("module_id,completed").eq("student_id",studentId),
+    supabaseClient.from("enrollments").select("status").eq("student_id",studentId).eq("course_id",courseId).maybeSingle(),
+    supabaseClient.from("eddeli_study_events").select("session_id,screen,stage_number,lesson_number,recorded_at").eq("student_id",studentId).order("recorded_at",{ascending:false}).order("id",{ascending:false}).limit(60),
+    supabaseClient.from("student_presence_sessions").select("session_id").eq("student_id",studentId).gte("last_seen_at",seenSince)
+   ]);
+   const failed=responses.find(response=>response.error);
+   if(failed)throw failed.error;
+   const [modules,assessments,progress,enrollment,events,sessions]=responses.map(response=>response.data);
+   const attempts=await readAttempts(studentId,assessments.map(a=>a.id));
+   if(!dialog.open)return;
+   const numbers=new Map(modules.map(m=>[m.id,m.module_number]));
+   const stages=new Map(assessments.map(a=>[a.id,a.is_final?"final":numbers.get(a.module_id)]));
+   const completed=new Set(progress.filter(p=>p.completed).map(p=>p.module_id));
+   const latest=new Map(),passed=new Map();
+   for(const attempt of attempts){
+    const stage=stages.get(attempt.assessment_id);
+    if(!latest.has(stage))latest.set(stage,attempt);
+    if(attempt.passed&&!passed.has(stage))passed.set(stage,attempt);
+   }
+   const ready=enrollment?.status==="approved";
+   const next=modules.find(m=>!completed.has(m.id));
+   const studies=events.filter(e=>e.screen!=="exit");
+   const liveSessions=new Set(sessions.map(s=>s.session_id));
+   const newestBySession=new Map();
+   for(const event of events)if(!newestBySession.has(event.session_id))newestBySession.set(event.session_id,event);
+   const live=events.find(e=>e.screen!=="exit"&&liveSessions.has(e.session_id)&&newestBySession.get(e.session_id)===e);
+   const recentTest=live&&latest.get(live.screen==="final"?"final":live.stage_number);
+   const submitted=live&&["test","final"].includes(live.screen)&&recentTest&&Date.parse(recentTest.completed_at)>=Date.parse(live.recorded_at);
+   const location=submitted
+    ?(live.screen==="final"?"Prueba final":"Test de la etapa "+live.stage_number)+" · "+result(recentTest)
+    :live?label(live,true):sessions.length?"En la aplicación · Sin pantalla de estudio confirmada":"Fuera de la aplicación";
+   body.replaceChildren();
+   add(body,"p",location).className="student-tracking-status";
+   const activity=studies.map(e=>({at:e.recorded_at,text:label(e)}));
+   for(const attempt of attempts.slice(0,60)){
+    const stage=stages.get(attempt.assessment_id);
+    const test=stage==="final"?"Prueba final":stage?"Test de la etapa "+stage:"Test";
+    activity.push({at:attempt.completed_at,text:test+" · "+result(attempt)});
+   }
+   activity.sort((a,b)=>Date.parse(b.at)-Date.parse(a.at));
+   const last=activity[0];
+   add(body,"p",last?"Última actividad de estudio: "+ago(last.at)+" · "+last.text:"Aún no hay actividad de estudio registrada.");
+   if(studies[0])add(body,"p","Último acceso a una etapa, lección o test: "+ago(studies[0].recorded_at));
+   add(body,"p",!ready?"Matrícula sin aprobar":next?"Siguiente etapa por aprobar: "+next.module_number:modules.length?"Todas las etapas publicadas están aprobadas":"Sin etapas publicadas");
+   add(body,"h3","Resultados por etapa");
+   const list=add(body,"ul","");
+   for(const module of modules){
+    const attempt=latest.get(module.module_number);
+    const state=completed.has(module.id)?"Aprobado":attempt?"Desaprobado":ready&&module===next?"Disponible":"Pendiente";
+    add(list,"li","Etapa "+module.module_number+" · "+state+(attempt?" · Último intento: "+result(attempt)+" · "+ago(attempt.completed_at):""));
+   }
+   const finalPass=passed.get("final"),finalAttempt=latest.get("final");
+   add(body,"h3","Prueba final · "+(finalPass?"Aprobada":finalAttempt?"Desaprobada":ready&&modules.length&&!next?"Disponible":"Bloqueada"));
+   if(finalPass)add(body,"p","Aprobación: "+result(finalPass)+" · "+new Date(finalPass.completed_at).toLocaleString("es"));
+   if(finalAttempt&&finalAttempt!==finalPass)add(body,"p","Último intento: "+result(finalAttempt)+" · "+ago(finalAttempt.completed_at));
+   add(body,"h3","Actividad reciente");
+   if(activity.length){
+    const history=add(body,"ol","");
+    for(const entry of activity.slice(0,60)){
+     add(history,"li",ago(entry.at)+" · "+entry.text).title=new Date(entry.at).toLocaleString("es");
+    }
+   }else add(body,"p","Todavía no hay pasos registrados.");
+  }catch(error){
+   if(dialog.open)body.textContent="No se pudo cargar el seguimiento. Cierra la ficha y vuelve a abrirla.";
+   console.warn("EDDELI: seguimiento académico no disponible.",error);
+  }
+ };
+})();
+</script>
 </body>
 </html>
