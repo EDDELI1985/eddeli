@@ -2081,10 +2081,11 @@ async function checkSystem(){const el=document.getElementById("system-status");t
       const [objective, evidence, criteria, scenario, response, ...distractors] = learning[i];
       const questions = [entries[5].split("|"), [scenario,response,...distractors]];
       const heading = `<h3 tabindex="-1">Etapa ${i+1} de ${stages.length} · ${worldChapters[i][0]}${step === "test" ? " · Test" : ""}</h3>`;
-      const back = '<button type="button" data-step="list">Volver a las etapas</button>';
+      const back = `<button type="button" data-step="list">${i === 0 ? "Volver al itinerario" : "Volver a las etapas"}</button>`;
       if(step === "study") return `${heading}
         <p class="cocina-objective"><strong>Al terminar</strong> · ${objective}</p>
         ${i ? cocinaPhoto(0,i,worldChapters[i][0]) : ""}
+        ${i === 0 ? `<p>4 lecciones con imágenes · Práctica guiada · Test de 2 preguntas</p>` : ""}
         ${chapterMarkup(i)}
         ${i === 0 ? renderInternationalLessons() : entries.slice(0, 4).map((entry, j) => {
           const [heading, body] = entry.split("|");
@@ -2092,10 +2093,15 @@ async function checkSystem(){const el=document.getElementById("system-status");t
           return `<h4>Lección ${j+1} · ${heading}</h4><p>${body}</p>
             ${cocinaPhoto(1+Math.floor(photo/16),photo%16,heading)}`;
         }).join("")}
-        <section class="cocina-practice"><h3>Práctica</h3><p>${i===0 ? "Diseña una cocina pequeña para preparar arroz blanco, pollo guisado y ensalada. Dibuja el plano, marca dónde entra cada ingrediente, dónde sale el plato y por dónde regresan los utensilios usados. Asigna las tareas a dos personas y anota el orden de preparación." : entries[4]}</p>
+        <section class="cocina-practice"><h3>${i === 0 ? "Práctica guiada · De la comanda al servicio" : "Práctica"}</h3>${i === 0 ? `<p>Imagina que recibes una comanda de arroz blanco, pollo guisado y ensalada. Dibuja el plan con papel y lápiz.</p>
+        <ol>
+          <li>Dibuja cinco zonas: almacenamiento, preparación, cocción, servicio y lavado. Coloca un utensilio o equipo en cada una.</li>
+          <li>Marca con flechas el camino de los ingredientes hasta el plato y, con otras flechas, el regreso de los utensilios usados al lavado.</li>
+          <li>Reparte las tareas entre dos personas y apunta en qué orden prepararán los platos.</li>
+        </ol>` : `<p>${entries[4]}</p>`}
         <p><strong>Qué debes preparar</strong> · ${evidence}</p>
-        <p><strong>Cómo revisar tu trabajo</strong> · ${criteria}</p></section>
-        <div class="cocina-tabs">${back}<button type="button" data-step="test">Siguiente · Test</button></div>`;
+        <p><strong>Cómo revisar tu trabajo</strong> · ${criteria}</p>${i === 0 ? `<p><strong>Antes del test</strong> · Comprueba que los dos recorridos se distinguen y que cada tarea tiene una persona asignada. Señala dónde prepararías el pollo crudo y dónde prepararías la ensalada.</p>` : ""}</section>
+        <div class="cocina-tabs">${back}<button type="button" data-step="test">${i === 0 ? "Empezar test" : "Siguiente · Test"}</button></div>`;
       return `${heading}<p>Responde correctamente las dos preguntas para continuar.</p>
         ${questions.map(([question,correct,...wrong],index) => {
           const choices = [...wrong];
