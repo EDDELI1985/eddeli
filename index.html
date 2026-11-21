@@ -1112,14 +1112,33 @@ if (typeof window.renderLashCurriculum === "function") {
 <script>
 (function(){
  const courseId="8b097e3a-4a76-4896-a79f-e4097c1b68dc";
- let lastScreen="",queue=Promise.resolve();
- function record(screen,stage=null,lesson=null){
+ const areas={
+  inicio:"Inicio",areas:"Explorar áreas",estudiante:"Panel del estudiante",academia:"Academia",
+  modulo:"Módulo",cursos:"Mis cursos","course-detail":"Detalle del curso",biblioteca:"Biblioteca",
+  notificaciones:"Notificaciones",perfil:"Mi perfil",plantillas:"Plantillas profesionales"
+ };
+ let lastScreen="",lastDescriptor=null,queue=Promise.resolve();
+ function confirmScreen(){
+  if(document.visibilityState!=="visible"||!lastScreen||lastScreen.startsWith("exit/")||currentProfile?.role!=="student"||!currentUser)return;
+  const userId=currentUser.id,sessionId=getStudentPresenceSessionId();
+  queue=queue.then(async()=>{
+   if(currentUser?.id!==userId||document.visibilityState!=="visible")return;
+   const response=await supabaseClient.rpc("eddeli_confirm_study_screen",{p_session_id:sessionId});
+   if(response.error)throw response.error;
+  }).catch(error=>console.warn("No se pudo confirmar el tiempo de uso.",error));
+ }
+ function record(screen,stage=null,lesson=null,area=null){
   if(currentProfile?.role!=="student"||currentProfile.approval_status!=="approved"||!currentUser?.email_confirmed_at)return;
-  const key=[screen,stage,lesson].join("/");
+  if(screen!=="exit"){
+   lastDescriptor=[screen,stage,lesson,area];
+   if(document.visibilityState!=="visible")return;
+  }
+  const key=[screen,stage,lesson,area].join("/");
   if(key===lastScreen||(screen==="exit"&&!lastScreen))return;
+  if(screen!=="exit")confirmScreen();
   lastScreen=key;
   const userId=currentUser.id;
-  const event={session_id:getStudentPresenceSessionId(),screen,stage_number:stage,lesson_number:lesson};
+  const event={session_id:getStudentPresenceSessionId(),screen,stage_number:stage,lesson_number:lesson,area_key:area};
   queue=queue.then(async()=>{
    if(currentUser?.id!==userId)return;
    const result=await supabaseClient.from("eddeli_study_events").insert(event);
@@ -1159,9 +1178,25 @@ if (typeof window.renderLashCurriculum === "function") {
    record("final");
   }
  });
- observe("go",()=>{if(!studying())record("exit");});
- observe("closeLashPanel",()=>record("exit"));
- supabaseClient.auth.onAuthStateChange(event=>{if(event==="SIGNED_OUT")lastScreen="";});
+ function recordVisibleArea(){
+  if(studying())return;
+  const view=document.querySelector(".view.active")?.id;
+  if(Object.hasOwn(areas,view))record("area",null,null,view);
+  else{lastDescriptor=null;record("exit");}
+ }
+ observe("openLashPrintableForms",()=>{
+  if(studying()&&window.__lashViewState?.mode==="printable-forms")record("area",null,null,"plantillas");
+ });
+ observe("go",recordVisibleArea);
+ observe("closeLashPanel",recordVisibleArea);
+ document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="hidden")record("exit");
+  else if(studying()&&lastDescriptor)record(...lastDescriptor);
+  else recordVisibleArea();
+ });
+ window.setInterval(confirmScreen,20000);
+ supabaseClient.auth.onAuthStateChange(event=>{if(event==="SIGNED_OUT"){lastScreen="";lastDescriptor=null;}});
+ recordVisibleArea();
 
  const relative=new Intl.RelativeTimeFormat("es",{numeric:"always"});
  function ago(timestamp){
@@ -1172,6 +1207,7 @@ if (typeof window.renderLashCurriculum === "function") {
   return relative.format(-Math.floor(minutes/1440),"day");
  }
  function label(event,active=false){
+  if(event.screen==="area")return (active?"En ":"Entró en ")+(areas[event.area_key]||"EDDELI");
   if(event.screen==="final")return active?"Respondiendo la prueba final":"Abrió la prueba final";
   if(event.screen==="test")return (active?"Respondiendo el test de la etapa ":"Abrió el test de la etapa ")+event.stage_number;
   return (active?"Estudiando la etapa ":"Abrió la etapa ")+event.stage_number+(event.lesson_number?" · Lección "+event.lesson_number:"");
@@ -1215,7 +1251,7 @@ if (typeof window.renderLashCurriculum === "function") {
     supabaseClient.from("assessments").select("id,module_id,is_final").eq("course_id",courseId),
     supabaseClient.from("module_progress").select("module_id,completed").eq("student_id",studentId),
     supabaseClient.from("enrollments").select("status").eq("student_id",studentId).eq("course_id",courseId).maybeSingle(),
-    supabaseClient.from("eddeli_study_events").select("session_id,screen,stage_number,lesson_number,recorded_at").eq("student_id",studentId).order("recorded_at",{ascending:false}).order("id",{ascending:false}).limit(60),
+    supabaseClient.from("eddeli_study_events").select("session_id,screen,stage_number,lesson_number,area_key,recorded_at,confirmed_at,active_seconds").eq("student_id",studentId).order("recorded_at",{ascending:false}).order("id",{ascending:false}).limit(60),
     supabaseClient.from("student_presence_sessions").select("session_id").eq("student_id",studentId).is("ended_at",null).gte("last_seen_at",seenSince)
    ]);
    const failed=responses.find(response=>response.error);
@@ -1234,11 +1270,12 @@ if (typeof window.renderLashCurriculum === "function") {
    }
    const ready=enrollment?.status==="approved";
    const next=modules.find(m=>!completed.has(m.id));
-   const studies=events.filter(e=>e.screen!=="exit");
+   const visits=events.filter(e=>e.screen!=="exit");
+   const studies=visits.filter(e=>e.screen!=="area"||["academia","modulo","course-detail","biblioteca","plantillas"].includes(e.area_key));
    const liveSessions=new Set(sessions.map(s=>s.session_id));
    const newestBySession=new Map();
    for(const event of events)if(!newestBySession.has(event.session_id))newestBySession.set(event.session_id,event);
-   const live=events.find(e=>e.screen!=="exit"&&liveSessions.has(e.session_id)&&newestBySession.get(e.session_id)===e);
+   const live=events.find(e=>e.screen!=="exit"&&liveSessions.has(e.session_id)&&newestBySession.get(e.session_id)===e&&Date.now()-Date.parse(e.confirmed_at||e.recorded_at)<45000);
    const recentTest=live&&latest.get(live.screen==="final"?"final":live.stage_number);
    const submitted=live&&["test","final"].includes(live.screen)&&recentTest&&Date.parse(recentTest.completed_at)>=Date.parse(live.recorded_at);
    const location=submitted
@@ -1246,14 +1283,21 @@ if (typeof window.renderLashCurriculum === "function") {
     :live?label(live,true):sessions.length?"En la aplicación · Sin pantalla de estudio confirmada":"Fuera de la aplicación";
    body.replaceChildren();
    add(body,"p",location).className="student-tracking-status";
-   const activity=studies.map(e=>({at:e.recorded_at,text:label(e)}));
+   const studyActivity=studies.map(e=>({at:e.confirmed_at||e.recorded_at,text:label(e)}));
+   const activity=visits.map(e=>({at:e.recorded_at,text:label(e)+(e.active_seconds?" · "+duration(e.active_seconds):"")}));
+   function duration(seconds){
+    return seconds<60?seconds+" s":Math.floor(seconds/60)+" min"+(seconds%60?" "+seconds%60+" s":"");
+   }
+   if(!live&&visits[0])add(body,"p","Última área registrada: "+label(visits[0],true).replace(/^En /,"")+" · "+ago(visits[0].confirmed_at||visits[0].recorded_at));
    for(const attempt of attempts.slice(0,60)){
     const stage=stages.get(attempt.assessment_id);
     const test=stage==="final"?"Prueba final":stage?"Test de la etapa "+stage:"Test";
-    activity.push({at:attempt.completed_at,text:test+" · "+result(attempt)});
+    const entry={at:attempt.completed_at,text:test+" · "+result(attempt)};
+    activity.push(entry);studyActivity.push(entry);
    }
    activity.sort((a,b)=>Date.parse(b.at)-Date.parse(a.at));
-   const last=activity[0];
+   studyActivity.sort((a,b)=>Date.parse(b.at)-Date.parse(a.at));
+   const last=studyActivity[0];
    add(body,"p",last?"Última actividad de estudio: "+ago(last.at)+" · "+last.text:"Aún no hay actividad de estudio registrada.");
    if(studies[0])add(body,"p","Último acceso a una etapa, lección o test: "+ago(studies[0].recorded_at));
    add(body,"p",!ready?"Matrícula sin aprobar":next?"Siguiente etapa por aprobar: "+next.module_number:modules.length?"Todas las etapas publicadas están aprobadas":"Sin etapas publicadas");
@@ -1268,6 +1312,22 @@ if (typeof window.renderLashCurriculum === "function") {
    add(body,"h3","Prueba final · "+(finalPass?"Aprobada":finalAttempt?"Desaprobada":ready&&modules.length&&!next?"Disponible":"Bloqueada"));
    if(finalPass)add(body,"p","Aprobación: "+result(finalPass)+" · "+new Date(finalPass.completed_at).toLocaleString("es"));
    if(finalAttempt&&finalAttempt!==finalPass)add(body,"p","Último intento: "+result(finalAttempt)+" · "+ago(finalAttempt.completed_at));
+   add(body,"h3","Uso por área");
+   add(body,"p","Visitas y tiempo aproximado con la pestaña visible, según los últimos 60 registros.");
+   const usage=new Map();
+   for(const visit of visits){
+    const area=visit.screen==="area"?areas[visit.area_key]:areas.academia;
+    if(!area)continue;
+    const stats=usage.get(area)||{visits:0,seconds:0};
+    stats.visits++;stats.seconds+=visit.active_seconds||0;
+    usage.set(area,stats);
+   }
+   if(usage.size){
+    const usageList=add(body,"ul","");
+    for(const [area,stats] of [...usage].sort((a,b)=>b[1].seconds-a[1].seconds||b[1].visits-a[1].visits)){
+     add(usageList,"li",area+" · "+stats.visits+(stats.visits===1?" visita":" visitas")+" · "+(stats.seconds?duration(stats.seconds):"sin tiempo confirmado"));
+    }
+   }else add(body,"p","Todavía no hay visitas registradas.");
    add(body,"h3","Actividad reciente");
    if(activity.length){
     const history=add(body,"ol","");
