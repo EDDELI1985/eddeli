@@ -296,6 +296,11 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
 #cocina .cocina-search-home input{box-sizing:border-box;width:min(100%,34rem)}
 #cocina .cocina-search-list{display:flex;flex-wrap:wrap;gap:.45rem;padding:0;list-style:none}
 #cocina .cocina-search-list button{text-align:start}
+#cocina .cocina-stage-accordion[hidden]{display:none}
+#cocina .cocina-stage-accordion summary{color:inherit}
+#cocina .cocina-stage-accordion ol{list-style:none;margin:.8rem 0 0;padding:0;display:grid;gap:.5rem}
+#cocina .cocina-stage-accordion button{width:100%;text-align:start}
+#cocina .cocina-stage-accordion button span{font-weight:700}
 
 #cocina .cocina-photo{width:min(100%,24rem);margin:.8rem 0 1.35rem;padding:0;overflow:hidden;border:1px solid #bc9181;border-radius:.75rem}
 #cocina .cocina-photo-crop{aspect-ratio:1;background-color:#f0e0cf;background-image:var(--cocina-sheet);background-size:400% 400%;background-position:var(--cocina-x) var(--cocina-y);background-repeat:no-repeat}
@@ -1339,6 +1344,10 @@ async function checkSystem(){const el=document.getElementById("system-status");t
       </nav>
       <div class="cocina-content"></div>
       <div class="cocina-tabs"><button type="button" onclick="go('areas')">Volver a las áreas</button></div>
+      <details class="cocina-stage-accordion" hidden>
+        <summary>Ver todas las etapas</summary>
+        <ol></ol>
+      </details>
     </section>`;
     const section = box.querySelector(".cocina-preview");
     const content = section.querySelector(".cocina-content");
@@ -2159,7 +2168,12 @@ async function checkSystem(){const el=document.getElementById("system-status");t
       return `<p>${count} ${count===1?"resultado":"resultados"}</p>`+groups.map(([label,items])=>items.length?
         `<h4>${label}</h4><ul class="cocina-search-list">${items.map(item=>`<li>${item}</li>`).join("")}</ul>`:"").join("");
     }
+    const stageAccordion = section.querySelector(".cocina-stage-accordion");
+    stageAccordion.querySelector("ol").innerHTML = worldChapters.map(([title], index) =>
+      `<li><button type="button" data-stage="${index}"><span>${index + 1}.</span> ${esc(title)}</button></li>`).join("");
     function renderView(){
+      stageAccordion.hidden = view !== "inicio";
+      if(stageAccordion.hidden) stageAccordion.open = false;
       section.querySelector(".cocina-hero").hidden = view !== "inicio";
       section.querySelectorAll("[data-cocina]").forEach(button => button.setAttribute("aria-pressed", String(button.dataset.cocina === view)));
       if(view === "inicio"){
