@@ -446,6 +446,14 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
     <time id="eddeli-study-clock-time">00:00:00</time>
    </div>
   </section>
+  <section id="eddeli-practice-intro" class="card eddeli-practice-intro" hidden>
+   <h2 id="eddeli-practice-intro-title">Empieza aquí</h2>
+   <p id="eddeli-practice-intro-copy">Consulta la guía del curso y prepara tus prácticas en maniquí.</p>
+   <div class="eddeli-practice-actions">
+    <button type="button" class="primary" id="eddeli-practice-guide">Ver guía del curso</button>
+    <button type="button" class="secondary" id="eddeli-practice-mine">Mis prácticas</button>
+   </div>
+  </section>
   <h2 class="section-title">Itinerario de aprendizaje</h2>
   <div id="modules" class="grid"></div>
   <div id="lash-lesson-panel" class="card" hidden style="margin-top:20px"></div>
@@ -1351,6 +1359,7 @@ if (typeof window.renderLashCurriculum === "function") {
   document.body.append(dialog);
   dialog.addEventListener("close",()=>dialog.remove(),{once:true});
   dialog.showModal();
+  window.eddeliRenderPracticeReview?.(dialog,studentId);
   try{
    const seenSince=new Date(Date.now()-STUDENT_PRESENCE_STALE_MS).toISOString();
    const responses=await Promise.all([
@@ -1447,6 +1456,308 @@ if (typeof window.renderLashCurriculum === "function") {
    console.warn("EDDELI: seguimiento académico no disponible.",error);
   }
  };
+})();
+</script>
+
+<style>
+.eddeli-practice-intro{margin-top:16px;border-inline-start:4px solid #9f4a83}
+.eddeli-practice-intro[hidden]{display:none}
+.eddeli-practice-actions{display:flex;flex-wrap:wrap;gap:.65rem;align-items:center;margin:.7rem 0}
+.eddeli-practice-dialog{width:min(720px,calc(100% - 2rem));max-height:85vh;overflow:auto;border:1px solid #e8cfdf;border-radius:18px;padding:1.25rem;background:#fff;color:#172033}
+.eddeli-practice-dialog::backdrop{background:#1e132ba8}
+.eddeli-practice-entry{margin:.75rem 0;padding:1rem;border:1px solid #ead6e4;border-radius:12px;background:#fffafd}
+.eddeli-practice-entry h3,.eddeli-practice-entry h4{margin:.2rem 0 .55rem}
+.eddeli-practice-entry p{white-space:pre-wrap;overflow-wrap:anywhere}
+.eddeli-practice-form{display:grid;gap:.5rem;margin:.85rem 0}
+.eddeli-practice-form label{display:grid;gap:.3rem}
+.eddeli-practice-form textarea{width:100%;min-height:4rem}
+.eddeli-practice-summary{font-weight:700;color:#60204f}
+.eddeli-practice-review{clear:both;margin:.7rem 0}
+</style>
+<script>
+(function(){
+ const course="8b097e3a-4a76-4896-a79f-e4097c1b68dc";
+ const table="eddeli_practice_submissions";
+ const bucket=supabaseClient.storage.from("eddeli-practice-evidence");
+ const stages=[8,9,13];
+ const extensions={"image/jpeg":"jpg","image/png":"png","image/webp":"webp","video/mp4":"mp4","video/webm":"webm","video/quicktime":"mov","application/pdf":"pdf"};
+ const intro=document.getElementById("eddeli-practice-intro");
+ const guide=document.getElementById("eddeli-practice-guide");
+ const mine=document.getElementById("eddeli-practice-mine");
+ const lang=(es,en)=>typeof getLang==="function"&&getLang()==="en"?en:es;
+ const assignments={
+  8:{
+   title:()=>lang("Preparación y aislamiento","Preparation and isolation"),
+   instructions:()=>lang("Graba un vídeo corto en maniquí. Muestra el puesto preparado y cómo aíslas una pestaña. Explica tu medida principal de higiene.","Record a short mannequin video showing your setup and how you isolate one lash. Explain your main hygiene measure."),
+   criteria:()=>lang("Preparación del puesto, higiene y control del aislamiento.","Workstation preparation, hygiene and control of isolation."),
+   scenario:()=>lang("Al aislar una pestaña, la pinza también atrapa una vecina. ¿Qué paso debes corregir antes de continuar?","Your tweezers catch a neighbouring lash during isolation. What should you correct before continuing?"),
+   answer:()=>lang("Suelta y repite el aislamiento hasta separar una sola pestaña. Comprueba que las vecinas puedan moverse antes de aplicar.","Release and isolate again until only one lash is separated. Check that neighbouring lashes move freely before applying."),
+   accept:"video/mp4,video/webm,video/quicktime"
+  },
+  9:{
+   title:()=>lang("Aplicación clásica","Classic application"),
+   instructions:()=>lang("Sube una foto de frente y otra de perfil de tu aplicación clásica en maniquí. Describe cómo cuidaste la dirección y la separación.","Upload a front and side photo of your classic application on a mannequin. Explain how you controlled direction and separation."),
+   criteria:()=>lang("Dirección, separación y uniformidad.","Direction, separation and consistency."),
+   scenario:()=>lang("En las fotos notas que dos extensiones apuntan en direcciones muy distintas. ¿Qué comprobarías primero?","Two extensions point in very different directions in your photos. What would you check first?"),
+   answer:()=>lang("Comprueba la alineación con la dirección de la pestaña natural y revisa la colocación y el aislamiento antes de repetir.","Check alignment with the natural lash direction, then review placement and isolation before repeating."),
+   accept:"image/jpeg,image/png,image/webp"
+  },
+  13:{
+   title:()=>lang("Práctica integral","Integrated practice"),
+   instructions:()=>lang("Entrega un portafolio breve de una práctica en maniquí. Incluye el diseño, el resultado y una explicación de qué mejorarías. Puedes adjuntar un PDF o hasta tres archivos con fotos o vídeo.","Submit a short portfolio of mannequin work. Include the design, outcome and what you would improve. Attach a PDF or up to three photo or video files."),
+   criteria:()=>lang("Coherencia del diseño, ejecución y criterio profesional.","Design coherence, execution and professional judgement."),
+   scenario:()=>lang("El resultado final se acerca al diseño, pero una evidencia muestra que dos pestañas quedaron unidas. ¿Qué registrarías y qué mejorarías?","Your result is close to the design, but one image shows two lashes joined together. What would you record and improve?"),
+   answer:()=>lang("Registra el hallazgo y la corrección en el portafolio. Revisa aislamiento, cantidad de adhesivo y comprobación final antes de dar la práctica por terminada.","Record the finding and correction in your portfolio. Review isolation, adhesive amount and the final check before completing the practice."),
+   accept:Object.keys(extensions).join(",")
+  }
+ };
+ const statusText={
+  submitted:()=>lang("En revisión","Awaiting review"),
+  approved:()=>lang("Aprobada","Approved"),
+  changes_requested:()=>lang("Requiere ajustes","Changes requested")
+ };
+ function add(parent,tag,text,className){
+  const item=document.createElement(tag);
+  if(text!=null)item.textContent=text;
+  if(className)item.className=className;
+  parent.append(item);return item;
+ }
+ function button(parent,text,action,className="secondary"){
+  const item=add(parent,"button",text,className);item.type="button";item.onclick=action;return item;
+ }
+ function student(){
+  return currentUser?.id&&currentProfile?.role==="student"&&currentProfile.approval_status==="approved";
+ }
+ function admin(){
+  return currentUser?.id&&currentProfile?.role==="admin"&&currentProfile.approval_status==="approved";
+ }
+ function modal(title){
+  const dialog=document.createElement("dialog");dialog.className="eddeli-practice-dialog";
+  dialog.setAttribute("aria-label",title);
+  const actions=add(dialog,"div",null,"eddeli-practice-actions");
+  button(actions,lang("Cerrar","Close"),()=>dialog.close());
+  add(dialog,"h2",title);
+  const main=add(dialog,"div");
+  document.body.append(dialog);
+  dialog.addEventListener("close",()=>dialog.remove(),{once:true});
+  dialog.showModal();
+  return {dialog,main};
+ }
+ function showGuide(){
+  const {main}=modal(lang("Empieza aquí","Start here"));
+  add(main,"p",lang("Aprenderás a preparar un puesto seguro, diseñar una aplicación, aislar pestañas y practicar técnicas clásicas y de volumen.","Learn to prepare a safe workstation, plan a design, isolate lashes and practise classic and volume techniques."));
+  add(main,"h3",lang("Materiales y dedicación","Materials and study time"));
+  add(main,"p",lang("Ten a mano un maniquí o tiras de práctica, pinzas, fibras de entrenamiento, cepillos y material de higiene. Consulta las fichas antes de usar cada producto. La dedicación total se estima en 40 horas.","Have a mannequin or practice strips, tweezers, training fibres, brushes and hygiene supplies ready. Check product guidance before use. Estimated total study time is 40 hours."));
+  add(main,"h3",lang("Avance y evaluación","Progress and assessment"));
+  add(main,"p",lang("Completa las 13 etapas en orden. Cada test tiene cuatro preguntas y se aprueba con al menos tres aciertos. Después se abre el examen final de 25 preguntas. Mis prácticas reúne las entregas de las etapas 8, 9 y 13.","Complete the 13 stages in order. Each stage test has four questions and requires at least three correct answers. Then the 25-question final exam opens. My practice submissions covers stages 8, 9 and 13."));
+  add(main,"h3",lang("Certificado y revisión práctica","Certificate and practice review"));
+  add(main,"p",lang("El certificado actual acredita la aprobación del examen teórico. El resultado de las prácticas se consulta por separado en Mis prácticas. La práctica en personas requiere supervisión presencial cualificada.","The current certificate records a pass in the theory exam. Practice results are shown separately under My practice submissions. Work on people requires qualified in-person supervision."));
+  add(main,"h3",lang("Cómo pedir ayuda","Getting help"));
+  add(main,"p",lang("Si tienes dudas sobre una entrega, escríbelas en las notas de la práctica para que la instructora pueda responder al revisarla. Para problemas de acceso, contacta con la persona que gestionó tu matrícula.","If you have a question about a submission, include it in your practice notes so the instructor can respond during the review. For access issues, contact the person who handled your enrolment."));
+  if(student())button(main,lang("Abrir mis prácticas","Open my practice submissions"),()=>{main.closest("dialog").close();showStudentPractices();},"primary");
+ }
+ async function submissions(id){
+  const response=await supabaseClient.from(table).select("id,stage_number,notes,files,status,feedback,submitted_at,reviewed_at").eq("student_id",id).order("submitted_at",{ascending:false}).order("id",{ascending:false});
+  if(response.error)throw response.error;
+  return response.data;
+ }
+ function evidence(parent,path,i){
+  const line=add(parent,"li");
+  const open=button(line,lang("Preparar archivo ","Load file ")+(i+1),async()=>{
+   open.disabled=true;
+   const {data,error}=await bucket.createSignedUrl(path,120);
+   if(error){open.disabled=false;open.textContent=lang("Reintentar archivo ","Retry file ")+(i+1);return;}
+   const link=add(line,"a",lang("Abrir archivo ","Open file ")+(i+1));
+   link.href=data.signedUrl;link.target="_blank";link.rel="noopener noreferrer";
+   open.remove();
+   link.focus();
+   window.setTimeout(()=>{
+    if(!link.isConnected)return;
+    link.replaceWith(open);open.disabled=false;
+   },115000);
+  });
+ }
+ function history(host,rows,canReview,refresh){
+  for(const row of rows){
+   const entry=add(host,"article",null,"eddeli-practice-entry");
+   add(entry,"h4",statusText[row.status]()+" · "+new Date(row.submitted_at).toLocaleString());
+   add(entry,"p",row.notes);
+   const files=add(entry,"ul");
+   row.files.forEach((path,i)=>evidence(files,path,i));
+   if(row.feedback)add(entry,"p",lang("Observaciones de la instructora: ","Instructor feedback: ")+row.feedback);
+   if(canReview&&row.status==="submitted"){
+    const form=add(entry,"form",null,"eddeli-practice-form");
+    const label=add(form,"label",lang("Observaciones según la rúbrica","Feedback based on the rubric"));
+    const feedback=add(label,"textarea");feedback.required=true;feedback.minLength=3;feedback.maxLength=2000;feedback.rows=3;
+    const actions=add(form,"div",null,"eddeli-practice-actions");
+    const submit=(label,value)=>{
+     const control=add(actions,"button",label,value==="approved"?"primary":"secondary");
+     control.type="submit";control.value=value;return control;
+    };
+    const approve=submit(lang("Aprobar práctica","Approve practice"),"approved");
+    const revise=submit(lang("Pedir ajustes","Request changes"),"changes_requested");
+    const status=add(form,"p");status.setAttribute("role","status");
+    form.onsubmit=async event=>{
+     event.preventDefault();
+     if(!admin()||![approve,revise].includes(event.submitter))return;
+     const value=feedback.value.trim();
+     if(value.length<3){status.textContent=lang("Escribe una observación breve.","Enter brief feedback.");return;}
+     approve.disabled=revise.disabled=true;
+     try{
+      const response=await supabaseClient.from(table).update({status:event.submitter.value,feedback:value,reviewed_at:new Date().toISOString()})
+       .eq("id",row.id).eq("status","submitted").select("id").maybeSingle();
+      if(response.error)throw response.error;
+      if(!response.data)throw new Error("Already reviewed");
+      form.replaceChildren();
+      add(form,"p",lang("Revisión guardada.","Review saved."));
+      await refresh();
+     }catch(error){status.textContent=lang("No se pudo guardar. Actualiza la ficha y vuelve a intentarlo.","Could not save. Refresh and try again.");approve.disabled=revise.disabled=false;}
+    };
+   }
+  }
+ }
+ function uploadForm(host,stage,refresh){
+  const assignment=assignments[stage];
+  const form=add(host,"form",null,"eddeli-practice-form");
+  const notesLabel=add(form,"label",lang("Notas de tu práctica","Practice notes"));
+  const notes=add(notesLabel,"textarea");notes.required=true;notes.minLength=5;notes.maxLength=2000;notes.rows=3;
+  const fileLabel=add(form,"label",lang("Archivos de práctica en maniquí","Mannequin practice files"));
+  const attachments=add(fileLabel,"input");attachments.type="file";attachments.accept=assignment.accept;attachments.required=true;attachments.multiple=stage!==8;
+  add(form,"small",lang("Hasta 50 MB por archivo. Usa solo evidencias de maniquí sin datos de clientes.","Up to 50 MB per file. Use mannequin evidence without client data."));
+  const submit=add(form,"button",lang("Entregar práctica","Submit practice"),"primary");submit.type="submit";
+  const status=add(form,"p");status.setAttribute("role","status");
+  form.onsubmit=async event=>{
+   event.preventDefault();
+   if(!student())return;
+   const files=[...attachments.files],note=notes.value.trim(),expected=stage===8?1:stage===9?2:null;
+   if(note.length<5||!files.length||files.length>3||(expected&&files.length!==expected)||files.some(file=>!assignment.accept.split(",").includes(file.type)||file.size<1||file.size>52428800)){
+    status.textContent=stage===9?lang("Adjunta dos fotos válidas y escribe tus notas.","Attach two valid photos and enter your notes."):lang("Comprueba los archivos y escribe tus notas.","Check the files and enter your notes.");return;
+   }
+   submit.disabled=true;status.textContent=lang("Enviando práctica…","Uploading practice…");
+   const id=crypto.randomUUID(),user=currentUser.id,paths=[];
+   let inserted=false;
+   try{
+    for(const [i,file] of files.entries()){
+     const path=user+"/"+id+"/"+(i+1)+"."+extensions[file.type];
+     const upload=await bucket.upload(path,file,{contentType:file.type});
+     if(upload.error)throw upload.error;
+     paths.push(path);
+    }
+    const response=await supabaseClient.from(table).insert({id,stage_number:stage,notes:note,files:paths});
+    if(response.error)throw response.error;
+    inserted=true;
+    status.textContent=lang("Práctica enviada a revisión.","Practice submitted for review.");
+    await refresh();
+   }catch(error){
+    if(!inserted&&paths.length)await bucket.remove(paths).catch(()=>{});
+    status.textContent=lang("No se pudo completar la entrega. Comprueba tu conexión y si ya hay una entrega en revisión.","The submission could not be completed. Check your connection and whether a submission is already under review.");
+    submit.disabled=false;
+   }
+  };
+ }
+ function stateMessage(host,error){
+  host.replaceChildren();
+  add(host,"p",error?lang("No se pudieron cargar las prácticas.","Could not load practice submissions."):lang("Cargando prácticas…","Loading practice submissions…")).setAttribute("role","status");
+ }
+ async function showStudentPractices(selected){
+  if(!student())return;
+  const user=currentUser.id,{dialog,main}=modal(lang("Mis prácticas","My practice submissions"));
+  const load=async()=>{
+   stateMessage(main,false);
+   try{
+    const [rows,modules,progress,enrolment,final]=await Promise.all([
+     submissions(user),
+     supabaseClient.from("academy_modules").select("id,module_number").eq("course_id",course).eq("published",true),
+     supabaseClient.from("module_progress").select("module_id,completed").eq("student_id",user).eq("completed",true),
+     supabaseClient.from("enrollments").select("status").eq("student_id",user).eq("course_id",course).maybeSingle(),
+     supabaseClient.from("assessments").select("id").eq("course_id",course).eq("is_final",true).maybeSingle()
+    ]);
+    const failed=[modules,progress,enrolment,final].find(r=>r.error);if(failed)throw failed.error;
+    let theory=false;
+    if(final.data){
+     const attempt=await supabaseClient.from("assessment_attempts").select("id").eq("student_id",user).eq("assessment_id",final.data.id).eq("passed",true).limit(1);
+     if(attempt.error)throw attempt.error;
+     theory=!!attempt.data.length;
+    }
+    if(!dialog.open)return;
+    main.replaceChildren();
+    add(main,"p",theory?lang("Examen teórico aprobado","Theory exam passed"):lang("Examen teórico pendiente de aprobación","Theory exam not yet passed"),"eddeli-practice-summary");
+    const approved=stages.filter(stage=>rows.some(row=>row.stage_number===stage&&row.status==="approved")).length;
+    add(main,"p",lang(approved+" de 3 prácticas aprobadas",approved+" of 3 practices approved"),"eddeli-practice-summary");
+    const completed=new Set(progress.data.map(p=>p.module_id));
+    for(const stage of selected?[selected]:stages){
+     const assignment=assignments[stage];
+     const section=add(main,"section",null,"eddeli-practice-entry");
+     add(section,"h3",lang("Etapa ","Stage ")+stage+" · "+assignment.title());
+     add(section,"p",assignment.instructions());
+     add(section,"p",lang("Criterios: ","Criteria: ")+assignment.criteria());
+     const unlocked=enrolment.data?.status==="approved"&&modules.data.some(m=>m.module_number===stage)&&
+      modules.data.filter(m=>m.module_number<stage).every(m=>completed.has(m.id));
+     if(unlocked){
+      const scenario=add(section,"details");add(scenario,"summary",lang("Practica tu criterio","Practise your judgement"));
+      add(scenario,"p",assignment.scenario());
+      const solution=add(scenario,"details");add(solution,"summary",lang("Ver orientación","See feedback"));add(solution,"p",assignment.answer());
+     }
+     const old=rows.filter(row=>row.stage_number===stage);
+     history(section,old,false);
+     if(!unlocked)add(section,"p",lang("Disponible al desbloquear esta etapa.","Available once you unlock this stage."));
+     else if(!old.some(row=>row.status==="submitted"||row.status==="approved"))uploadForm(section,stage,load);
+    }
+   }catch(error){if(dialog.open)stateMessage(main,true);}
+  };
+  await load();
+ }
+ window.eddeliRenderPracticeReview=function(dialog,studentId){
+  if(!admin())return;
+  const entry=add(dialog,"section",null,"eddeli-practice-review");
+  const toggle=button(entry,lang("Prácticas","Practices"),()=>{}, "secondary");
+  const body=add(entry,"div");body.hidden=true;
+  const refresh=async()=>{
+   stateMessage(body,false);
+   try{
+    const rows=await submissions(studentId);
+    if(!dialog.open)return;
+    body.replaceChildren();
+    for(const stage of stages){
+     const section=add(body,"section",null,"eddeli-practice-entry");
+     const assignment=assignments[stage];
+     add(section,"h3",lang("Etapa ","Stage ")+stage+" · "+assignment.title());
+     add(section,"p",lang("Criterios: ","Criteria: ")+assignment.criteria());
+     const stageRows=rows.filter(row=>row.stage_number===stage);
+     if(!stageRows.length)add(section,"p",lang("Sin entregas.","No submissions."));
+     history(section,stageRows,true,refresh);
+    }
+   }catch(error){if(dialog.open)stateMessage(body,true);}
+  };
+  toggle.setAttribute("aria-expanded","false");
+  toggle.onclick=()=>{
+   body.hidden=!body.hidden;
+   toggle.setAttribute("aria-expanded",String(!body.hidden));
+   if(!body.hidden)void refresh();
+  };
+  dialog.insertBefore(entry,dialog.lastElementChild);
+ };
+ function refreshCard(){
+  intro.hidden=!student();
+  document.getElementById("eddeli-practice-intro-title").textContent=lang("Empieza aquí","Start here");
+  document.getElementById("eddeli-practice-intro-copy").textContent=lang("Consulta la guía del curso y prepara tus prácticas en maniquí.","Read the course guide and prepare your mannequin practice submissions.");
+  guide.textContent=lang("Ver guía del curso","View course guide");
+  mine.textContent=lang("Mis prácticas","My practice submissions");
+ }
+ guide.onclick=showGuide;mine.onclick=()=>showStudentPractices();
+ const originalGo=window.go;
+ window.go=function(...args){const value=originalGo.apply(this,args);refreshCard();return value;};
+ function addStageButton(index){
+  const stage=index+1,view=window.__lashViewState,panel=document.getElementById("lash-lesson-panel");
+  if(!student()||!assignments[stage]||view?.index!==index||!["stage","lesson"].includes(view.mode)||panel.hidden||panel.querySelector(".eddeli-stage-practice"))return;
+  const links=add(panel,"div",null,"eddeli-stage-practice eddeli-practice-actions");
+  button(links,lang("Práctica de la etapa ","Stage practice ")+stage,()=>showStudentPractices(stage),"secondary");
+ }
+ const originalStage=window.renderLashStage,originalLesson=window.renderLashLesson;
+ window.renderLashStage=async function(index){const result=await originalStage.apply(this,arguments);addStageButton(index);return result;};
+ window.renderLashLesson=function(index){const result=originalLesson.apply(this,arguments);addStageButton(index);return result;};
+ document.getElementById("language-switch")?.addEventListener("change",()=>queueMicrotask(refreshCard));
+ refreshCard();
 })();
 </script>
 </body>
