@@ -297,19 +297,21 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
 #cocina .cocina-search-list{display:flex;flex-wrap:wrap;gap:.45rem;padding:0;list-style:none}
 #cocina .cocina-search-list button{text-align:start}
 #cocina .cocina-stage-accordion[hidden]{display:none}
-#cocina .cocina-stage-accordion ol{display:flex;align-items:stretch;gap:.2rem;overflow-x:auto;list-style:none;padding:.25rem 0 .6rem;margin:.8rem 0;touch-action:pan-y;overscroll-behavior-inline:contain}
-#cocina .cocina-fold{display:flex;flex:1 0 1.55rem;min-width:0;min-height:16rem;border:1px solid #bc9181;border-radius:.55rem;background:#fff9ee;color:#35241f;transition:flex-basis .28s ease}
-#cocina .cocina-fold:has(.cocina-fold-title[aria-expanded=true]){flex-basis:min(68vw,17rem);background:#f0e0cf}
-#cocina .cocina-fold-title{flex:0 0 1.55rem;min-width:0;display:flex;flex-direction:column;align-items:center;gap:.4rem;padding:.4rem 0;border:0;background:transparent}
+#cocina .cocina-stage-accordion ol{display:grid;gap:.45rem;list-style:none;padding:0;margin:.8rem 0;overflow-anchor:none}
+#cocina .cocina-fold{min-width:0;border:1px solid #bc9181;border-radius:.55rem;background:#fff9ee;color:#35241f}
+#cocina .cocina-fold-title{width:100%;display:flex;align-items:center;gap:.65rem;padding:.65rem .8rem;border:0;background:transparent;text-align:start;touch-action:pan-x pinch-zoom}
+#cocina .cocina-fold-title[aria-expanded=true]{background:#f0e0cf}
 #cocina .cocina-fold-title:focus-visible{outline-offset:-2px}
-#cocina .cocina-fold-number{font-weight:700;font-size:.83rem}
-#cocina .cocina-fold-name{writing-mode:vertical-rl;font-size:.85rem;line-height:1.1;max-height:13rem}
-#cocina .cocina-fold-panel{min-width:0;flex:1;overflow:hidden;opacity:0;transition:opacity .18s ease}
-#cocina .cocina-fold-title[aria-expanded=true]+.cocina-fold-panel{opacity:1}
-#cocina .cocina-fold-clip{min-width:9rem;padding:.6rem .5rem .55rem 0}
-#cocina .cocina-fold-clip ul{margin:0 0 .6rem;padding-inline-start:1.1rem;font-size:.89rem}
-#cocina .cocina-fold-clip button{padding:.45rem;background:#703c32;color:#fff;font-size:.875rem}
-@media(prefers-reduced-motion:reduce){#cocina .cocina-fold,#cocina .cocina-fold-panel{transition:none}}
+#cocina .cocina-fold-number{font-weight:700;min-width:1.6em}
+#cocina .cocina-fold-name{flex:1}
+#cocina .cocina-fold-title::after{content:"";width:.45em;height:.45em;flex:none;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg);transition:transform .24s ease}
+#cocina .cocina-fold-title[aria-expanded=true]::after{transform:rotate(225deg)}
+#cocina .cocina-fold-panel{display:grid;grid-template-rows:0fr;visibility:hidden;transition:grid-template-rows .24s ease,visibility 0s linear .24s}
+#cocina .cocina-fold-title[aria-expanded=true]+.cocina-fold-panel{grid-template-rows:1fr;visibility:visible;transition-delay:0s}
+#cocina .cocina-fold-clip{min-height:0;overflow:hidden}
+#cocina .cocina-fold-clip ul{margin:.65rem .85rem;padding-inline-start:1.2rem}
+#cocina .cocina-fold-clip button{margin:0 .85rem .75rem;background:#703c32;color:#fff}
+@media(prefers-reduced-motion:reduce){#cocina .cocina-fold-panel,#cocina .cocina-fold-title::after{transition:none}}
 #cocina .cocina-photo{width:min(100%,24rem);margin:.8rem 0 1.35rem;padding:0;overflow:hidden;border:1px solid #bc9181;border-radius:.75rem}
 #cocina .cocina-photo-crop{aspect-ratio:1;background-color:#f0e0cf;background-image:var(--cocina-sheet);background-size:400% 400%;background-position:var(--cocina-x) var(--cocina-y);background-repeat:no-repeat}
 #cocina .cocina-photo figcaption{padding:.55rem .75rem;font-size:.9rem}
@@ -1354,7 +1356,7 @@ async function checkSystem(){const el=document.getElementById("system-status");t
       <div class="cocina-tabs"><button type="button" onclick="go('areas')">Volver a las áreas</button></div>
       <section class="cocina-stage-accordion" aria-labelledby="cocina-etapas-linea" hidden>
         <h3 id="cocina-etapas-linea">Etapas del curso</h3>
-        <p>Pasa el ratón o desliza el dedo por la línea para explorar las etapas. También puedes tocar una etapa.</p>
+        <p>Pasa el ratón por un título o recorre los títulos con el dedo para ver sus lecciones. También puedes tocar una etapa.</p>
         <ol></ol>
       </section>
     </section>`;
@@ -2211,34 +2213,26 @@ async function checkSystem(){const el=document.getElementById("system-status");t
     let gesture;
     let skipTouchClick = false;
     foldByRow.forEach((fold,row) => {
-      fold.title.addEventListener("click", event => {
-        if(event.detail && skipTouchClick){skipTouchClick = false;return;}
-        showFold(fold);
-        if(event.detail === 0 || event.pointerType === "touch"){
-          row.scrollIntoView({block:"nearest",inline:"nearest",behavior:"instant"});
-        }
-      });
-      row.addEventListener("pointerenter", event => {
-        if(event.pointerType === "mouse") showFold(fold);
+      fold.title.addEventListener("click", () => showFold(fold));
+      row.addEventListener("pointermove", event => {
+        if(event.pointerType === "mouse" && event.target.closest(".cocina-fold-title")) showFold(fold);
       });
     });
     track.addEventListener("pointerdown", event => {
-      if(event.pointerType !== "touch") return;
+      if(event.pointerType !== "touch" || !event.target.closest(".cocina-fold-title")) return;
       skipTouchClick = false;
-      gesture = {id:event.pointerId,x:event.clientX,y:event.clientY,lastX:event.clientX,moved:false};
+      gesture = {id:event.pointerId,startY:event.clientY,lastY:event.clientY,moved:false};
     });
     track.addEventListener("pointermove", event => {
       if(gesture?.id !== event.pointerId) return;
-      if(!gesture.moved && (Math.abs(event.clientX-gesture.x)<8 ||
-        Math.abs(event.clientX-gesture.x)<Math.abs(event.clientY-gesture.y))) return;
+      if(!gesture.moved && Math.abs(event.clientY-gesture.startY)<8) return;
       gesture.moved = true;
-      const bounds = track.getBoundingClientRect();
-      if(event.clientX > bounds.right-26 || event.clientX < bounds.left+26){
-        track.scrollLeft += gesture.lastX-event.clientX;
-      }
-      gesture.lastX = event.clientX;
       const row = document.elementFromPoint(event.clientX,event.clientY)?.closest(".cocina-fold");
       if(foldByRow.has(row)) showFold(foldByRow.get(row));
+      if(event.clientY<48 || event.clientY>window.innerHeight-48){
+        window.scrollBy({top:gesture.lastY-event.clientY,behavior:"instant"});
+      }
+      gesture.lastY = event.clientY;
     });
     track.addEventListener("pointerup", event => {
       if(gesture?.id !== event.pointerId) return;
@@ -2247,11 +2241,14 @@ async function checkSystem(){const el=document.getElementById("system-status");t
     });
     track.addEventListener("pointercancel", () => {gesture = undefined;});
     track.addEventListener("click", event => {
-      if(skipTouchClick && event.detail){skipTouchClick = false;event.stopPropagation();}
+      if(skipTouchClick && event.detail && event.pointerType === "touch"){
+        skipTouchClick = false;
+        event.stopPropagation();
+      }
     },true);
     function renderView(){
       stageAccordion.hidden = view !== "inicio";
-      if(stageAccordion.hidden){showFold();track.scrollLeft = 0;}
+      if(stageAccordion.hidden){showFold();gesture = undefined;skipTouchClick = false;}
       section.querySelector(".cocina-hero").hidden = view !== "inicio";
       section.querySelectorAll("[data-cocina]").forEach(button => button.setAttribute("aria-pressed", String(button.dataset.cocina === view)));
       if(view === "inicio"){
