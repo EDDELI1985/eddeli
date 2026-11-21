@@ -690,15 +690,27 @@ async function stopStudentPresence(markOffline){
 async function refreshStudentPresence(){
  const list=document.getElementById("students-list");
  if(!list||!document.getElementById("admin-alumnos")?.classList.contains("active"))return;
- const cutoff=new Date(Date.now()-STUDENT_PRESENCE_STALE_MS).toISOString();
+ const cutoff=new Date(Date.now()-5*60*1000).toISOString();
  try{
-  const result=await supabaseClient.from("student_presence_sessions").select("student_id,last_seen_at").gte("last_seen_at",cutoff);
+  const result=await supabaseClient.from("student_presence_sessions").select("student_id,last_seen_at,ended_at").or("last_seen_at.gte."+cutoff+",ended_at.gte."+cutoff);
   if(result.error)throw result.error;
   const now=Date.now();
   const onlineIds=new Set((result.data||[]).filter(function(row){
    const seen=Date.parse(row.last_seen_at);
-   return Number.isFinite(seen)&&seen<=now&&now-seen<=STUDENT_PRESENCE_STALE_MS;
+   return !row.ended_at&&Number.isFinite(seen)&&seen<=now&&now-seen<=STUDENT_PRESENCE_STALE_MS;
   }).map(function(row){return row.student_id;}));
+  const recentlySeen=new Set((result.data||[]).filter(row=>{
+   const seen=Date.parse(row.ended_at||row.last_seen_at);
+   return Number.isFinite(seen)&&seen<=now&&now-seen<5*60*1000;
+  }).map(row=>row.student_id));
+  list.querySelectorAll(".student-tracking-button").forEach(button=>{
+   const online=onlineIds.has(button.dataset.studentId);
+   const recent=recentlySeen.has(button.dataset.studentId);
+   const status=online?"En la aplicación":recent?"Actividad en los últimos 5 minutos":"Sin actividad reciente";
+   button.classList.toggle("is-recent",online||recent);
+   button.title=status;
+   button.setAttribute("aria-label","Ver seguimiento de "+button.dataset.studentName+" · "+status);
+  });
   list.querySelectorAll(".student-presence").forEach(function(button){
    const online=onlineIds.has(button.dataset.studentId);
    button.classList.toggle("is-online",online);
@@ -749,6 +761,8 @@ async function loadStudents(){
     const tracking=document.createElement("button");
     tracking.type="button";
     tracking.className="student-tracking-button";
+    tracking.dataset.studentId=s.id;
+    tracking.dataset.studentName=title.textContent;
     tracking.textContent="Ver seguimiento";
     tracking.setAttribute("aria-label","Ver seguimiento de "+title.textContent);
     tracking.onclick=()=>window.showEddeliStudentTracking(s.id,title.textContent);
@@ -1086,6 +1100,8 @@ if (typeof window.renderLashCurriculum === "function") {
 <style>
 .student-tracking-button{margin-inline-start:.65rem;background:#6d28d9;color:#fff;border:0;border-radius:8px;padding:.5rem .8rem;font-weight:700;cursor:pointer}
 .student-tracking-button:hover{background:#5b21b6}
+.student-tracking-button.is-recent{background:#166534}
+.student-tracking-button.is-recent:hover{background:#14532d}
 .student-tracking-dialog{width:min(760px,calc(100% - 2rem));max-height:85vh;overflow:auto;padding:1.35rem;border:1px solid #ddd6fe;border-radius:16px;background:#fff;color:#172033}
 .student-tracking-dialog::backdrop{background:#0f172a99}
 .student-tracking-dialog h2,.student-tracking-dialog h3{margin:.85rem 0 .4rem}
@@ -1200,7 +1216,7 @@ if (typeof window.renderLashCurriculum === "function") {
     supabaseClient.from("module_progress").select("module_id,completed").eq("student_id",studentId),
     supabaseClient.from("enrollments").select("status").eq("student_id",studentId).eq("course_id",courseId).maybeSingle(),
     supabaseClient.from("eddeli_study_events").select("session_id,screen,stage_number,lesson_number,recorded_at").eq("student_id",studentId).order("recorded_at",{ascending:false}).order("id",{ascending:false}).limit(60),
-    supabaseClient.from("student_presence_sessions").select("session_id").eq("student_id",studentId).gte("last_seen_at",seenSince)
+    supabaseClient.from("student_presence_sessions").select("session_id").eq("student_id",studentId).is("ended_at",null).gte("last_seen_at",seenSince)
    ]);
    const failed=responses.find(response=>response.error);
    if(failed)throw failed.error;
