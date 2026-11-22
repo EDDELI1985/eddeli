@@ -73,7 +73,7 @@ function show(data,value){
  const counts=[['decoracion',data.decoration],['detalle',data.detail_rewards],['descuento',data.discount],['final',data.final_rewards]];
  const available=counts.filter(pair=>pair[1]>0).map(([code,count])=>rewards[code]+' × '+count);
  say(available.join(' · ')||'Todavía no tienes premios disponibles.','fan-benefits');
- get('fan-private').value=value;refreshPrices();say('Tarjeta actualizada.');
+ get('fan-private').value=value;refreshPrices();loadPhoto(value);say('Tarjeta actualizada.');
 }
 async function load(value){show(await rpc('card',{p_token:value}),value);}
 const recoveryCode = get('fan-recover').elements.code;
@@ -96,7 +96,7 @@ submit('fan-join',async fields=>{
 });
 get('fan-refresh').onclick=()=>load(token).catch(error=>say(error.message));
 get('fan-signout').onclick=()=>{
- token='';card=null;requestId=undefined;localStorage.removeItem('eddeli.club.card');
+ token='';card=null;requestId=undefined;profileRevision++;displayPhoto(null);photoForm.reset();localStorage.removeItem('eddeli.club.card');
  get('fan-member').hidden=true;get('fan-identify').hidden=false;
  get('fan-private').value='';get('fan-wa').hidden=true;get('fan-wa').removeAttribute('href');say('');
 };
@@ -104,6 +104,7 @@ get('fan-service').onchange=refreshPrices;
 get('fan-request').oninput=()=>{requestId=undefined;get('fan-wa').hidden=true;};
 submit('fan-request',async fields=>{
  const value=fields.service.value,price=prices.get(value);
+ if(!profileReady)throw Error('Completa tu perfil con foto antes de solicitar una cita.');
  if(!card||price===undefined)throw Error('Elige un servicio.');
  requestId ||= crypto.randomUUID();
  const preference=fields.preference.value.trim(),reward=fields.reward.value,socia=card;
@@ -130,7 +131,7 @@ async function staffLists(){
   button.type='button';button.textContent='Cargar solicitud';button.onclick=()=>{
    const fields=get('fan-visit').elements;fields.member.value=request.member;fields.reference.value='club-'+request.id;fields.service.value=request.service;fields.reward.value='';fields.service.focus();
   };
-  row.append(button);return row;
+  row.append(button,profileButton(request.member));return row;
  }));
  say(requests.length?requests.length+' solicitudes pendientes':'No hay solicitudes pendientes.','fan-request-count');
 }
@@ -164,6 +165,97 @@ submit('fan-visit',async fields=>{
  say('Visita registrada para '+result.name+' · '+result.stamps9+'/9 sellos.','fan-admin-status');
  try{await staffLists();}catch{say('Visita registrada. Actualiza los listados para ver el cambio.','fan-admin-status');}
 },'fan-admin-status');
+
+const profile = document.createElement('section');
+profile.innerHTML = '<h3>Mi perfil de socia</h3><p>Sube una foto reciente de tu rostro en la que se te vea bien. El salón la usa para reconocer a la titular cuando llega a una cita y evitar que alguien use su tarjeta haciéndose pasar por ella. Tu foto queda en tu tarjeta y la puede consultar el personal autorizado. Tú decides si la adjuntas a tu mensaje de WhatsApp.</p><img alt="Foto de perfil de la socia" width="88" height="88" hidden><form><label>Tu foto de perfil<input type="file" accept="image/*" required></label><button>Guardar mi perfil</button></form><p role="status"></p>';
+get('fan-name').after(profile);
+const photoForm = profile.querySelector('form');
+const photoStatus = profile.querySelector('[role=status]');
+const avatar = profile.querySelector('img');
+avatar.style.cssText = 'object-fit:cover;border-radius:50%;border:2px solid #b887a2';
+const appointment = get('fan-request').closest('details');
+const downloadPhoto = document.createElement('a');
+downloadPhoto.textContent = 'Descargar mi foto para adjuntarla en WhatsApp';
+downloadPhoto.download = 'foto-club-eli.jpg';
+downloadPhoto.hidden = true;
+get('fan-wa').after(downloadPhoto);
+let profileReady = false;
+let profileRevision = 0;
+function displayPhoto(photo) {
+ profileReady = Boolean(photo);
+ avatar.hidden = !photo;
+ photoForm.hidden = Boolean(photo);
+ appointment.hidden = !photo;
+ downloadPhoto.hidden = !photo || get('fan-wa').hidden;
+ if (photo) { avatar.src = photo; downloadPhoto.href = photo; }
+ else { avatar.removeAttribute('src'); downloadPhoto.removeAttribute('href'); }
+}
+async function loadPhoto(value) {
+ const revision = ++profileRevision;
+ displayPhoto(null);
+ photoForm.hidden = true;
+ photoStatus.textContent = 'Cargando tu perfil…';
+ try {
+  const photo = await rpc('member_profile',{p_token:value});
+  if (revision !== profileRevision || token !== value) return;
+  displayPhoto(photo);
+  photoStatus.textContent = photo ? '' : 'Completa tu perfil para pedir citas desde tu tarjeta.';
+ } catch {
+  if (revision === profileRevision && token === value) photoStatus.textContent = 'No pudimos cargar tu perfil. Pulsa Actualizar sellos para volver a intentar.';
+ }
+}
+photoForm.addEventListener('submit',async event => {
+ event.preventDefault();
+ const file = photoForm.querySelector('input').files[0];
+ const button = photoForm.querySelector('button');
+ const value = token;
+ if (!file || !value || button.disabled) return;
+ button.disabled = true;
+ photoStatus.textContent = 'Guardando tu foto…';
+ try {
+  if (file.size > 20 * 1024 * 1024) throw Error('Elige una foto de menos de 20 MB.');
+  const source = URL.createObjectURL(file);
+  const image = new Image();
+  try { image.src = source; await image.decode(); }
+  finally { URL.revokeObjectURL(source); }
+  const canvas = document.createElement('canvas');
+  const side = Math.min(image.naturalWidth,image.naturalHeight);
+  canvas.width = canvas.height = 320;
+  canvas.getContext('2d').drawImage(image,(image.naturalWidth-side)/2,(image.naturalHeight-side)/2,side,side,0,0,320,320);
+  if (token !== value) return;
+  const photo = await rpc('member_profile',{p_token:value,p_photo:canvas.toDataURL('image/jpeg',.76)});
+  if (token !== value) return;
+  displayPhoto(photo);
+  photoStatus.textContent = 'Perfil guardado.';
+  photoForm.reset();
+ } catch(error) { if(token === value) photoStatus.textContent = error.message || 'Elige una foto que se pueda abrir.'; }
+ finally { button.disabled = false; }
+});
+new MutationObserver(() => {
+ downloadPhoto.hidden = !profileReady || get('fan-wa').hidden;
+}).observe(get('fan-wa'),{attributes:true,attributeFilter:['hidden']});
+function profileButton(id) {
+ const button = document.createElement('button');
+ button.type = 'button';
+ button.textContent = 'Ver foto de socia';
+ button.onclick = async () => {
+  const access = session;
+  button.disabled = true;
+  try {
+   const photo = await rpc('staff_profile',{p_member:id},access);
+   if (access !== session || !button.isConnected) return;
+   if (!photo) { say('La socia todavía no ha guardado su foto.','fan-admin-status'); return; }
+   const image = document.createElement('img');
+   image.alt = 'Foto de perfil de la socia '+id;
+   image.width = image.height = 88;
+   image.style.cssText = 'display:block;object-fit:cover;border-radius:50%';
+   image.src = photo;
+   button.replaceWith(image);
+  } catch(error) { if(access === session) say(error.message,'fan-admin-status'); }
+  finally { button.disabled = false; }
+ };
+ return button;
+}
 function invitationEntry(){
  const hash=location.hash.match(/^#inscripcion-club=([0-9a-f-]{36})$/i);
  if(!hash||typeof window.go!=='function')return false;
