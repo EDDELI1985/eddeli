@@ -372,6 +372,7 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
   <div class="side-label">MENÚ PRINCIPAL</div>
   <button class="navbtn active" data-page="inicio" onclick="go('inicio')"><span class="navicon">⌂</span> Inicio</button>
   <button class="navbtn" data-page="areas" onclick="go('areas')"><span class="navicon">✧</span> Explorar áreas</button>
+  <button class="navbtn" data-page="club-eli" onclick="go('club-eli')"><span class="navicon" aria-hidden="true">✦</span> Club ELI</button>
   <button class="navbtn" data-page="academia" onclick="go('academia')"><span class="navicon">🎓</span> Academia</button>
   <button class="navbtn" data-page="cursos" onclick="go('cursos')"><span class="navicon">▤</span> Cursos</button>
   <button class="navbtn" data-page="biblioteca" onclick="go('biblioteca')"><span class="navicon">▣</span> Biblioteca</button>
@@ -402,6 +403,11 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
     <small id="install-app-status">Disponible para Android, iPhone, iPad y ordenador mediante instalación desde el navegador.</small>
   </div>
 </div>
+<div class="card" style="margin:1rem 0">
+  <h2>Club ELI</h2>
+  <p>Tu tarjeta de socia, tus sellos y tus premios.</p>
+  <button type="button" class="secondary" onclick="go('club-eli')">Abrir Club ELI</button>
+</div>
 <div class="home-heading"><div><span class="eyebrow dark-eyebrow">DESCUBRE TU PRÓXIMO PASO</span><h2 class="section-title">¿Qué te gustaría aprender?</h2><p>Explora nuestras áreas de conocimiento y encuentra el camino que va contigo.</p></div><button class="text-action" onclick="go('areas')">Ver todas las áreas →</button></div>
 <div class="learning-grid">
 <button class="learning-card beauty-card" onclick="openLearningArea('beauty')"><span class="learning-icon">✿</span><span class="learning-name">Belleza y estética</span><span class="learning-desc">ELI BEAUTY ACADEMY</span><span class="learning-arrow">↗</span></button>
@@ -425,6 +431,15 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
 <button class="learning-card business-card" onclick="openLearningArea('business')"><span class="learning-icon">↗</span><span class="learning-name">Desarrollo y negocios</span><span class="learning-desc">Impulsa tus proyectos</span></button>
 <button class="learning-card more-card" onclick="openLearningArea('more')"><span class="learning-icon">＋</span><span class="learning-name">Más áreas</span><span class="learning-desc">Seguimos creciendo</span></button></div><div id="area-detail" class="area-detail" hidden></div></section>
 <section id="cocina" class="view" hidden aria-label="Cocina y gastronomía"></section>
+
+<section id="club-eli" class="view" aria-labelledby="club-eli-title">
+  <div class="card">
+    <h1 id="club-eli-title" class="section-title">Club ELI</h1>
+    <p>Acceso para socias registradas. Usa tu tarjeta o tu código privado de recuperación para consultar tus sellos, ver tus premios y pedir una cita.</p>
+    <a class="primary" style="display:inline-block;text-decoration:none" href="https://elibeautystudio.blogspot.com/#tarjeta-club-eli">Entrar al Club ELI</a>
+    <button type="button" class="secondary" onclick="go('inicio')">Volver a Inicio</button>
+  </div>
+</section>
 
 <section id="acceso" class="view">
   <h1 class="section-title">Acceso a EDDELI</h1>
