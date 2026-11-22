@@ -86,8 +86,18 @@ submit('fan-recover', fields => {
  }
  return load(code);
 });
+const invitationInput=get('fan-join').elements.invite;
+invitationInput.removeAttribute('pattern');
+invitationInput.removeAttribute('maxlength');
+invitationInput.placeholder='Pega el enlace o el código de invitación';
+function parseInvitation(value) {
+ const raw=value.trim();
+ const match=raw.match(/^(?:https:\/\/[^\s#]+#(?:inscripcion-club|invita-club-eli)=)?([0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12})$/i);
+ return match?.[1].toLowerCase();
+}
 submit('fan-join',async fields=>{
- const invitation=fields.invite.value.trim().toLowerCase();
+ const invitation=parseInvitation(fields.invite.value);
+ if(!invitation)throw Error('Pega el enlace de invitación completo que te envió el salón o copia el código que aparece al final del enlace.');
  const pending='eddeli.club.pending.'+invitation;
  let secret=localStorage.getItem(pending);
  if(!secret){secret=Array.from(crypto.getRandomValues(new Uint8Array(32)),b=>b.toString(16).padStart(2,'0')).join('');localStorage.setItem(pending,secret);}
