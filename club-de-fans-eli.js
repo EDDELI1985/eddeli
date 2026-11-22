@@ -98,10 +98,10 @@ get('fan-refresh').onclick=()=>load(token).catch(error=>say(error.message));
 get('fan-signout').onclick=()=>{
  token='';card=null;requestId=undefined;profileRevision++;displayPhoto(null);photoForm.reset();localStorage.removeItem('eddeli.club.card');
  get('fan-member').hidden=true;get('fan-identify').hidden=false;
- get('fan-private').value='';get('fan-wa').hidden=true;get('fan-wa').removeAttribute('href');say('');
+ get('fan-private').value='';clearPostal();say('');
 };
 get('fan-service').onchange=refreshPrices;
-get('fan-request').oninput=()=>{requestId=undefined;get('fan-wa').hidden=true;};
+get('fan-request').oninput=()=>{requestId=undefined;clearPostal();};
 submit('fan-request',async fields=>{
  const value=fields.service.value,price=prices.get(value);
  if(!profileReady)throw Error('Completa tu perfil con foto antes de solicitar una cita.');
@@ -111,8 +111,6 @@ submit('fan-request',async fields=>{
  const requestCardToken=token;
 
  const preparedId=requestId;
- const link=get('fan-wa');
- link.hidden=true;
  clearPostal();
  let file;
  try { file=await makePostal(socia,value.split('|')[1],preference,reward,price,avatar.src); }
@@ -121,11 +119,8 @@ submit('fan-request',async fields=>{
  await rpc('request_visit',{p_token:requestCardToken,p_id:preparedId,p_service:value,p_preference:preference,p_reward:reward||null});
  if(token!==requestCardToken||requestId!==preparedId)return;
  postalFile=file;postalUrl=URL.createObjectURL(file);
- preview.src=postalUrl;download.href=postalUrl;postal.hidden=false;
- link.href='https://wa.me/5350655825';
- link.textContent='Abrir chat del salón en WhatsApp';
- link.hidden=false;
- say('Carné listo. Compártelo por WhatsApp o descárgalo y adjúntalo en el chat del salón.');
+ preview.src=postalUrl;postal.hidden=false;
+ say('');
 });
 let session='';
 async function staffLists(){
@@ -193,30 +188,27 @@ preview.alt = 'Vista previa del carné de la cita';
 preview.style.cssText = 'display:block;width:min(100%,360px);height:auto;margin:.75rem 0;border-radius:12px';
 const share = document.createElement('button');
 share.type = 'button';
-share.textContent = 'Compartir carné como imagen';
-const download = document.createElement('a');
-download.textContent = 'Descargar carné';
-download.download = 'Club-ELI-cita.jpg';
-download.style.cssText = 'display:inline-block;margin:.5rem;color:#74284e;text-decoration:underline';
+share.textContent = 'Enviar';
 const help = document.createElement('p');
-help.textContent = 'Elige WhatsApp y selecciona el chat del salón (+53 5065 5825). También puedes descargar el carné, abrir el chat del salón y adjuntar la imagen.';
-postal.append(preview,share,download,help);
+help.textContent = 'Elige WhatsApp y selecciona el chat del salón (+53 5065 5825).';
+postal.append(preview,share,help);
 get('fan-wa').after(postal);
 let postalFile;
 let postalUrl;
 function clearPostal(){
  if(postalUrl)URL.revokeObjectURL(postalUrl);
- postalUrl=undefined;postalFile=undefined;postal.hidden=true;preview.removeAttribute('src');download.removeAttribute('href');
+ postalUrl=undefined;postalFile=undefined;postal.hidden=true;preview.removeAttribute('src');
 }
 share.onclick=async()=>{
+ if(!postalFile)return;
  const data={files:[postalFile]};
- if(!postalFile||!navigator.canShare?.(data)){
-  say('Descarga el carné y adjúntalo al mensaje de WhatsApp.');return;
+ if(!navigator.canShare?.(data)){
+  say('Abre EDDELI desde un teléfono que permita compartir imágenes con WhatsApp.');
+  return;
  }
  try{await navigator.share(data);}
- catch(error){if(error.name!=='AbortError')say('Descarga el carné y adjúntalo al mensaje de WhatsApp.');}
+ catch(error){if(error.name!=='AbortError')say('No pudimos compartir el carné. Vuelve a pulsar Enviar.');}
 };
-new MutationObserver(()=>{if(get('fan-wa').hidden)clearPostal();}).observe(get('fan-wa'),{attributes:true,attributeFilter:['hidden']});
 async function makePostal(socia,service,preference,reward,price,photo){
  const image=new Image();
  image.src=photo;
