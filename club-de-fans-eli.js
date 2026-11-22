@@ -396,7 +396,7 @@ function installClubHelp(){
 #fan-eli-help label{display:block;margin:.65rem 0 .4rem}
 #fan-eli-help input{display:block;box-sizing:border-box;width:100%;padding:8px;margin-top:4px;border:1px solid #b887a2;border-radius:8px;font:inherit;background:white;color:#51263e}
 #fan-eli-answer:not(:empty){padding:9px;border-radius:9px;background:white}
-</style><button class="eli-orb" type="button" aria-label="Pregúntale a ELI" title="Pregúntale a ELI" aria-expanded="false" aria-controls="fan-eli-help">E</button><section id="fan-eli-help" aria-label="Chat con ELI" hidden><header><strong>ELI</strong><button type="button" data-close>Cerrar</button></header><p id="fan-eli-greeting"></p><p>Te ayudo con el Club de Fans ELI.</p><div id="fan-eli-topics" style="display:flex;flex-wrap:wrap;gap:.4rem"></div><form><label>Tu pregunta<input name="question" required maxlength="180" placeholder="Ej. ¿Qué gano con seis sellos?" autocomplete="off"></label><button>Enviar</button></form><div id="fan-eli-answer" role="status" style="margin-top:.65rem"></div></section>`;
+</style><button class="eli-orb" type="button" aria-label="Pregúntale a ELI" title="Pregúntale a ELI" aria-expanded="false" aria-controls="fan-eli-help">E</button><section id="fan-eli-help" aria-label="Chat con ELI" hidden><header><strong>ELI</strong><button type="button" data-close>Cerrar</button></header><p id="fan-eli-greeting"></p><p id="fan-eli-context"></p><div id="fan-eli-topics" style="display:flex;flex-wrap:wrap;gap:.4rem"></div><form><label>Tu pregunta<input name="question" required maxlength="180" placeholder="Ej. ¿Qué gano con seis sellos?" autocomplete="off"></label><button>Enviar</button></form><div id="fan-eli-answer" role="status" style="margin-top:.65rem"></div></section>`;
  document.body.append(entry);
  const toggle=entry.querySelector('.eli-orb');
  const panel=entry.querySelector('#fan-eli-help');
@@ -408,9 +408,7 @@ function installClubHelp(){
   panel.hidden=!open;
   toggle.setAttribute('aria-expanded',String(open));
   if(!open){toggle.focus();return;}
-  const userProfile=typeof currentUser!=='undefined'&&currentUser&&typeof currentProfile!=='undefined'?currentProfile:null;
-  const name=(userProfile?.full_name||(root.classList.contains('active')?card?.name:'')||'').trim().split(/\s+/)[0];
-  greeting.textContent=name?'Hola, '+name+'. ¿En qué te puedo ayudar?':'Hola, soy ELI. ¿En qué te puedo ayudar?';
+  refreshContext();
   answer.textContent='';
   form.reset();
   close.focus();
@@ -425,21 +423,95 @@ function installClubHelp(){
   rewards:'Ganas acceso anticipado a turnos con 1 sello, un detalle con 3, un 5 % de descuento con 6 y una decoración especial en dos uñas con 9.',
   appointment:'Abre tu tarjeta, entra en Pedir cita y elige tu servicio. Después prepara el carné y toca Enviar. El salón confirma el turno.',
   card:'Si tienes una invitación, abre el enlace y activa tu tarjeta. Para volver a abrirla en otro dispositivo, usa el código privado que guardaste. Si lo perdiste, contacta al salón.',
-  restricted:'Puedo orientar sobre el Club ELI. Para recuperar tu acceso, usa tu código privado o contacta al salón.'
+  restricted:'Puedo orientarte dentro de EDDELI. Para recuperar tu acceso, usa la opción oficial de tu cuenta o contacta al equipo.'
  };
- const topics=[['services','Servicios y precios'],['rewards','Sellos y premios'],['appointment','Pedir una cita'],['card','Ayuda con mi tarjeta']];
+ const clubTopics=[['services','Servicios y precios'],['rewards','Sellos y premios'],['appointment','Pedir una cita'],['card','Ayuda con mi tarjeta']];
+ const academy=['Academia','Abre Academia para ver las etapas de ELI Beauty Academy. Los módulos se desbloquean según tu progreso.'];
+ const access=['Acceso y registro','Si eres estudiante, entra con tu cuenta aprobada. Si todavía no tienes cuenta, usa Solicitar registro desde Acceso.'];
+ const contexts={
+  inicio:['Inicio','Desde Inicio puedes explorar las áreas, entrar a la academia o abrir el Club de Fans ELI.'],
+  areas:['Explorar áreas','Toca una casilla para abrir el área. Las que indican Próximamente están en preparación.'],
+  cocina:['Cocina y gastronomía','El curso de Cocina está en preparación. Por ahora su vista está reservada a administración.'],
+  'club-eli':['Club de Fans ELI','Desde tu tarjeta puedes consultar los sellos y premios o pedir una cita.'],
+  acceso:access,'login-alumno':access,registro:access,
+  'login-admin':['Acceso de administración','Usa tu cuenta administrativa autorizada para abrir el panel.'],
+  admin:['Administración','Desde el panel puedes abrir Alumnos, Cursos, Exámenes, Certificados, Cocina y Club de Fans ELI.'],
+  'admin-alumnos':['Gestión de alumnos','En esta sección puedes revisar las solicitudes de matrícula y gestionar el acceso de estudiantes.'],
+  'admin-cursos':['Gestión de cursos','Aquí puedes revisar los cursos y módulos de la academia.'],
+  'admin-examenes':['Gestión de exámenes','Aquí puedes revisar las evaluaciones y las preguntas de cada examen.'],
+  'admin-certificados':['Certificados','Aquí puedes gestionar las acreditaciones de la academia.'],
+  'admin-config':['Configuración','Aquí puedes consultar el estado de tu cuenta administrativa y la conexión.'],
+  estudiante:['Mi formación','Desde tu panel puedes consultar tus cursos, progresos, exámenes y certificados.'],
+  academia:academy,modulo:academy,
+  cursos:['Mis cursos','Aquí aparecen tus cursos disponibles. Abre un curso para ver sus módulos y continuar.'],
+  'course-detail':['Detalle del curso','En esta pantalla puedes ver los módulos de tu curso y abrir los disponibles.'],
+  biblioteca:['Biblioteca','Aquí encuentras los recursos de estudio disponibles para tu cuenta.'],
+  notificaciones:['Notificaciones','Aquí puedes consultar tus avisos de EDDELI.'],
+  perfil:['Mi perfil','Aquí puedes revisar tu cuenta y la información disponible para tu perfil.']
+ };
+ const questionTopics=[
+  [/\b(cocina|gastronomia|recetas)\b/,'cocina'],
+  [/\b(biblioteca|materiales de estudio)\b/,'biblioteca'],
+  [/\b(notificaciones?|avisos?)\b/,'notificaciones'],
+  [/\b(registr\w*|matricul\w*|iniciar sesion)\b/,'acceso'],
+  [/\b(certificados?|acreditaciones?)\b/,'admin-certificados'],
+  [/\b(academia|etapas?|lecciones?|modulos?|estudiar)\b/,'academia'],
+  [/\b(cursos?|formacion|progreso)\b/,'cursos'],
+  [/\b(perfil|cuenta)\b/,'perfil']
+ ];
  function respond(message){answer.textContent=message;}
- for(const [topic,label] of topics){
-  const button=document.createElement('button');button.type='button';button.textContent=label;
-  button.onclick=()=>respond(replies[topic]);
-  panel.querySelector('#fan-eli-topics').append(button);
+ function normalize(value){return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
+ function locationContext(){
+  const page=document.querySelector('main.content > .view.active')?.id||'inicio';
+  const detail=document.getElementById('area-detail');
+  const heading=page==='areas'&&detail&&!detail.hidden?detail.querySelector('h2')?.textContent:null;
+  return heading?[page,heading,'Esta área está en preparación. Puedes volver a la cuadrícula para explorar las áreas disponibles.']:[page,...(contexts[page]||contexts.inicio)];
  }
+ let previousContext='';
+ function refreshContext(){
+  const [page,area,hint]=locationContext();
+  const profile=typeof currentUser!=='undefined'&&currentUser&&typeof currentProfile!=='undefined'?currentProfile:null;
+  const name=(profile?.full_name||(page==='club-eli'?card?.name:'')||'').trim().split(/\s+/)[0];
+  greeting.textContent=name?'Hola, '+name+'. ¿En qué te puedo ayudar?':'Hola, soy ELI. ¿En qué te puedo ayudar?';
+  panel.querySelector('#fan-eli-context').textContent='Estás en '+area+'.';
+  const contextKey=page+'|'+area+'|'+name;
+  if(contextKey===previousContext)return;
+  previousContext=contextKey;
+  answer.textContent='';
+  const container=panel.querySelector('#fan-eli-topics');
+  container.replaceChildren();
+  const choices=page==='club-eli'?clubTopics.map(([key,label])=>[label,replies[key]]):[
+   ['Ayuda en esta sección',hint],['Cómo acceder',access[1]],['Club de Fans ELI',contexts['club-eli'][1]]
+  ];
+  for(const [label,message] of choices){
+   const button=document.createElement('button');button.type='button';button.textContent=label;
+   button.onclick=()=>respond(message);container.append(button);
+  }
+ }
+ const main=root.parentElement;
+ const observer=new MutationObserver(()=>{if(!panel.hidden)refreshContext();});
+ for(const view of main.querySelectorAll(':scope > .view'))observer.observe(view,{attributes:true,attributeFilter:['class','hidden']});
+ const areaDetail=document.getElementById('area-detail');
+ if(areaDetail)observer.observe(areaDetail,{attributes:true,attributeFilter:['hidden'],childList:true});
  form.onsubmit=event=>{
   event.preventDefault();
   const input=form.elements.question;
   const question=input.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
   input.value='';
   if(/\b(contrasenas?|claves?|pin|codigos?)\b/.test(question)){respond(replies.restricted);return;}
+  const [page,area,hint]=locationContext();
+  if(/\b(ayuda|donde estoy|que puedo hacer)\b/.test(question)){respond(hint);return;}
+  const areaMatch=Object.values(typeof learningAreas==='undefined'?{}:learningAreas).find(item=>normalize(item.name).length>8&&question.includes(normalize(item.name)));
+  if(areaMatch&&areaMatch.status!=='Disponible'&&!/\bcocina\b/.test(question)){respond(areaMatch.description+' Esta área está en preparación.');return;}
+  const routed=questionTopics.find(([pattern])=>pattern.test(question));
+  if(routed&&!/\b(club|sellos?|premios?|citas?)\b/.test(question)){
+   const key=routed[1];
+   respond(key==='admin-certificados'&& !page.startsWith('admin')?'Consulta tus certificados desde Mi perfil.':contexts[key][1]);return;
+  }
+  if(/\b(precios?|cuesta|coste)\b/.test(question)){
+   const service=[...prices.entries()].find(([key])=>question.includes(normalize(key.split('|')[1])));
+   if(service){respond(service[0].split('|')[1]+': '+service[1].toFixed(2)+' CUP. Con el 5 % de descuento por reserva, el total es '+(service[1]*.95).toFixed(2)+' CUP.');return;}
+  }
   if(/\b(sellos?|premios?|descuento|gano)\b/.test(question)){
    const match=question.match(/\b(1|3|6|9|uno|un|tres|seis|nueve)\s+sellos?\b/);
    const count=match&&({uno:1,un:1,tres:3,seis:6,nueve:9}[match[1]]||Number(match[1]));
@@ -449,7 +521,7 @@ function installClubHelp(){
   if(/\b(citas?|turnos?|reserv\w*)\b/.test(question)){respond(replies.appointment);return;}
   if(/\b(precios?|servicios?|cuesta|coste)\b/.test(question)){respond(replies.services);return;}
   if(/\b(tarjetas?|acceso|invitacion|activar)\b/.test(question)){respond(replies.card);return;}
-  respond('Puedo ayudarte con los servicios, los sellos, las citas y el acceso a tu tarjeta del Club ELI. Elige uno de los temas de arriba.');
+  respond('No tengo una respuesta confirmada para esa pregunta. '+hint);
  };
 }
 installClubHelp();
