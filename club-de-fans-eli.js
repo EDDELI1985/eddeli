@@ -109,19 +109,23 @@ submit('fan-request',async fields=>{
  requestId ||= crypto.randomUUID();
  const preference=fields.preference.value.trim(),reward=fields.reward.value,socia=card;
  const requestCardToken=token;
- await rpc('request_visit',{p_token:requestCardToken,p_id:requestId,p_service:value,p_preference:preference,p_reward:reward||null});
- if(token!==requestCardToken)return;
- const message=['Hola, soy '+socia.name+', socia n.º '+socia.id+' del Club ELI.','Quiero reservar '+value.split('|')[1]+'.',preference&&'Prefiero '+preference+'.',reward&&'Quisiera usar '+rewards[reward]+'.','Precio '+price.toFixed(2)+' CUP · Descuento por reserva '+(price*.05).toFixed(2)+' CUP · Total '+(price*.95).toFixed(2)+' CUP.'].filter(Boolean).join('\n');
- const link=get('fan-wa');link.href='https://wa.me/5350655825?text='+encodeURIComponent(message);link.hidden=false;
- try {
-  const file=await makePostal(socia,value.split('|')[1],preference,reward,price,avatar.src);
-  if(token!==requestCardToken||link.hidden)return;
-  clearPostal();postalFile=file;postalUrl=URL.createObjectURL(file);
-  preview.src=postalUrl;download.href=postalUrl;postal.hidden=false;
-  say('Solicitud guardada. Comparte el carné para enviar la foto y los datos juntos.');
- }catch{
-  if(token===requestCardToken&&!link.hidden)say('Solicitud guardada. Puedes enviar el mensaje de WhatsApp. No pudimos preparar la imagen.');
- }
+
+ const preparedId=requestId;
+ const link=get('fan-wa');
+ link.hidden=true;
+ clearPostal();
+ let file;
+ try { file=await makePostal(socia,value.split('|')[1],preference,reward,price,avatar.src); }
+ catch { throw Error('No pudimos crear el carné. Vuelve a preparar la solicitud.'); }
+ if(token!==requestCardToken||requestId!==preparedId)return;
+ await rpc('request_visit',{p_token:requestCardToken,p_id:preparedId,p_service:value,p_preference:preference,p_reward:reward||null});
+ if(token!==requestCardToken||requestId!==preparedId)return;
+ postalFile=file;postalUrl=URL.createObjectURL(file);
+ preview.src=postalUrl;download.href=postalUrl;postal.hidden=false;
+ link.href='https://wa.me/5350655825';
+ link.textContent='Abrir chat del salón en WhatsApp';
+ link.hidden=false;
+ say('Carné listo. Compártelo por WhatsApp o descárgalo y adjúntalo en el chat del salón.');
 });
 let session='';
 async function staffLists(){
@@ -195,7 +199,7 @@ download.textContent = 'Descargar carné';
 download.download = 'Club-ELI-cita.jpg';
 download.style.cssText = 'display:inline-block;margin:.5rem;color:#74284e;text-decoration:underline';
 const help = document.createElement('p');
-help.textContent = 'Al compartir, elige WhatsApp y el chat del salón. También puedes descargar el carné y adjuntarlo al mensaje preparado.';
+help.textContent = 'Elige WhatsApp y selecciona el chat del salón (+53 5065 5825). También puedes descargar el carné, abrir el chat del salón y adjuntar la imagen.';
 postal.append(preview,share,download,help);
 get('fan-wa').after(postal);
 let postalFile;
