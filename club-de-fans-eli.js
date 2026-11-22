@@ -113,7 +113,15 @@ submit('fan-request',async fields=>{
  if(token!==requestCardToken)return;
  const message=['Hola, soy '+socia.name+', socia n.º '+socia.id+' del Club ELI.','Quiero reservar '+value.split('|')[1]+'.',preference&&'Prefiero '+preference+'.',reward&&'Quisiera usar '+rewards[reward]+'.','Precio '+price.toFixed(2)+' CUP · Descuento por reserva '+(price*.05).toFixed(2)+' CUP · Total '+(price*.95).toFixed(2)+' CUP.'].filter(Boolean).join('\n');
  const link=get('fan-wa');link.href='https://wa.me/5350655825?text='+encodeURIComponent(message);link.hidden=false;
- say('Solicitud guardada. Abre WhatsApp para enviar el mensaje al salón.');
+ try {
+  const file=await makePostal(socia,value.split('|')[1],preference,reward,price,avatar.src);
+  if(token!==requestCardToken||link.hidden)return;
+  clearPostal();postalFile=file;postalUrl=URL.createObjectURL(file);
+  preview.src=postalUrl;download.href=postalUrl;postal.hidden=false;
+  say('Solicitud guardada. Comparte el carné para enviar la foto y los datos juntos.');
+ }catch{
+  if(token===requestCardToken&&!link.hidden)say('Solicitud guardada. Puedes enviar el mensaje de WhatsApp. No pudimos preparar la imagen.');
+ }
 });
 let session='';
 async function staffLists(){
@@ -174,11 +182,81 @@ const photoStatus = profile.querySelector('[role=status]');
 const avatar = profile.querySelector('img');
 avatar.style.cssText = 'object-fit:cover;border-radius:50%;border:2px solid #b887a2';
 const appointment = get('fan-request').closest('details');
-const downloadPhoto = document.createElement('a');
-downloadPhoto.textContent = 'Descargar mi foto para adjuntarla en WhatsApp';
-downloadPhoto.download = 'foto-club-eli.jpg';
-downloadPhoto.hidden = true;
-get('fan-wa').after(downloadPhoto);
+const postal = document.createElement('div');
+postal.hidden = true;
+const preview = document.createElement('img');
+preview.alt = 'Vista previa del carné de la cita';
+preview.style.cssText = 'display:block;width:min(100%,360px);height:auto;margin:.75rem 0;border-radius:12px';
+const share = document.createElement('button');
+share.type = 'button';
+share.textContent = 'Compartir carné como imagen';
+const download = document.createElement('a');
+download.textContent = 'Descargar carné';
+download.download = 'Club-ELI-cita.jpg';
+download.style.cssText = 'display:inline-block;margin:.5rem;color:#74284e;text-decoration:underline';
+const help = document.createElement('p');
+help.textContent = 'Al compartir, elige WhatsApp y el chat del salón. También puedes descargar el carné y adjuntarlo al mensaje preparado.';
+postal.append(preview,share,download,help);
+get('fan-wa').after(postal);
+let postalFile;
+let postalUrl;
+function clearPostal(){
+ if(postalUrl)URL.revokeObjectURL(postalUrl);
+ postalUrl=undefined;postalFile=undefined;postal.hidden=true;preview.removeAttribute('src');download.removeAttribute('href');
+}
+share.onclick=async()=>{
+ const data={files:[postalFile]};
+ if(!postalFile||!navigator.canShare?.(data)){
+  say('Descarga el carné y adjúntalo al mensaje de WhatsApp.');return;
+ }
+ try{await navigator.share(data);}
+ catch(error){if(error.name!=='AbortError')say('Descarga el carné y adjúntalo al mensaje de WhatsApp.');}
+};
+new MutationObserver(()=>{if(get('fan-wa').hidden)clearPostal();}).observe(get('fan-wa'),{attributes:true,attributeFilter:['hidden']});
+async function makePostal(socia,service,preference,reward,price,photo){
+ const image=new Image();
+ image.src=photo;
+ await image.decode();
+ const canvas=document.createElement('canvas');
+ canvas.width=760;canvas.height=900;
+ const ctx=canvas.getContext('2d');
+ ctx.fillStyle='#fff1f6';ctx.fillRect(0,0,760,900);
+ ctx.fillStyle='#74284e';ctx.fillRect(0,0,760,210);
+ ctx.fillStyle='#fff4f9';ctx.font='bold 42px Georgia';ctx.fillText('Club de Fans ELI',48,85);
+ ctx.font='27px sans-serif';ctx.fillText('Solicitud de cita',48,135);
+ ctx.save();ctx.beginPath();ctx.arc(125,225,68,0,Math.PI*2);ctx.clip();ctx.drawImage(image,57,157,136,136);ctx.restore();
+ let y=245;
+ function line(value,font,color,x=48,width=664){
+  ctx.font=font;ctx.fillStyle=color;
+  let row='';
+  for(const word of String(value).split(/\s+/)){
+   let part=word;
+   while(ctx.measureText(part).width>width){
+    let cut=part.length-1;while(ctx.measureText(part.slice(0,cut)).width>width)cut--;
+    if(row){ctx.fillText(row,x,y);y+=34;row='';}
+    ctx.fillText(part.slice(0,cut),x,y);y+=34;part=part.slice(cut);
+   }
+   const candidate=row?row+' '+part:part;
+   if(row&&ctx.measureText(candidate).width>width){ctx.fillText(row,x,y);y+=34;row=part;}
+   else row=candidate;
+  }
+  if(row){ctx.fillText(row,x,y);y+=34;}
+ }
+ line(socia.name,'bold 28px sans-serif','#542744',210,500);
+ line('Socia n.º '+socia.id,'24px sans-serif','#694356',210,500);
+ y=Math.max(y+38,338);
+ line('Servicio: '+service,'bold 30px sans-serif','#542744');
+ if(preference)line('Turno preferido: '+preference,'26px sans-serif','#41213c');
+ if(reward)line('Premio solicitado: '+rewards[reward],'26px sans-serif','#41213c');
+ y+=24;
+ line('Precio original: '+price.toFixed(2)+' CUP','27px sans-serif','#41213c');
+ line('Descuento por reserva (5 %): '+(price*.05).toFixed(2)+' CUP','27px sans-serif','#41213c');
+ line('Total de la reserva: '+(price*.95).toFixed(2)+' CUP','bold 30px sans-serif','#74284e');
+ y+=22;line('Turno pendiente de confirmación por el salón.','23px sans-serif','#694356');
+ const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.92));
+ if(!blob)throw Error('No se pudo crear el carné.');
+ return new File([blob],'Club-ELI-cita.jpg',{type:'image/jpeg'});
+}
 let profileReady = false;
 let profileRevision = 0;
 function displayPhoto(photo) {
@@ -186,9 +264,8 @@ function displayPhoto(photo) {
  avatar.hidden = !photo;
  photoForm.hidden = Boolean(photo);
  appointment.hidden = !photo;
- downloadPhoto.hidden = !photo || get('fan-wa').hidden;
- if (photo) { avatar.src = photo; downloadPhoto.href = photo; }
- else { avatar.removeAttribute('src'); downloadPhoto.removeAttribute('href'); }
+ if (photo) avatar.src = photo;
+ else avatar.removeAttribute('src');
 }
 async function loadPhoto(value) {
  const revision = ++profileRevision;
@@ -231,9 +308,6 @@ photoForm.addEventListener('submit',async event => {
  } catch(error) { if(token === value) photoStatus.textContent = error.message || 'Elige una foto que se pueda abrir.'; }
  finally { button.disabled = false; }
 });
-new MutationObserver(() => {
- downloadPhoto.hidden = !profileReady || get('fan-wa').hidden;
-}).observe(get('fan-wa'),{attributes:true,attributeFilter:['hidden']});
 function profileButton(id) {
  const button = document.createElement('button');
  button.type = 'button';
