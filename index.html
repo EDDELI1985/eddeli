@@ -471,7 +471,7 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
 <button type="button" id="fan-signout">Cerrar mi tarjeta</button>
 </section>
 <p id="fan-status" role="status"></p>
-<details><summary>Administrar el club</summary>
+<details id="fan-admin-access"><summary>Administrar el club</summary>
 <form id="fan-login"><label>Correo<input type="email" name="email" required autocomplete="username"></label><label>Contraseña<input type="password" name="password" required autocomplete="current-password"></label><button>Entrar</button></form>
 <section id="fan-staff" hidden>
 <h2 id="fan-count">Socias registradas</h2><ul id="fan-members"></ul>
@@ -551,6 +551,7 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
   <h2 class="section-title">Herramientas de gestión</h2>
   <div class="grid three">
     <div class="card"><h3>Cocina y gastronomía</h3><p>Revisa el Curso de Cocina Internacional.</p><button type="button" class="secondary" onclick="openLearningArea('food')">ABRIR</button></div>
+    <div class="card"><h3>Club de Fans ELI</h3><p>Gestiona socias, invitaciones, solicitudes y visitas pagadas.</p><button type="button" class="secondary" onclick="if(go('club-eli')){const panel=document.getElementById('fan-admin-access');panel.open=true;panel.querySelector('summary').focus();}">Administrar Club de Fans ELI</button></div>
     <div class="card"><div class="card-icon">👥</div><h3>Alumnos</h3><p>Registro y seguimiento.</p><button class="secondary" onclick="go('admin-alumnos')">ABRIR</button></div>
     <div class="card"><div class="card-icon">📚</div><h3>Cursos</h3><p>Organización académica.</p><button class="secondary" onclick="go('admin-cursos')">ABRIR</button></div>
     <div class="card"><div class="card-icon">📝</div><h3>Exámenes</h3><p>Evaluaciones y pruebas.</p><button class="secondary" onclick="go('admin-examenes')">ABRIR</button></div>
