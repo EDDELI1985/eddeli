@@ -376,6 +376,55 @@ function profileButton(id) {
  };
  return button;
 }
+
+function installClubHelp(){
+ const entry=document.createElement('section');
+ entry.setAttribute('aria-label','Ayuda del Club ELI');
+ entry.style.cssText='margin:0 0 1rem;padding:.9rem 1rem;border:1px solid #bc779b;border-radius:14px;background:#f8dfec;color:#542744';
+ entry.innerHTML='<button type="button" aria-expanded="false" aria-controls="fan-eli-help"><span aria-hidden="true">✦</span> Pregúntale a ELI</button><p style="margin:.35rem 0 0">¿Necesitas ayuda con tu tarjeta, los sellos o una cita?</p><div id="fan-eli-help" hidden><p>¡Hola! Soy ELI. Elige un tema o escribe una pregunta sobre el club.</p><div id="fan-eli-topics" style="display:flex;flex-wrap:wrap;gap:.4rem"></div><form><label>Tu pregunta<input name="question" required maxlength="180" placeholder="Ej. ¿Qué gano con seis sellos?" autocomplete="off"></label><button>Enviar</button></form><div id="fan-eli-answer" role="status" style="margin-top:.65rem"></div></div>';
+ const title=get('club-eli-title');
+ title.after(entry);
+ const toggle=entry.querySelector('button');
+ const panel=entry.querySelector('#fan-eli-help');
+ const answer=panel.querySelector('#fan-eli-answer');
+ const form=panel.querySelector('form');
+ toggle.onclick=()=>{
+  panel.hidden=!panel.hidden;
+  toggle.setAttribute('aria-expanded',String(!panel.hidden));
+ };
+ const replies={
+  services:'Puedes consultar los servicios y el precio al elegir una opción en Pedir cita desde tu tarjeta.',
+  rewards:'Ganas acceso anticipado a turnos con 1 sello, un detalle con 3, un 5 % de descuento con 6 y una decoración especial en dos uñas con 9.',
+  appointment:'Abre tu tarjeta, entra en Pedir cita y elige tu servicio. Después prepara el carné y toca Enviar. El salón confirma el turno.',
+  card:'Si tienes una invitación, abre el enlace y activa tu tarjeta. Para volver a abrirla en otro dispositivo, usa el código privado que guardaste. Si lo perdiste, contacta al salón.',
+  restricted:'Puedo orientar sobre el Club ELI. Para recuperar tu acceso, usa tu código privado o contacta al salón.'
+ };
+ const topics=[['services','Servicios y precios'],['rewards','Sellos y premios'],['appointment','Pedir una cita'],['card','Ayuda con mi tarjeta']];
+ function respond(message){answer.textContent=message;}
+ for(const [topic,label] of topics){
+  const button=document.createElement('button');button.type='button';button.textContent=label;
+  button.onclick=()=>respond(replies[topic]);
+  panel.querySelector('#fan-eli-topics').append(button);
+ }
+ form.onsubmit=event=>{
+  event.preventDefault();
+  const input=form.elements.question;
+  const question=input.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  input.value='';
+  if(/\b(contrasenas?|claves?|pin|codigos?)\b/.test(question)){respond(replies.restricted);return;}
+  if(/\b(sellos?|premios?|descuento|gano)\b/.test(question)){
+   const match=question.match(/\b(1|3|6|9|uno|un|tres|seis|nueve)\s+sellos?\b/);
+   const count=match&&({uno:1,un:1,tres:3,seis:6,nueve:9}[match[1]]||Number(match[1]));
+   respond(count?'Con '+count+(count===1?' sello desbloqueas ':' sellos desbloqueas ')+milestones[count]+'.':replies.rewards);
+   return;
+  }
+  if(/\b(citas?|turnos?|reserv\w*)\b/.test(question)){respond(replies.appointment);return;}
+  if(/\b(precios?|servicios?|cuesta|coste)\b/.test(question)){respond(replies.services);return;}
+  if(/\b(tarjetas?|acceso|invitacion|activar)\b/.test(question)){respond(replies.card);return;}
+  respond('Puedo ayudarte con los servicios, los sellos, las citas y el acceso a tu tarjeta del Club ELI. Elige uno de los temas de arriba.');
+ };
+}
+installClubHelp();
 function invitationEntry(){
  const hash=location.hash.match(/^#inscripcion-club=([0-9a-f-]{36})$/i);
  if(!hash||typeof window.go!=='function')return false;
