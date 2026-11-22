@@ -133,6 +133,52 @@ submit('fan-request',async fields=>{
  say('');
 });
 let session='';
+let requestsForStaff=[];
+let visibleRequestId;
+function renderStaffRequest(){
+ const list=get('fan-requests');
+ const total=requestsForStaff.length;
+ if(!total){list.replaceChildren();say('No hay solicitudes pendientes.','fan-request-count');return;}
+ const position=Math.max(0,requestsForStaff.findIndex(request=>request.id===visibleRequestId));
+ const request=requestsForStaff[position];
+ const row=document.createElement('li');
+ const heading=document.createElement('strong');
+ heading.textContent=request.name+' · Socia '+request.member;
+ const service=document.createElement('p');
+ service.textContent='Servicio: '+(request.service.split('|')[1]||request.service);
+ row.append(heading,service);
+ if(request.preference||request.reward){
+  const details=document.createElement('p');
+  details.textContent=[request.preference&&'Turno preferido: '+request.preference,request.reward&&'Premio solicitado: '+(rewards[request.reward]||request.reward)].filter(Boolean).join(' · ');
+  row.append(details);
+ }
+ const loadButton=document.createElement('button');
+ loadButton.type='button';loadButton.textContent='Cargar solicitud';
+ loadButton.onclick=()=>{
+  const fields=get('fan-visit').elements;
+  fields.member.value=request.member;fields.reference.value='club-'+request.id;
+  fields.service.value=request.service;fields.reward.value='';
+  say('Solicitud cargada: '+request.name+' · Socia '+request.member,'fan-admin-status');
+  fields.service.focus();
+ };
+ row.append(loadButton,document.createTextNode(' '),profileButton(request.member));
+ if(total>1){
+  const controls=document.createElement('nav');controls.setAttribute('aria-label','Cambiar solicitud');
+  controls.style.cssText='display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.6rem';
+  for(const [step,label] of [[-1,'Anterior'],[1,'Siguiente']]){
+   const button=document.createElement('button');button.type='button';button.textContent=label;
+   button.onclick=()=>{
+    visibleRequestId=requestsForStaff[(position+step+total)%total].id;
+    renderStaffRequest();
+    list.querySelectorAll('nav button')[step===-1?0:1]?.focus();
+   };
+   controls.append(button);
+  }
+  row.append(controls);
+ }
+ list.replaceChildren(row);
+ say('Solicitud '+(position+1)+' de '+total+' pendientes','fan-request-count');
+}
 async function staffLists(){
  const access=session;
  const [members,requests]=await Promise.all([rpc('staff_members',{},access),rpc('staff_requests',{},access)]);
@@ -142,15 +188,9 @@ async function staffLists(){
   const row=document.createElement('li');const next=Object.keys(milestones).map(Number).find(n=>n>member.stamps);
   row.textContent=member.name+' · Socia '+member.id+' · '+member.stamps+'/9'+(next-member.stamps===1?' · A 1 sello del próximo premio':'');return row;
  }));
- get('fan-requests').replaceChildren(...requests.map(request=>{
-  const row=document.createElement('li'),button=document.createElement('button');
-  row.textContent=request.name+' · Socia '+request.member+' · '+request.service.split('|')[1]+(request.preference?' · '+request.preference:'')+(request.reward?' · Solicita '+rewards[request.reward]:'');
-  button.type='button';button.textContent='Cargar solicitud';button.onclick=()=>{
-   const fields=get('fan-visit').elements;fields.member.value=request.member;fields.reference.value='club-'+request.id;fields.service.value=request.service;fields.reward.value='';fields.service.focus();
-  };
-  row.append(button,profileButton(request.member));return row;
- }));
- say(requests.length?requests.length+' solicitudes pendientes':'No hay solicitudes pendientes.','fan-request-count');
+ requestsForStaff=requests;
+ if(!requests.some(request=>request.id===visibleRequestId))visibleRequestId=requests[0]?.id;
+ renderStaffRequest();
 }
 submit('fan-login',async fields=>{
  const login=await api('/auth/v1/token?grant_type=password',{email:fields.email.value.trim(),password:fields.password.value});
@@ -160,7 +200,7 @@ submit('fan-login',async fields=>{
  await staffLists();say('Sesión iniciada.','fan-admin-status');
 },'fan-admin-status');
 get('fan-exit').onclick=()=>{
- session='';get('fan-staff').hidden=true;get('fan-login').hidden=false;
+ session='';requestsForStaff=[];visibleRequestId=undefined;get('fan-staff').hidden=true;get('fan-login').hidden=false;
  get('fan-members').replaceChildren();get('fan-requests').replaceChildren();get('fan-invite-url').value='';get('fan-visit').reset();say('Sesión cerrada.','fan-admin-status');
 };
 get('fan-staff-refresh').onclick=()=>staffLists().catch(error=>say(error.message,'fan-admin-status'));
