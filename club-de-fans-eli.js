@@ -378,20 +378,48 @@ function profileButton(id) {
 }
 
 function installClubHelp(){
- const entry=document.createElement('section');
- entry.setAttribute('aria-label','Ayuda del Club ELI');
- entry.style.cssText='margin:0 0 1rem;padding:.9rem 1rem;border:1px solid #bc779b;border-radius:14px;background:#f8dfec;color:#542744';
- entry.innerHTML='<button type="button" aria-expanded="false" aria-controls="fan-eli-help"><span aria-hidden="true">✦</span> Pregúntale a ELI</button><p style="margin:.35rem 0 0">¿Necesitas ayuda con tu tarjeta, los sellos o una cita?</p><div id="fan-eli-help" hidden><p>¡Hola! Soy ELI. Elige un tema o escribe una pregunta sobre el club.</p><div id="fan-eli-topics" style="display:flex;flex-wrap:wrap;gap:.4rem"></div><form><label>Tu pregunta<input name="question" required maxlength="180" placeholder="Ej. ¿Qué gano con seis sellos?" autocomplete="off"></label><button>Enviar</button></form><div id="fan-eli-answer" role="status" style="margin-top:.65rem"></div></div>';
- const title=get('club-eli-title');
- title.after(entry);
- const toggle=entry.querySelector('button');
+
+ const entry=document.createElement('aside');
+ entry.id='eli-floating-help';
+ entry.setAttribute('aria-label','Asistente ELI');
+ entry.innerHTML=`<style>
+#eli-floating-help{--eli-offset:calc(88px + env(safe-area-inset-bottom,0px));position:fixed;right:max(16px,env(safe-area-inset-right));bottom:var(--eli-offset);z-index:1200;color:#51263e;font:15px/1.45 system-ui,sans-serif}
+@media(min-width:901px){#eli-floating-help{--eli-offset:24px}}
+#eli-floating-help button{font:inherit;cursor:pointer}
+#eli-floating-help .eli-orb{display:grid;place-items:center;margin-left:auto;width:58px;height:58px;border:1px solid #edc782;border-radius:50%;background:radial-gradient(circle at 32% 25%,#ba668e,#79234e 62%,#451632);color:#ffe4a4;font:700 32px Georgia,serif;box-shadow:0 7px 22px #56244166}
+#eli-floating-help button:focus-visible,#eli-floating-help input:focus-visible{outline:2px solid #8e3e65;outline-offset:3px}
+#fan-eli-help{position:absolute;right:0;bottom:70px;width:min(350px,calc(100vw - 32px));max-height:max(130px,calc(100dvh - var(--eli-offset) - 86px));overflow:auto;box-sizing:border-box;padding:16px;border:1px solid #c58ba8;border-radius:18px;background:#fff4f8;box-shadow:0 10px 32px #41213c36}
+#fan-eli-help[hidden]{display:none!important}
+#fan-eli-help header{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#fan-eli-help header strong{font:700 23px Georgia,serif}
+#fan-eli-help button{border:1px solid #a65c81;border-radius:9px;background:#84375d;color:#fff;padding:7px 10px}
+#fan-eli-help label{display:block;margin:.65rem 0 .4rem}
+#fan-eli-help input{display:block;box-sizing:border-box;width:100%;padding:8px;margin-top:4px;border:1px solid #b887a2;border-radius:8px;font:inherit;background:white;color:#51263e}
+#fan-eli-answer:not(:empty){padding:9px;border-radius:9px;background:white}
+</style><button class="eli-orb" type="button" aria-label="Pregúntale a ELI" title="Pregúntale a ELI" aria-expanded="false" aria-controls="fan-eli-help">E</button><section id="fan-eli-help" aria-label="Chat con ELI" hidden><header><strong>ELI</strong><button type="button" data-close>Cerrar</button></header><p id="fan-eli-greeting"></p><p>Te ayudo con el Club de Fans ELI.</p><div id="fan-eli-topics" style="display:flex;flex-wrap:wrap;gap:.4rem"></div><form><label>Tu pregunta<input name="question" required maxlength="180" placeholder="Ej. ¿Qué gano con seis sellos?" autocomplete="off"></label><button>Enviar</button></form><div id="fan-eli-answer" role="status" style="margin-top:.65rem"></div></section>`;
+ document.body.append(entry);
+ const toggle=entry.querySelector('.eli-orb');
  const panel=entry.querySelector('#fan-eli-help');
+ const greeting=panel.querySelector('#fan-eli-greeting');
  const answer=panel.querySelector('#fan-eli-answer');
  const form=panel.querySelector('form');
- toggle.onclick=()=>{
-  panel.hidden=!panel.hidden;
-  toggle.setAttribute('aria-expanded',String(!panel.hidden));
- };
+ const close=panel.querySelector('[data-close]');
+ function setOpen(open){
+  panel.hidden=!open;
+  toggle.setAttribute('aria-expanded',String(open));
+  if(!open){toggle.focus();return;}
+  const userProfile=typeof currentUser!=='undefined'&&currentUser&&typeof currentProfile!=='undefined'?currentProfile:null;
+  const name=(userProfile?.full_name||(root.classList.contains('active')?card?.name:'')||'').trim().split(/\s+/)[0];
+  greeting.textContent=name?'Hola, '+name+'. ¿En qué te puedo ayudar?':'Hola, soy ELI. ¿En qué te puedo ayudar?';
+  answer.textContent='';
+  form.reset();
+  close.focus();
+ }
+ toggle.onclick=()=>setOpen(panel.hidden);
+ close.onclick=()=>setOpen(false);
+ entry.addEventListener('keydown',event=>{
+  if(event.key==='Escape'&&!panel.hidden){event.stopPropagation();setOpen(false);}
+ });
  const replies={
   services:'Puedes consultar los servicios y el precio al elegir una opción en Pedir cita desde tu tarjeta.',
   rewards:'Ganas acceso anticipado a turnos con 1 sello, un detalle con 3, un 5 % de descuento con 6 y una decoración especial en dos uñas con 9.',
