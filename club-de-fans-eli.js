@@ -76,7 +76,16 @@ function show(data,value){
  get('fan-private').value=value;refreshPrices();say('Tarjeta actualizada.');
 }
 async function load(value){show(await rpc('card',{p_token:value}),value);}
-submit('fan-recover',fields=>load(fields.code.value.trim()));
+const recoveryCode = get('fan-recover').elements.code;
+recoveryCode.removeAttribute('pattern');
+recoveryCode.removeAttribute('maxlength');
+submit('fan-recover', fields => {
+ const code = fields.code.value.replace(/\s/g, '').toLowerCase();
+ if (!/^[0-9a-f]{64}$/.test(code)) {
+  throw Error('Pega el código privado de 64 caracteres que guardaste desde tu tarjeta. Si tienes una invitación, abre «Tengo una invitación».');
+ }
+ return load(code);
+});
 submit('fan-join',async fields=>{
  const invitation=fields.invite.value.trim().toLowerCase();
  const pending='eddeli.club.pending.'+invitation;
