@@ -372,7 +372,7 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
   <div class="side-label">MENÚ PRINCIPAL</div>
   <button class="navbtn active" data-page="inicio" onclick="go('inicio')"><span class="navicon">⌂</span> Inicio</button>
   <button class="navbtn" data-page="areas" onclick="go('areas')"><span class="navicon">✧</span> Explorar áreas</button>
-  <button class="navbtn" data-page="club-eli" onclick="go('club-eli')"><span class="navicon" aria-hidden="true">✦</span> Club ELI</button>
+  <button class="navbtn" data-page="club-eli" onclick="go('club-eli')"><span class="navicon" aria-hidden="true">✦</span> Club de Fans ELI</button>
   <button class="navbtn" data-page="academia" onclick="go('academia')"><span class="navicon">🎓</span> Academia</button>
   <button class="navbtn" data-page="cursos" onclick="go('cursos')"><span class="navicon">▤</span> Cursos</button>
   <button class="navbtn" data-page="biblioteca" onclick="go('biblioteca')"><span class="navicon">▣</span> Biblioteca</button>
@@ -404,9 +404,9 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
   </div>
 </div>
 <div class="card" style="margin:1rem 0">
-  <h2>Club ELI</h2>
+  <h2>Club de Fans ELI</h2>
   <p>Tu tarjeta de socia, tus sellos y tus premios.</p>
-  <button type="button" class="secondary" onclick="go('club-eli')">Abrir Club ELI</button>
+  <button type="button" class="secondary" onclick="go('club-eli')">Abrir Club de Fans ELI</button>
 </div>
 <div class="home-heading"><div><span class="eyebrow dark-eyebrow">DESCUBRE TU PRÓXIMO PASO</span><h2 class="section-title">¿Qué te gustaría aprender?</h2><p>Explora nuestras áreas de conocimiento y encuentra el camino que va contigo.</p></div><button class="text-action" onclick="go('areas')">Ver todas las áreas →</button></div>
 <div class="learning-grid">
@@ -421,6 +421,7 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
 <button class="learning-card more-card" onclick="go('areas')"><span class="learning-icon">＋</span><span class="learning-name">Y mucho más</span><span class="learning-desc">Nuevas áreas por descubrir</span><span class="learning-arrow">↗</span></button></div>
 <div class="platform-promise"><div class="promise-symbol">E</div><div><strong>Un solo espacio. Muchas formas de crecer.</strong><p>Aprende a tu ritmo, descubre nuevos intereses y desarrolla habilidades para tu vida.</p></div><button class="primary" onclick="go('areas')">EMPEZAR A EXPLORAR</button></div><div class="home-footer-note"><span>EDDELI</span><span>Mucho más que una academia.</span></div></section>
 <section id="areas" class="view"><div class="page-intro"><span class="eyebrow dark-eyebrow">EL CONOCIMIENTO NO TIENE LÍMITES</span><h1>Explora las áreas de EDDELI</h1><p>Elige una especialidad. Cada área podrá reunir distintas academias, profesores y cursos.</p></div><div class="learning-grid">
+<button type="button" class="learning-card" style="background:#f8dfec;color:#542744;border-color:#dcaac6" onclick="go('club-eli')"><span class="learning-icon" aria-hidden="true">✦</span><span class="learning-name">Club de Fans ELI</span><span class="learning-desc" style="color:#673955">Tarjeta, premios y citas</span></button>
 <button class="learning-card beauty-card" onclick="openLearningArea('beauty')"><span class="learning-icon">✿</span><span class="learning-name">Belleza y estética</span><span class="learning-desc">ELI BEAUTY ACADEMY</span></button>
 <button class="learning-card professional-card" onclick="openLearningArea('professional')"><span class="learning-icon">✧</span><span class="learning-name">Academia y cursos</span><span class="learning-desc">Formación profesional</span></button>
 <button class="learning-card health-card" onclick="openLearningArea('health')"><span class="learning-icon">♡</span><span class="learning-name">Salud y bienestar</span><span class="learning-desc">Cuida tu bienestar</span></button>
@@ -433,12 +434,66 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
 <section id="cocina" class="view" hidden aria-label="Cocina y gastronomía"></section>
 
 <section id="club-eli" class="view" aria-labelledby="club-eli-title">
-  <div class="card">
-    <h1 id="club-eli-title" class="section-title">Club ELI</h1>
-    <p>Acceso para socias registradas. Usa tu tarjeta o tu código privado de recuperación para consultar tus sellos, ver tus premios y pedir una cita.</p>
-    <a class="primary" style="display:inline-block;text-decoration:none" href="https://elibeautystudio.blogspot.com/#tarjeta-club-eli">Entrar al Club ELI</a>
-    <button type="button" class="secondary" onclick="go('inicio')">Volver a Inicio</button>
-  </div>
+<style>
+#club-eli .fan-shell{max-width:720px;margin:auto;background:#fff2f6;border:1px solid #e8c5d6;border-radius:22px;padding:clamp(1rem,4vw,2rem);color:#41213c}
+#club-eli [hidden]{display:none!important}
+#club-eli h1{font-family:Georgia,serif;color:#74284e}
+#club-eli h2,#club-eli p{color:inherit}
+#club-eli details,#fan-member{background:#fffafd;border:1px solid #e8c5d6;padding:1rem;border-radius:15px;margin:.8rem 0}
+#club-eli summary{cursor:pointer;font-weight:700;padding:.35rem 0}
+#club-eli label{display:block;margin:.65rem 0;font-weight:600}
+#club-eli input,#club-eli select{display:block;width:100%;max-width:100%;box-sizing:border-box;border:1px solid #b887a2;border-radius:9px;background:white;color:#41213c;padding:.65rem;font:inherit}
+#club-eli button,#fan-wa{display:inline-block;background:#84375d;color:white;border:1px solid #84375d;border-radius:9px;padding:.65rem .95rem;margin:.25rem 0;font:inherit;cursor:pointer}
+#club-eli button:focus-visible,#club-eli a:focus-visible{outline:3px solid #714291;outline-offset:2px}
+#fan-stamps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.4rem;list-style:none;padding:0}
+#fan-stamps li{background:#f3e6f6;border-radius:10px;padding:.45rem;text-align:center;overflow-wrap:anywhere;font-size:.83rem}
+#fan-stamps li.fan-earned{background:#f5d4e3}
+#fan-stamps b,#fan-stamps span,#fan-stamps small{display:block}
+#fan-stamps b{font-size:1.25rem;color:#74284e}
+#fan-members,#fan-requests{max-height:280px;overflow:auto}
+</style>
+<div class="fan-shell">
+<button type="button" onclick="go('areas')">Volver a las áreas</button>
+<h1 id="club-eli-title">Club de Fans ELI</h1>
+<div id="fan-identify">
+<p>Accede con tu código privado de socia o activa tu tarjeta con una invitación.</p>
+<form id="fan-recover"><label>Código privado<input name="code" type="password" required autocomplete="off" maxlength="64" pattern="[a-f0-9]{64}"></label><button>Ver mi tarjeta</button></form>
+<details><summary>Tengo una invitación</summary><form id="fan-join"><label>Tu nombre<input name="name" required maxlength="80" autocomplete="name"></label><label>Código de invitación<input name="invite" required maxlength="36" pattern="[0-9A-Fa-f\-]{36}" autocomplete="off"></label><button>Activar mi tarjeta</button></form></details>
+</div>
+<section id="fan-member" hidden>
+<h2 id="fan-name"></h2><p id="fan-progress"></p><ol id="fan-stamps" aria-label="Tus nueve sellos"></ol><p id="fan-benefits"></p>
+<button type="button" id="fan-refresh">Actualizar sellos</button>
+<details><summary>Pedir cita</summary>
+<form id="fan-request">
+<label>Servicio<select id="fan-service" name="service" required><option value="">Elige un servicio</option></select></label>
+<p id="fan-price" aria-live="polite"></p>
+<label>Día o turno preferido (opcional)<input name="preference" maxlength="120" placeholder="Ej. viernes por la tarde"></label>
+<label>Premio que quieres solicitar<select id="fan-reward" name="reward"><option value="">Ninguno</option></select></label>
+<button>Preparar solicitud</button>
+</form><a id="fan-wa" rel="noreferrer" hidden>Abrir WhatsApp y enviar</a></details>
+<details><summary>Mi código privado de recuperación</summary><label>Código privado<input id="fan-private" readonly></label><p>Guárdalo en privado para abrir tu tarjeta en otro dispositivo.</p></details>
+<button type="button" id="fan-signout">Cerrar mi tarjeta</button>
+</section>
+<p id="fan-status" role="status"></p>
+<details><summary>Administrar el club</summary>
+<form id="fan-login"><label>Correo<input type="email" name="email" required autocomplete="username"></label><label>Contraseña<input type="password" name="password" required autocomplete="current-password"></label><button>Entrar</button></form>
+<section id="fan-staff" hidden>
+<h2 id="fan-count">Socias registradas</h2><ul id="fan-members"></ul>
+<button type="button" id="fan-invite">Generar invitación</button><label>Enlace de invitación<input id="fan-invite-url" readonly></label>
+<h2>Solicitudes del club</h2><p id="fan-request-count"></p><ul id="fan-requests"></ul>
+<button type="button" id="fan-staff-refresh">Actualizar listados</button>
+<form id="fan-visit">
+<label>Número de socia<input name="member" required inputmode="numeric" pattern="[0-9]+" maxlength="16"></label>
+<label>Referencia única<input name="reference" required maxlength="48"></label>
+<label>Servicio<select name="service" required></select></label>
+<label>Premio aplicado<select name="reward"><option value="">Ninguno</option></select></label>
+<button>Confirmar visita pagada</button>
+</form>
+<button type="button" id="fan-exit">Salir del panel</button>
+</section>
+<p id="fan-admin-status" role="status"></p>
+</details>
+</div>
 </section>
 
 <section id="acceso" class="view">
@@ -3212,5 +3267,6 @@ if (typeof window.renderLashCurriculum === "function") {
 })();
 </script>
 
+<script defer src="./club-de-fans-eli.js"></script>
 </body>
 </html>
