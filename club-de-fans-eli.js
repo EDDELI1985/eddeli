@@ -400,8 +400,11 @@ function installClubHelp(){
 #fan-eli-help button{border:1px solid #a65c81;border-radius:9px;background:#84375d;color:#fff;padding:7px 10px}
 #fan-eli-help label{display:block;margin:.65rem 0 .4rem}
 #fan-eli-help input{display:block;box-sizing:border-box;width:100%;padding:8px;margin-top:4px;border:1px solid #b887a2;border-radius:8px;font:inherit;background:white;color:#51263e}
-#fan-eli-answer:not(:empty){padding:9px;border-radius:9px;background:white}
-</style><button class="eli-orb" type="button" aria-label="Pregúntale a ELI" title="Pregúntale a ELI" aria-expanded="false" aria-controls="fan-eli-help">e</button><section id="fan-eli-help" aria-label="Chat con ELI" hidden><header><strong>ELI</strong><button type="button" data-close>Cerrar</button></header><p id="fan-eli-greeting"></p><p id="fan-eli-context"></p><div id="fan-eli-topics" style="display:flex;flex-wrap:wrap;gap:.4rem"></div><form><label>Tu pregunta<input name="question" required maxlength="180" placeholder="Ej. ¿Qué gano con seis sellos?" autocomplete="off"></label><button>Enviar</button></form><div id="fan-eli-answer" role="status" style="margin-top:.65rem"></div></section>`;
+#fan-eli-answer{display:grid;gap:7px;max-height:210px;overflow:auto}
+#fan-eli-answer p{max-width:92%;box-sizing:border-box;margin:0;padding:8px 10px;border-radius:12px;background:white;overflow-wrap:anywhere}
+#fan-eli-answer p[data-speaker="Tú"]{justify-self:end;background:#f1d9e6}
+#fan-eli-answer strong{display:block;font-size:.78rem}
+</style><button class="eli-orb" type="button" aria-label="Pregúntale a ELI" title="Pregúntale a ELI" aria-expanded="false" aria-controls="fan-eli-help">e</button><section id="fan-eli-help" aria-label="Chat con ELI" hidden><header><strong>ELI</strong><button type="button" data-close>Cerrar</button></header><p id="fan-eli-greeting"></p><p id="fan-eli-context"></p><div id="fan-eli-answer" role="log" aria-live="polite" aria-label="Conversación"></div><form><label>Tu pregunta<input name="question" required maxlength="180" placeholder="Ej. ¿Qué gano con seis sellos?" autocomplete="off"></label><button>Enviar</button> <button type="button" data-eli-voice aria-pressed="false">🎙 Hablar</button><p data-eli-voice-status role="status" style="margin:.35rem 0 0"></p></form></section>`;
  document.body.append(entry);
  const toggle=entry.querySelector('.eli-orb');
  const panel=entry.querySelector('#fan-eli-help');
@@ -412,9 +415,8 @@ function installClubHelp(){
  function setOpen(open){
   panel.hidden=!open;
   toggle.setAttribute('aria-expanded',String(open));
-  if(!open){toggle.focus();return;}
+  if(!open){if(listening)recognition.abort();toggle.focus();return;}
   refreshContext();
-  answer.textContent='';
   form.reset();
   close.focus();
  }
@@ -430,7 +432,6 @@ function installClubHelp(){
   card:'Si tienes una invitación, abre el enlace y activa tu tarjeta. Para volver a abrirla en otro dispositivo, usa el código privado que guardaste. Si lo perdiste, contacta al salón.',
   restricted:'Puedo orientarte dentro de EDDELI. Para recuperar tu acceso, usa la opción oficial de tu cuenta o contacta al equipo.'
  };
- const clubTopics=[['services','Servicios y precios'],['rewards','Sellos y premios'],['appointment','Pedir una cita'],['card','Ayuda con mi tarjeta']];
  const academy=['Academia','Abre Academia para ver las etapas de ELI Beauty Academy. Los módulos se desbloquean según tu progreso.'];
  const access=['Acceso y registro','Si eres estudiante, entra con tu cuenta aprobada. Si todavía no tienes cuenta, usa Solicitar registro desde Acceso.'];
  const contexts={
@@ -464,7 +465,16 @@ function installClubHelp(){
   [/\b(cursos?|formacion|progreso)\b/,'cursos'],
   [/\b(perfil|cuenta)\b/,'perfil']
  ];
- function respond(message){answer.textContent=message;}
+ function addMessage(speaker,message){
+  const row=document.createElement('p');
+  row.dataset.speaker=speaker;
+  const author=document.createElement('strong');
+  author.textContent=speaker;
+  row.append(author,document.createTextNode(message));answer.append(row);
+  if(answer.children.length>20)answer.firstElementChild.remove();
+  answer.scrollTop=answer.scrollHeight;
+ }
+ function respond(message){addMessage('ELI',message);}
  function normalize(value){return value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
  function locationContext(){
   const page=document.querySelector('main.content > .view.active')?.id||'inicio';
@@ -482,27 +492,52 @@ function installClubHelp(){
   const contextKey=page+'|'+area+'|'+name;
   if(contextKey===previousContext)return;
   previousContext=contextKey;
-  answer.textContent='';
-  const container=panel.querySelector('#fan-eli-topics');
-  container.replaceChildren();
-  const choices=page==='club-eli'?clubTopics.map(([key,label])=>[label,replies[key]]):[
-   ['Ayuda en esta sección',hint],['Cómo acceder',access[1]],['Club de Fans ELI',contexts['club-eli'][1]]
-  ];
-  for(const [label,message] of choices){
-   const button=document.createElement('button');button.type='button';button.textContent=label;
-   button.onclick=()=>respond(message);container.append(button);
-  }
+
  }
  const main=root.parentElement;
  const observer=new MutationObserver(()=>{if(!panel.hidden)refreshContext();});
  for(const view of main.querySelectorAll(':scope > .view'))observer.observe(view,{attributes:true,attributeFilter:['class','hidden']});
  const areaDetail=document.getElementById('area-detail');
  if(areaDetail)observer.observe(areaDetail,{attributes:true,attributeFilter:['hidden'],childList:true});
+ const voice=panel.querySelector('[data-eli-voice]');
+ const voiceStatus=panel.querySelector('[data-eli-voice-status]');
+ const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+ const recognition=Recognition?new Recognition():null;
+ let listening=false;
+ if(!recognition){voice.hidden=true;voiceStatus.textContent='Puedes escribir tu pregunta en este navegador.';}
+ else{
+  recognition.lang='es-ES';
+  recognition.interimResults=false;
+  function showListening(active){
+   listening=active;
+   voice.textContent=active?'Detener':'🎙 Hablar';
+   voice.setAttribute('aria-pressed',String(active));
+  }
+  recognition.onstart=()=>{showListening(true);voiceStatus.textContent='Te escucho…';};
+  recognition.onend=()=>{showListening(false);if(voiceStatus.textContent==='Te escucho…')voiceStatus.textContent='';};
+  recognition.onresult=event=>{
+   if(panel.hidden)return;
+   form.elements.question.value=Array.from(event.results,result=>result[0].transcript).join(' ').slice(0,180);
+   voiceStatus.textContent='Revisa tu pregunta y pulsa Enviar.';
+   form.elements.question.focus();
+  };
+  recognition.onerror=event=>{
+   if(event.error!=='aborted')voiceStatus.textContent='No pude escuchar la pregunta. Puedes volver a intentar o escribirla.';
+  };
+  voice.onclick=()=>{
+   try{if(listening)recognition.stop();else recognition.start();}
+   catch{voiceStatus.textContent='El micrófono ya está en uso. Espera un momento o escribe tu pregunta.';}
+  };
+ }
  form.onsubmit=event=>{
   event.preventDefault();
   const input=form.elements.question;
-  const question=input.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-  input.value='';
+  const typed=input.value.trim();
+  if(!typed)return;
+  const question=typed.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const privateQuestion=/\b(contrasenas?|claves?|pin|codigos?)\b/.test(question);
+  input.value='';voiceStatus.textContent='';
+  addMessage('Tú',privateQuestion?'Consulta sobre acceso':typed);
   if(/\b(contrasenas?|claves?|pin|codigos?)\b/.test(question)){respond(replies.restricted);return;}
   const [page,area,hint]=locationContext();
   if(/\b(ayuda|donde estoy|que puedo hacer)\b/.test(question)){respond(hint);return;}
