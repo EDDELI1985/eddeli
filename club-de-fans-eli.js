@@ -386,7 +386,12 @@ function installClubHelp(){
 #eli-floating-help{--eli-offset:calc(88px + env(safe-area-inset-bottom,0px));position:fixed;right:max(16px,env(safe-area-inset-right));bottom:var(--eli-offset);z-index:1200;color:#51263e;font:15px/1.45 system-ui,sans-serif}
 @media(min-width:901px){#eli-floating-help{--eli-offset:24px}}
 #eli-floating-help button{font:inherit;cursor:pointer}
-#eli-floating-help .eli-orb{display:grid;place-items:center;margin-left:auto;width:58px;height:58px;border:1px solid #edc782;border-radius:50%;background:radial-gradient(circle at 32% 25%,#ba668e,#79234e 62%,#451632);color:#ffe4a4;font:700 32px Georgia,serif;box-shadow:0 7px 22px #56244166}
+#eli-floating-help .eli-orb{position:relative;isolation:isolate;display:grid;place-items:center;margin-left:auto;width:58px;height:58px;padding:0;border:0;background:transparent;color:#ffe0a0;font:700 34px/1 system-ui,sans-serif;text-transform:none;text-shadow:0 0 8px #ffd69576;filter:drop-shadow(0 5px 8px #5624415c)}
+#eli-floating-help .eli-orb::before,#eli-floating-help .eli-orb::after{content:"";position:absolute;inset:0;clip-path:path("M 22 5 Q 29 -2 36 5 Q 43 13 53 22 Q 60 29 53 36 Q 43 45 36 53 Q 29 60 22 53 Q 15 45 5 36 Q -2 29 5 22 Q 15 13 22 5 Z");pointer-events:none}
+#eli-floating-help .eli-orb::before{z-index:-2;background:linear-gradient(135deg,#fff1c6,#ffbdab 42%,#b97069 72%,#ffdfaf)}
+#eli-floating-help .eli-orb::after{z-index:-1;transform:scale(.94);background:radial-gradient(ellipse at 25% 12%,#db7c9b 0%,#9c305e 34%,#591433 78%,#8b254c)}
+@keyframes eli-attention{0%,8%,100%{transform:translateX(0) rotate(0)}2%{transform:translateX(-2px) rotate(-6deg)}4%{transform:translateX(2px) rotate(6deg)}6%{transform:translateX(-1px) rotate(-3deg)}}
+@media(prefers-reduced-motion:no-preference){#eli-floating-help .eli-orb[aria-expanded="false"]:not(:hover):not(:focus-visible){animation:eli-attention 9s 2s infinite}}
 #eli-floating-help button:focus-visible,#eli-floating-help input:focus-visible{outline:2px solid #8e3e65;outline-offset:3px}
 #fan-eli-help{position:absolute;right:0;bottom:70px;width:min(350px,calc(100vw - 32px));max-height:max(130px,calc(100dvh - var(--eli-offset) - 86px));overflow:auto;box-sizing:border-box;padding:16px;border:1px solid #c58ba8;border-radius:18px;background:#fff4f8;box-shadow:0 10px 32px #41213c36}
 #fan-eli-help[hidden]{display:none!important}
@@ -396,7 +401,7 @@ function installClubHelp(){
 #fan-eli-help label{display:block;margin:.65rem 0 .4rem}
 #fan-eli-help input{display:block;box-sizing:border-box;width:100%;padding:8px;margin-top:4px;border:1px solid #b887a2;border-radius:8px;font:inherit;background:white;color:#51263e}
 #fan-eli-answer:not(:empty){padding:9px;border-radius:9px;background:white}
-</style><button class="eli-orb" type="button" aria-label="Pregúntale a ELI" title="Pregúntale a ELI" aria-expanded="false" aria-controls="fan-eli-help">E</button><section id="fan-eli-help" aria-label="Chat con ELI" hidden><header><strong>ELI</strong><button type="button" data-close>Cerrar</button></header><p id="fan-eli-greeting"></p><p id="fan-eli-context"></p><div id="fan-eli-topics" style="display:flex;flex-wrap:wrap;gap:.4rem"></div><form><label>Tu pregunta<input name="question" required maxlength="180" placeholder="Ej. ¿Qué gano con seis sellos?" autocomplete="off"></label><button>Enviar</button></form><div id="fan-eli-answer" role="status" style="margin-top:.65rem"></div></section>`;
+</style><button class="eli-orb" type="button" aria-label="Pregúntale a ELI" title="Pregúntale a ELI" aria-expanded="false" aria-controls="fan-eli-help">e</button><section id="fan-eli-help" aria-label="Chat con ELI" hidden><header><strong>ELI</strong><button type="button" data-close>Cerrar</button></header><p id="fan-eli-greeting"></p><p id="fan-eli-context"></p><div id="fan-eli-topics" style="display:flex;flex-wrap:wrap;gap:.4rem"></div><form><label>Tu pregunta<input name="question" required maxlength="180" placeholder="Ej. ¿Qué gano con seis sellos?" autocomplete="off"></label><button>Enviar</button></form><div id="fan-eli-answer" role="status" style="margin-top:.65rem"></div></section>`;
  document.body.append(entry);
  const toggle=entry.querySelector('.eli-orb');
  const panel=entry.querySelector('#fan-eli-help');
