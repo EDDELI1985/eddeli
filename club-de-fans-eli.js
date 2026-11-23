@@ -483,13 +483,18 @@ function installClubHelp(){
   return heading?[page,heading,'Esta área está en preparación. Puedes volver a la cuadrícula para explorar las áreas disponibles.']:[page,...(contexts[page]||contexts.inicio)];
  }
  let previousContext='';
+ function verifiedEddeliAdmin(){
+  if(typeof currentUser==='undefined'||typeof currentProfile==='undefined')return false;
+  return Boolean(currentUser?.email_confirmed_at&&currentProfile?.id===currentUser.id&&currentProfile.role==='admin'&&currentProfile.approval_status==='approved');
+ }
  function refreshContext(){
   const [page,area,hint]=locationContext();
   const profile=typeof currentUser!=='undefined'&&currentUser&&typeof currentProfile!=='undefined'?currentProfile:null;
   const name=(profile?.full_name||(page==='club-eli'?card?.name:'')||'').trim().split(/\s+/)[0];
   greeting.textContent=name?'Hola, '+name+'. ¿En qué te puedo ayudar?':'Hola, soy ELI. ¿En qué te puedo ayudar?';
-  panel.querySelector('#fan-eli-context').textContent='Estás en '+area+'.';
-  const contextKey=page+'|'+area+'|'+name;
+  const admin=verifiedEddeliAdmin();
+  panel.querySelector('#fan-eli-context').textContent=(admin?'Sesión de administración de EDDELI · ':'')+'Estás en '+area+'.';
+  const contextKey=page+'|'+area+'|'+name+'|'+admin;
   if(contextKey===previousContext)return;
   previousContext=contextKey;
 
@@ -540,6 +545,10 @@ function installClubHelp(){
   addMessage('Tú',privateQuestion?'Consulta sobre acceso':typed);
   if(/\b(contrasenas?|claves?|pin|codigos?)\b/.test(question)){respond(replies.restricted);return;}
   const [page,area,hint]=locationContext();
+  if(/\b(administrador(?:a|es)?|administracion|administrar|gestionar|mis permisos)\b/.test(question)){
+   if(!verifiedEddeliAdmin()){respond('Para acceder a Administración, inicia sesión con una cuenta administrativa aprobada de EDDELI.');return;}
+   respond(page.startsWith('admin')?'Tu sesión de administración de EDDELI está activa. '+hint:'Tu sesión de administración de EDDELI está activa. Abre Administración para gestionar alumnos, cursos, exámenes y certificados, o para acceder a Cocina y al Club de Fans ELI.');return;
+  }
   if(/\b(ayuda|donde estoy|que puedo hacer)\b/.test(question)){respond(hint);return;}
   const areaMatch=Object.values(typeof learningAreas==='undefined'?{}:learningAreas).find(item=>normalize(item.name).length>8&&question.includes(normalize(item.name)));
   if(areaMatch&&areaMatch.status!=='Disponible'&&!/\bcocina\b/.test(question)){respond(areaMatch.description+' Esta área está en preparación.');return;}
