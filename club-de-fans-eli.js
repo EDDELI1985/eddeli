@@ -72,7 +72,9 @@ function show(data,value){
  }));
  const counts=[['decoracion',data.decoration],['detalle',data.detail_rewards],['descuento',data.discount],['final',data.final_rewards]];
  const available=counts.filter(pair=>pair[1]>0).map(([code,count])=>rewards[code]+' × '+count);
- say(available.join(' · ')||'Todavía no tienes premios disponibles.','fan-benefits');
+ const benefits = available.join(' · ')||'Todavía no tienes premios disponibles.';
+ say(benefits,'fan-benefits');
+ cardBenefits.textContent = total >= 1 ? 'Acceso anticipado a turnos. ' + benefits : benefits;
  get('fan-private').value=value;refreshPrices();loadPhoto(value);say('Tarjeta actualizada.');
 }
 async function load(value){show(await rpc('card',{p_token:value}),value);}
@@ -106,6 +108,7 @@ submit('fan-join',async fields=>{
 });
 get('fan-refresh').onclick=()=>load(token).catch(error=>say(error.message));
 get('fan-signout').onclick=()=>{
+ openMemberView('menu',false);
  token='';card=null;requestId=undefined;profileRevision++;displayPhoto(null);photoForm.reset();localStorage.removeItem('eddeli.club.card');
  get('fan-member').hidden=true;get('fan-identify').hidden=false;
  get('fan-private').value='';clearPostal();say('');
@@ -231,6 +234,59 @@ const photoStatus = profile.querySelector('[role=status]');
 const avatar = profile.querySelector('img');
 avatar.style.cssText = 'object-fit:cover;border-radius:50%;border:2px solid #b887a2';
 const appointment = get('fan-request').closest('details');
+const member = get('fan-member');
+const menu = document.createElement('div');
+const back = document.createElement('button');
+back.type = 'button';
+back.textContent = 'Volver al Club';
+const views = new Map([['menu', menu]]);
+let activeView = 'menu';
+const menuButtons = new Map();
+function openMemberView(name, focus = true) {
+ const previous = activeView;
+ activeView = name;
+ for (const [key, view] of views) view.hidden = key !== name;
+ back.hidden = name === 'menu';
+ if (!focus) return;
+ const target = name === 'menu' ? menuButtons.get(previous) : views.get(name).firstElementChild;
+ target?.focus({preventScroll:true});
+}
+back.onclick = () => openMemberView('menu');
+const menuGrid = document.createElement('nav');
+menuGrid.setAttribute('aria-label','Menú de socia');
+menuGrid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,9rem),1fr));gap:.5rem';
+menu.append(get('fan-progress'),menuGrid,get('fan-signout'));
+member.append(back,menu);
+const recovery = get('fan-private').closest('details');
+const bookingHint = document.createElement('p');
+bookingHint.textContent = 'Para reservar, completa tu foto en Mi perfil. Si ya tienes foto, espera a que se cargue.';
+const cardBenefits = document.createElement('p');
+for (const [name, label, icon, content] of [
+ ['card','Mi tarjeta','▦',[get('fan-stamps'),cardBenefits,get('fan-refresh')]],
+ ['appointment','Reservar cita','◷',[bookingHint,appointment]],
+ ['rewards','Mis premios','✦',[get('fan-benefits')]],
+ ['profile','Mi perfil','◉',[profile,recovery]]
+]) {
+ const button = document.createElement('button');
+ button.type = 'button';
+ const symbol = document.createElement('span');
+ symbol.setAttribute('aria-hidden','true');
+ symbol.textContent = icon + ' ';
+ button.append(symbol,label);
+ button.onclick = () => openMemberView(name);
+ menuButtons.set(name,button);
+ menuGrid.append(button);
+ const view = document.createElement('section');
+ const heading = document.createElement('h3');
+ heading.textContent = label;
+ heading.tabIndex = -1;
+ view.append(heading,...content);
+ views.set(name,view);
+ member.append(view);
+}
+appointment.open = true;
+openMemberView('menu',false);
+
 const postal = document.createElement('div');
 postal.hidden = true;
 const preview = document.createElement('img');
@@ -310,6 +366,7 @@ function displayPhoto(photo) {
  avatar.hidden = !photo;
  photoForm.hidden = Boolean(photo);
  appointment.hidden = !photo;
+ bookingHint.hidden = Boolean(photo);
  if (photo) avatar.src = photo;
  else avatar.removeAttribute('src');
 }
