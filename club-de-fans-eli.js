@@ -58,6 +58,12 @@ function show(data,value){
  get('fan-identify').hidden=true;get('fan-member').hidden=false;
  say(data.name+' · Socia n.º '+data.id,'fan-name');
  const total=data.stamps9??data.stamps;
+ stampCells.forEach((cell,index)=>{
+  const earned = index < total;
+  cell.classList.toggle('fan-earned',earned);
+  cell.textContent = earned ? '✓' : String(index+1);
+  cell.setAttribute('aria-label','Sello '+(index+1)+(earned?' confirmado':' pendiente'));
+ });
  say(total+' de 9 sellos'+(total===9?' · Tarjeta completa':''),'fan-progress');
  get('fan-stamps').replaceChildren(...Array.from({length:9},(_,index)=>{
   const item=document.createElement('li'),stamp=document.createElement('b'),label=document.createElement('span');
@@ -236,6 +242,66 @@ avatar.style.cssText = 'object-fit:cover;border-radius:50%;border:2px solid #b88
 const appointment = get('fan-request').closest('details');
 const member = get('fan-member');
 const menu = document.createElement('div');
+menu.className = 'fan-dashboard';
+const title = get('club-eli-title');
+const brand = document.createElement('p');
+brand.className = 'fan-brand';
+brand.textContent = 'ELI BEAUTY STUDIO';
+const tagline = document.createElement('p');
+tagline.className = 'fan-tagline';
+tagline.textContent = 'Tu belleza, tu espacio, tus beneficios.';
+title.before(brand);
+title.after(tagline);
+
+const welcome = document.createElement('header');
+welcome.className = 'fan-welcome';
+const greeting = document.createElement('h2');
+greeting.textContent = '¡Bienvenida, socia!';
+const membership = document.createElement('p');
+membership.textContent = 'Miembro del Club ELI';
+welcome.append(greeting,get('fan-name'),membership);
+
+const loyalty = document.createElement('section');
+loyalty.className = 'fan-loyalty';
+const loyaltyTitle = document.createElement('h3');
+loyaltyTitle.textContent = 'Tu tarjeta de fidelización';
+const overviewStamps = document.createElement('ol');
+overviewStamps.className = 'fan-overview-stamps';
+overviewStamps.setAttribute('aria-label','Tus nueve sellos');
+const stampCells = Array.from({length:9},(_,index)=>{
+ const cell = document.createElement('li');
+ cell.textContent = String(index+1);
+ overviewStamps.append(cell);
+ return cell;
+});
+loyalty.append(loyaltyTitle,overviewStamps,get('fan-progress'));
+
+const design = document.createElement('style');
+design.textContent = `
+#club-eli .fan-brand,#club-eli .fan-tagline,#club-eli-title{text-align:center}
+#club-eli .fan-brand{color:#77511e;font-size:.75rem;font-weight:750;letter-spacing:.2em;margin:1rem 0 .4rem}
+#club-eli-title{font-size:clamp(1.9rem,6vw,3.1rem);line-height:1.04;margin:.35rem 0}
+#club-eli .fan-tagline{margin:.65rem 0 1.25rem}
+#club-eli .fan-dashboard{display:grid;gap:1rem}
+#club-eli .fan-welcome{text-align:center}
+#club-eli .fan-welcome h2{font:700 clamp(1.35rem,4vw,1.8rem) Georgia,serif;margin:.15rem 0 .35rem}
+#club-eli .fan-welcome p{margin:.25rem 0;font-size:.9rem}
+#club-eli .fan-loyalty{background:linear-gradient(140deg,#ffe5ef,#fff8eb);border:1px solid #c49a55;border-radius:18px;padding:clamp(.55rem,3vw,1.25rem);text-align:center}
+#club-eli .fan-loyalty h3{color:#74284e;font-family:Georgia,serif;margin:.2rem 0 .75rem}
+#club-eli .fan-loyalty p{margin:.7rem 0 .1rem;font-weight:700}
+#club-eli .fan-overview-stamps{display:grid;grid-template-columns:repeat(9,minmax(0,2.7rem));justify-content:center;gap:clamp(2px,1vw,8px);margin:0;padding:0;list-style:none}
+#club-eli .fan-overview-stamps li{display:grid;place-items:center;aspect-ratio:1;border-radius:50%;border:1px solid #b38b49;background:#fffaf2;color:#65451e;font-size:clamp(.68rem,2.4vw,1rem);font-weight:700}
+#club-eli .fan-overview-stamps .fan-earned{background:#84375d;color:white;border-color:#84375d}
+#club-eli .fan-dashboard nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(4px,1.4vw,10px)}
+#club-eli .fan-dashboard nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.2rem;min-width:0;min-height:4.25rem;padding:.35rem .15rem;margin:0;background:#fff6fa;border:1px solid #deb7c8;color:#632846;font-size:clamp(.68rem,2.7vw,.9rem);line-height:1.2;overflow-wrap:anywhere}
+#club-eli .fan-dashboard nav button:enabled:hover{background:#f8dfec;border-color:#b38b49}
+#club-eli .fan-dashboard nav button:disabled{cursor:default;background:#fffafd;color:#694958}
+#club-eli .fan-dashboard nav button small{font-size:.72rem}
+#club-eli .fan-dashboard nav button span{color:#785522;font-size:1.25rem}
+#club-eli .fan-exclusive{text-align:center;font-family:Georgia,serif;margin:0}
+#club-eli .fan-dashboard #fan-signout{justify-self:center}
+`;
+root.append(design);
 const back = document.createElement('button');
 back.type = 'button';
 back.textContent = 'Volver al Club';
@@ -254,8 +320,10 @@ function openMemberView(name, focus = true) {
 back.onclick = () => openMemberView('menu');
 const menuGrid = document.createElement('nav');
 menuGrid.setAttribute('aria-label','Menú de socia');
-menuGrid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,9rem),1fr));gap:.5rem';
-menu.append(get('fan-progress'),menuGrid,get('fan-signout'));
+const exclusive = document.createElement('p');
+exclusive.className = 'fan-exclusive';
+exclusive.textContent = '✦ Exclusivo para nuestras socias ✦';
+menu.append(welcome,loyalty,menuGrid,exclusive,get('fan-signout'));
 member.append(back,menu);
 const recovery = get('fan-private').closest('details');
 const bookingHint = document.createElement('p');
@@ -265,6 +333,11 @@ for (const [name, label, icon, content] of [
  ['card','Mi tarjeta','▦',[get('fan-stamps'),cardBenefits,get('fan-refresh')]],
  ['appointment','Reservar cita','◷',[bookingHint,appointment]],
  ['rewards','Mis premios','✦',[get('fan-benefits')]],
+ ['inspiration','Inspiración','❀'],
+ ['entertainment','Entretenimiento','☆'],
+ ['offers','Ofertas VIP','♕'],
+ ['advice','Consejos','☼'],
+ ['community','Comunidad','♡'],
  ['profile','Mi perfil','◉',[profile,recovery]]
 ]) {
  const button = document.createElement('button');
@@ -273,9 +346,16 @@ for (const [name, label, icon, content] of [
  symbol.setAttribute('aria-hidden','true');
  symbol.textContent = icon + ' ';
  button.append(symbol,label);
+ menuGrid.append(button);
+ if (!content) {
+  button.disabled = true;
+  const status = document.createElement('small');
+  status.textContent = 'Próximamente';
+  button.append(status);
+  continue;
+ }
  button.onclick = () => openMemberView(name);
  menuButtons.set(name,button);
- menuGrid.append(button);
  const view = document.createElement('section');
  const heading = document.createElement('h3');
  heading.textContent = label;
