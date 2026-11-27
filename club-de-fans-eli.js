@@ -58,6 +58,12 @@ function show(data,value){
  get('fan-identify').hidden=true;get('fan-member').hidden=false;
  say(data.name+' · Socia n.º '+data.id,'fan-name');
  const total=data.stamps9??data.stamps;
+ stampCells.forEach((cell,index)=>{
+  const earned = index < total;
+  cell.classList.toggle('fan-earned',earned);
+  cell.textContent = earned ? '✓' : String(index+1);
+  cell.setAttribute('aria-label','Sello '+(index+1)+(earned?' confirmado':' pendiente'));
+ });
  say(total+' de 9 sellos'+(total===9?' · Tarjeta completa':''),'fan-progress');
  get('fan-stamps').replaceChildren(...Array.from({length:9},(_,index)=>{
   const item=document.createElement('li'),stamp=document.createElement('b'),label=document.createElement('span');
@@ -72,7 +78,10 @@ function show(data,value){
  }));
  const counts=[['decoracion',data.decoration],['detalle',data.detail_rewards],['descuento',data.discount],['final',data.final_rewards]];
  const available=counts.filter(pair=>pair[1]>0).map(([code,count])=>rewards[code]+' × '+count);
- say(available.join(' · ')||'Todavía no tienes premios disponibles.','fan-benefits');
+ const benefits = available.join(' · ')||'Todavía no tienes premios disponibles.';
+ say(benefits,'fan-benefits');
+ cardBenefits.textContent = total >= 1 ? 'Acceso anticipado a turnos. ' + benefits : benefits;
+ vipBenefits.textContent = cardBenefits.textContent;
  get('fan-private').value=value;refreshPrices();loadPhoto(value);say('Tarjeta actualizada.');
 }
 async function load(value){show(await rpc('card',{p_token:value}),value);}
@@ -106,6 +115,10 @@ submit('fan-join',async fields=>{
 });
 get('fan-refresh').onclick=()=>load(token).catch(error=>say(error.message));
 get('fan-signout').onclick=()=>{
+ openMemberView('menu',false);
+ inspirationStatus.textContent = '';
+ quizResult.textContent = '';
+ pollStatus.textContent = '';
  token='';card=null;requestId=undefined;profileRevision++;displayPhoto(null);photoForm.reset();localStorage.removeItem('eddeli.club.card');
  get('fan-member').hidden=true;get('fan-identify').hidden=false;
  get('fan-private').value='';clearPostal();say('');
@@ -231,6 +244,194 @@ const photoStatus = profile.querySelector('[role=status]');
 const avatar = profile.querySelector('img');
 avatar.style.cssText = 'object-fit:cover;border-radius:50%;border:2px solid #b887a2';
 const appointment = get('fan-request').closest('details');
+const member = get('fan-member');
+const menu = document.createElement('div');
+menu.className = 'fan-dashboard';
+const title = get('club-eli-title');
+const brand = document.createElement('p');
+brand.className = 'fan-brand';
+brand.textContent = 'ELI BEAUTY STUDIO';
+const tagline = document.createElement('p');
+tagline.className = 'fan-tagline';
+tagline.textContent = 'Tu belleza, tu espacio, tus beneficios.';
+title.before(brand);
+title.after(tagline);
+
+const welcome = document.createElement('header');
+welcome.className = 'fan-welcome';
+const greeting = document.createElement('h2');
+greeting.textContent = '¡Bienvenida, socia!';
+const membership = document.createElement('p');
+membership.textContent = 'Miembro del Club ELI';
+welcome.append(greeting,get('fan-name'),membership);
+
+const loyalty = document.createElement('section');
+loyalty.className = 'fan-loyalty';
+const loyaltyTitle = document.createElement('h3');
+loyaltyTitle.textContent = 'Tu tarjeta de fidelización';
+const overviewStamps = document.createElement('ol');
+overviewStamps.className = 'fan-overview-stamps';
+overviewStamps.setAttribute('aria-label','Tus nueve sellos');
+const stampCells = Array.from({length:9},(_,index)=>{
+ const cell = document.createElement('li');
+ cell.textContent = String(index+1);
+ overviewStamps.append(cell);
+ return cell;
+});
+loyalty.append(loyaltyTitle,overviewStamps,get('fan-progress'));
+
+const design = document.createElement('style');
+design.textContent = `
+#club-eli .fan-brand,#club-eli .fan-tagline,#club-eli-title{text-align:center}
+#club-eli .fan-brand{color:#77511e;font-size:.75rem;font-weight:750;letter-spacing:.2em;margin:1rem 0 .4rem}
+#club-eli-title{font-size:clamp(1.9rem,6vw,3.1rem);line-height:1.04;margin:.35rem 0}
+#club-eli .fan-tagline{margin:.65rem 0 1.25rem}
+#club-eli .fan-dashboard{display:grid;gap:1rem}
+#club-eli .fan-welcome{text-align:center}
+#club-eli .fan-welcome h2{font:700 clamp(1.35rem,4vw,1.8rem) Georgia,serif;margin:.15rem 0 .35rem}
+#club-eli .fan-welcome p{margin:.25rem 0;font-size:.9rem}
+#club-eli .fan-loyalty{background:linear-gradient(140deg,#ffe5ef,#fff8eb);border:1px solid #c49a55;border-radius:18px;padding:clamp(.55rem,3vw,1.25rem);text-align:center}
+#club-eli .fan-loyalty h3{color:#74284e;font-family:Georgia,serif;margin:.2rem 0 .75rem}
+#club-eli .fan-loyalty p{margin:.7rem 0 .1rem;font-weight:700}
+#club-eli .fan-overview-stamps{display:grid;grid-template-columns:repeat(9,minmax(0,2.7rem));justify-content:center;gap:clamp(2px,1vw,8px);margin:0;padding:0;list-style:none}
+#club-eli .fan-overview-stamps li{display:grid;place-items:center;aspect-ratio:1;border-radius:50%;border:1px solid #b38b49;background:#fffaf2;color:#65451e;font-size:clamp(.68rem,2.4vw,1rem);font-weight:700}
+#club-eli .fan-overview-stamps .fan-earned{background:#84375d;color:white;border-color:#84375d}
+#club-eli .fan-dashboard nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(4px,1.4vw,10px)}
+#club-eli .fan-dashboard nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.2rem;min-width:0;min-height:4.25rem;padding:.35rem .15rem;margin:0;background:#fff6fa;border:1px solid #deb7c8;color:#632846;font-size:clamp(.68rem,2.7vw,.9rem);line-height:1.2;overflow-wrap:anywhere}
+#club-eli .fan-dashboard nav button:enabled:hover{background:#f8dfec;border-color:#b38b49}
+#club-eli .fan-dashboard nav button span{color:#785522;font-size:1.25rem}
+#club-eli .fan-exclusive{text-align:center;font-family:Georgia,serif;margin:0}
+#club-eli .fan-dashboard #fan-signout{justify-self:center}
+`;
+root.append(design);
+const back = document.createElement('button');
+back.type = 'button';
+back.textContent = 'Volver al Club';
+const views = new Map([['menu', menu]]);
+let activeView = 'menu';
+const menuButtons = new Map();
+function openMemberView(name, focus = true) {
+ const previous = activeView;
+ activeView = name;
+ for (const [key, view] of views) view.hidden = key !== name;
+ back.hidden = name === 'menu';
+ if (!focus) return;
+ const target = name === 'menu' ? menuButtons.get(previous) : views.get(name).firstElementChild;
+ target?.focus({preventScroll:true});
+}
+back.onclick = () => openMemberView('menu');
+const menuGrid = document.createElement('nav');
+menuGrid.setAttribute('aria-label','Menú de socia');
+const exclusive = document.createElement('p');
+exclusive.className = 'fan-exclusive';
+exclusive.textContent = '✦ Exclusivo para nuestras socias ✦';
+menu.append(welcome,loyalty,menuGrid,exclusive,get('fan-signout'));
+member.append(back,menu);
+const recovery = get('fan-private').closest('details');
+const bookingHint = document.createElement('p');
+bookingHint.textContent = 'Para reservar, completa tu foto en Mi perfil. Si ya tienes foto, espera a que se cargue.';
+const cardBenefits = document.createElement('p');
+function clubText(tag, value) {
+ const element = document.createElement(tag);
+ element.textContent = value;
+ return element;
+}
+function clubButton(label, action) {
+ const button = clubText('button',label);
+ button.type = 'button';
+ button.onclick = action;
+ return button;
+}
+function clubStatus() {
+ const status = document.createElement('p');
+ status.setAttribute('role','status');
+ return status;
+}
+
+const inspiration = document.createElement('div');
+const inspirationStatus = clubStatus();
+inspiration.append(clubText('p','Elige un diseño que quieras comentar en tu próxima cita.'),inspirationStatus);
+for (const [name,description] of [
+ ['Francesa rosa','Base rosa suave con puntas finas y claras.'],
+ ['Burdeos brillante','Un tono profundo con acabado brillante.'],
+ ['Flores discretas','Una flor pequeña sobre una base neutra.']
+]) {
+ const design = document.createElement('article');
+ design.append(clubText('h4',name),clubText('p',description),clubButton('Elegir '+name,()=>{
+  inspirationStatus.textContent = 'Tu elección: '+name+'. Puedes mencionarla al pedir cita.';
+ }));
+ inspiration.append(design);
+}
+
+const entertainment = document.createElement('div');
+const quizResult = clubStatus();
+entertainment.append(
+ clubText('h4','Minijuego de belleza'),
+ clubText('p','¿Cuál de estos estilos se reconoce por una línea en la punta de la uña?'),
+ clubButton('Manicura francesa',()=>{quizResult.textContent='¡Acertaste! La línea en la punta es característica de la francesa.';}),
+ clubButton('Efecto ojo de gato',()=>{quizResult.textContent='Pista: el nombre del estilo también identifica un país.';}),
+ quizResult
+);
+
+const offers = document.createElement('div');
+const vipBenefits = clubStatus();
+offers.append(clubText('h4','Beneficios de tu tarjeta'),vipBenefits,clubButton('Consultar mis premios',()=>openMemberView('rewards')));
+
+const advice = document.createElement('div');
+advice.append(clubText('h4','Revista ELI'));
+for (const [title,body] of [
+ ['Cómo elegir un diseño para tu cita','Lleva una referencia que muestre el color, la forma y el acabado que prefieres.'],
+ ['Ideas para combinar tus uñas','Elige un tono base y repítelo en el detalle de una o dos uñas para mantener la combinación.'],
+ ['Qué contar antes de un servicio de pestañas','Comenta si llevas extensiones, si usas lentillas o si has tenido una reacción a algún producto.']
+]) {
+ const article = document.createElement('details');
+ article.append(clubText('summary',title),clubText('p',body));
+ advice.append(article);
+}
+
+const community = document.createElement('div');
+const pollStatus = clubStatus();
+community.append(
+ clubText('h4','Pregunta del Club'),
+ clubText('p','¿Qué te gustaría encontrar primero en la galería? Tu elección se muestra en esta visita.'),
+ ...['Diseños de uñas','Estilos de pestañas','Ideas para el cabello'].map(option=>
+  clubButton(option,()=>{pollStatus.textContent='Tu elección: '+option+'.';})
+ ),
+ pollStatus
+);
+const bookingProfile = clubButton('Ir a Mi perfil',()=>openMemberView('profile'));
+bookingHint.append(document.createElement('br'),bookingProfile);
+for (const [name, label, icon, content] of [
+ ['card','Mi tarjeta','▦',[get('fan-stamps'),cardBenefits,get('fan-refresh')]],
+ ['appointment','Reservar cita','◷',[bookingHint,appointment]],
+ ['rewards','Mis premios','✦',[get('fan-benefits')]],
+ ['inspiration','Inspiración','❀',[inspiration]],
+ ['entertainment','Entretenimiento','☆',[entertainment]],
+ ['offers','Ofertas VIP','♕',[offers]],
+ ['advice','Consejos','☼',[advice]],
+ ['community','Comunidad','♡',[community]],
+ ['profile','Mi perfil','◉',[profile,recovery]]
+]) {
+ const button = document.createElement('button');
+ button.type = 'button';
+ const symbol = document.createElement('span');
+ symbol.setAttribute('aria-hidden','true');
+ symbol.textContent = icon + ' ';
+ button.append(symbol,label);
+ menuGrid.append(button);
+ button.onclick = () => openMemberView(name);
+ menuButtons.set(name,button);
+ const view = document.createElement('section');
+ const heading = document.createElement('h3');
+ heading.textContent = label;
+ heading.tabIndex = -1;
+ view.append(heading,...content);
+ views.set(name,view);
+ member.append(view);
+}
+appointment.open = true;
+openMemberView('menu',false);
+
 const postal = document.createElement('div');
 postal.hidden = true;
 const preview = document.createElement('img');
@@ -310,6 +511,7 @@ function displayPhoto(photo) {
  avatar.hidden = !photo;
  photoForm.hidden = Boolean(photo);
  appointment.hidden = !photo;
+ bookingHint.hidden = Boolean(photo);
  if (photo) avatar.src = photo;
  else avatar.removeAttribute('src');
 }

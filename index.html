@@ -1253,7 +1253,7 @@ async function checkSystem(){const el=document.getElementById("system-status");t
     if(page === "estudiante" && typeof window.loadStudentProgress === "function") window.loadStudentProgress();
     if(page === "estudiante" && typeof window.loadStudentResults === "function") window.loadStudentResults();
     if(page === "perfil" && typeof window.fillProfile === "function") window.fillProfile();
-    window.scrollTo({top:0,behavior:"auto"});
+    if(page !== "club-eli") window.scrollTo({top:0,behavior:"auto"});
     return true;
   };
   window.loadStudentProgress = typeof loadStudentProgress === "function" ? loadStudentProgress : undefined;
