@@ -651,10 +651,34 @@ const registrationBack=registration?.querySelector('#reg-back');
 const identityFields={name:document.getElementById('reg-name'),email:document.getElementById('reg-email'),phone:document.getElementById('reg-phone')};
 const identityMismatch='Tus datos deben coincidir con los de tu perfil del Club de Fans ELI. Revisa tu perfil antes de continuar.';
 let academyRegistration=null;
+const academyPassword=document.getElementById('reg-password');
+const passwordRow=document.createElement('div');
+passwordRow.style.cssText='display:flex;align-items:center;gap:.4rem';
+const passwordEye=clubButton('',()=>setAcademyPasswordVisibility(academyPassword.type==='password'));
+passwordEye.className='secondary';
+passwordEye.style.cssText='flex:none;min-width:44px;min-height:44px;padding:.4rem';
+passwordEye.setAttribute('aria-controls','reg-password');
+
+function setAcademyPasswordVisibility(visible){
+ if(!academyPassword)return;
+ academyPassword.type=visible?'text':'password';
+ passwordEye.textContent=visible?'◉̸':'👁';
+ const label=visible?'Ocultar contraseña':'Mostrar contraseña';
+ passwordEye.setAttribute('aria-label',label);
+ passwordEye.title=label;
+}
+function addAcademyPasswordEye(){
+ if(!academyPassword||passwordRow.isConnected)return;
+ setAcademyPasswordVisibility(false);
+ academyPassword.before(passwordRow);
+ passwordRow.append(academyPassword,passwordEye);
+}
 
 function clearClubRegistration(){
  if(!academyRegistration)return;
  academyRegistration=null;
+ setAcademyPasswordVisibility(false);
+ if(passwordRow.isConnected)passwordRow.replaceWith(academyPassword);
  registrationForm.reset();
  for(const field of Object.values(identityFields))field.readOnly=false;
  registrationBack.textContent='VOLVER';
@@ -707,6 +731,7 @@ const academyButton = clubButton('Curso de extensiones de pestañas',async()=>{
    field.readOnly=true;
   }
   academyRegistration={token:value,profile};
+  addAcademyPasswordEye();
   registrationBack.textContent='VOLVER AL CLUB DE FANS ELI';
   say('');
   if(!window.go('registro'))clearClubRegistration();
