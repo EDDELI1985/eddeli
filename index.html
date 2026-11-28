@@ -455,7 +455,7 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
 <div id="fan-identify">
 <p>Accede con tu código privado de socia o activa tu tarjeta con una invitación.</p>
 <form id="fan-recover"><label>Código privado<input name="code" type="password" required autocomplete="off" maxlength="64" pattern="[a-f0-9]{64}"></label><button>Ver mi tarjeta</button></form>
-<details><summary>Tengo una invitación</summary><form id="fan-join"><label>Nombre<input name="given" required maxlength="80" autocomplete="given-name"></label><label>Apellidos<input name="family" required maxlength="80" autocomplete="family-name"></label><label>Foto de perfil<input name="photo" type="file" accept="image/*" required></label><label>Código de invitación<input name="invite" required maxlength="36" pattern="[0-9A-Fa-f\-]{36}" autocomplete="off"></label><button>Activar mi tarjeta</button></form></details>
+<details><summary>Entrar con contraseña</summary><form id="fan-password-login"><label>Número de socia<input name="member" required inputmode="numeric" pattern="[0-9]+" maxlength="16" autocomplete="username"></label><label>Contraseña<input type="password" name="password" required maxlength="72" autocomplete="current-password"></label><button>Entrar</button></form></details><form id="fan-password-reset" hidden><h2>Restablecer contraseña del Club</h2><label>Nueva contraseña<input type="password" name="password" required minlength="12" maxlength="72" autocomplete="new-password"></label><label>Repite la contraseña<input type="password" name="confirm" required minlength="12" maxlength="72" autocomplete="new-password"></label><button>Guardar contraseña</button></form><details><summary>Tengo una invitación</summary><form id="fan-join"><label>Nombre<input name="given" required maxlength="80" autocomplete="given-name"></label><label>Apellidos<input name="family" required maxlength="80" autocomplete="family-name"></label><label>Foto de perfil<input name="photo" type="file" accept="image/*" required></label><label>Código de invitación<input name="invite" required maxlength="36" pattern="[0-9A-Fa-f\-]{36}" autocomplete="off"></label><button>Activar mi tarjeta</button></form></details>
 </div>
 <section id="fan-member" hidden>
 <h2 id="fan-name"></h2><p id="fan-progress"></p><ol id="fan-stamps" aria-label="Tus nueve sellos"></ol><p id="fan-benefits"></p>
@@ -468,14 +468,14 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
 <label>Premio que quieres solicitar<select id="fan-reward" name="reward"><option value="">Ninguno</option></select></label>
 <button>Preparar solicitud</button>
 </form><a id="fan-wa" rel="noreferrer" hidden>Abrir WhatsApp y enviar</a></details>
-<details><summary>Mi código privado de recuperación</summary><label>Código privado<input id="fan-private" readonly></label><p>Guárdalo en privado para abrir tu tarjeta en otro dispositivo.</p></details>
+<details><summary>Mi código privado de recuperación</summary><label>Código privado<input id="fan-private" type="password" readonly autocomplete="off"></label><p>Guárdalo en privado para abrir tu tarjeta en otro dispositivo.</p></details>
 <button type="button" id="fan-signout">Cerrar mi tarjeta</button>
 </section>
 <p id="fan-status" role="status"></p>
 <details id="fan-admin-access" hidden><summary>Administrar el club</summary>
 <form id="fan-login"><label>Correo<input type="email" name="email" required autocomplete="username"></label><label>Contraseña<input type="password" name="password" required autocomplete="current-password"></label><button>Entrar</button></form>
 <section id="fan-staff" hidden>
-<h2 id="fan-count">Socias registradas</h2><ul id="fan-members"></ul>
+<h2 id="fan-count">Socias registradas</h2><ul id="fan-members"></ul><div id="fan-staff-account" aria-live="polite"></div>
 <button type="button" id="fan-invite">Generar invitación</button><label>Enlace de invitación<input id="fan-invite-url" readonly></label>
 <h2>Solicitudes del club</h2><form id="fan-verify"><label>Referencia del carnet<input name="reference" required maxlength="80" autocomplete="off"></label><button>Verificar carnet</button></form><div id="fan-verification" aria-live="polite"></div><p id="fan-request-count"></p><ul id="fan-requests"></ul>
 <button type="button" id="fan-staff-refresh">Actualizar listados</button>
@@ -3265,6 +3265,6 @@ if (typeof window.renderLashCurriculum === "function") {
 })();
 </script>
 
-<script defer src="./club-de-fans-eli.js?v=identidad-carnet"></script>
+<script defer src="./club-de-fans-eli.js?v=perfil-seguridad"></script>
 </body>
 </html>
