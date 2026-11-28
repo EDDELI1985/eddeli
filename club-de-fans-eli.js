@@ -433,7 +433,7 @@ function openMemberView(name, focus = true) {
  for (const [key, view] of views) view.hidden = key !== name;
  back.hidden = name === 'menu';
  if (!focus) return;
- const target = name === 'menu' ? menuButtons.get(previous) : views.get(name).firstElementChild;
+ const target = name === 'menu' ? (previous==='academy-status'?academyButton:menuButtons.get(previous)) : views.get(name).firstElementChild;
  target?.focus({preventScroll:true});
 }
 back.onclick = () => openMemberView('menu');
@@ -708,6 +708,55 @@ if(registration) new MutationObserver(()=>{
  if(!registration.classList.contains('active'))clearClubRegistration();
 }).observe(registration,{attributes:true,attributeFilter:['class']});
 
+const studentLogin=document.getElementById('login-alumno');
+const studentLoginBack=document.getElementById('student-login-back');
+const studentRegisterLink=document.getElementById('student-register-link');
+let clubStudentLogin=false;
+function clearClubStudentLogin(){
+ if(!clubStudentLogin)return;
+ clubStudentLogin=false;
+ studentLoginBack.textContent='VOLVER';
+ studentRegisterLink.style.removeProperty('display');
+ studentLogin.querySelector('form').reset();
+}
+window.returnToClubAfterStudentLogin=()=>{
+ if(!clubStudentLogin)return false;
+ clearClubStudentLogin();
+ window.go('club-eli');
+ openMemberView('menu',false);
+ academyButton.focus({preventScroll:true});
+ return true;
+};
+if(studentLogin)new MutationObserver(()=>{
+ if(!studentLogin.classList.contains('active'))clearClubStudentLogin();
+}).observe(studentLogin,{attributes:true,attributeFilter:['class']});
+
+const academyStatusView=document.createElement('section');
+const academyStatusTitle=clubText('h3','Estado de tu inscripción');
+academyStatusTitle.tabIndex=-1;
+const academyStatusMessage=clubText('p','');
+const enterCourse=clubButton('Entrar al curso',()=>{
+ if(!studentLoginBack||!studentRegisterLink||!window.go('login-alumno')||!studentLogin.classList.contains('active'))return;
+ clubStudentLogin=true;
+ studentLoginBack.textContent='VOLVER AL CLUB DE FANS ELI';
+ studentRegisterLink.style.display='none';
+});
+academyStatusView.append(academyStatusTitle,academyStatusMessage,enterCourse);
+views.set('academy-status',academyStatusView);
+member.append(academyStatusView);
+
+async function getAcademyRegistrationStatus(value){
+ const response=await fetch(base+'/functions/v1/club-academy-registration',{
+  method:'POST',headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({action:'status',token:value}),signal:AbortSignal.timeout(20000)
+ });
+ const result=await response.json().catch(()=>null);
+ if(!response.ok||!['not_registered','confirm_email','pending','approved'].includes(result?.state)){
+  throw Error(result?.message||'No pudimos consultar el estado de tu solicitud. Inténtalo de nuevo.');
+ }
+ return result.state;
+}
+
 const academyButton = clubButton('Curso de extensiones de pestañas',async()=>{
  if(!registrationForm||!registrationBack||Object.values(identityFields).some(field=>!field)||!token)return;
  const value=token;
@@ -716,6 +765,19 @@ const academyButton = clubButton('Curso de extensiones de pestañas',async()=>{
  try{
   const [profile,identity]=await Promise.all([rpc('profile_details',{p_token:value}),rpc('identity_status',{p_token:value})]);
   if(token!==value||!root.classList.contains('active'))return;
+  const state=await getAcademyRegistrationStatus(value);
+  if(token!==value||!root.classList.contains('active'))return;
+  if(state!=='not_registered'){
+   const approved=state==='approved';
+   academyStatusTitle.textContent=approved?'¡Tu solicitud fue aprobada!':'Solicitud enviada';
+   academyStatusMessage.textContent=approved
+    ?'Ya tienes acceso al curso de Extensiones de Pestañas de ELI Beauty Academy. Entra con el correo y la contraseña que creaste al inscribirte. Guarda tu contraseña en un lugar seguro.'
+    :state==='confirm_email'?'Confirma tu correo con el enlace que recibiste. Después se revisará tu solicitud.':'Ya confirmaste tu correo. Tu solicitud está pendiente de revisión.';
+   enterCourse.hidden=!approved;
+   say('');
+   openMemberView('academy-status');
+   return;
+  }
   const missing=[];
   if(!identity?.complete)missing.push('nombre, apellidos y foto');
   if(!profile?.phone)missing.push('teléfono');

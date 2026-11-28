@@ -526,8 +526,8 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
       <button class="primary">ENTRAR</button>
       <button type="button" class="secondary" onclick="recoverPassword(this.form)">OLVIDÉ MI CONTRASEÑA</button>
     </form>
-    <button class="secondary" onclick="go('registro')">REGISTRARME</button>
-    <button class="secondary" onclick="go('acceso')">VOLVER</button>
+    <button class="secondary" id="student-register-link" onclick="go('registro')">REGISTRARME</button>
+    <button class="secondary" id="student-login-back" onclick="if (!window.returnToClubAfterStudentLogin?.()) go('acceso')">VOLVER</button>
   </div>
 </section>
 
@@ -3265,6 +3265,6 @@ if (typeof window.renderLashCurriculum === "function") {
 })();
 </script>
 
-<script defer src="./club-de-fans-eli.js?v=clave-visible-club"></script>
+<script defer src="./club-de-fans-eli.js?v=estado-academia-club"></script>
 </body>
 </html>
