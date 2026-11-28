@@ -3,7 +3,8 @@ const root=document.querySelector('#club-eli');
 if(!root)return;
 const get=id=>root.querySelector('#'+id);
 const adminPanel=get('fan-admin-access');
-adminPanel.hidden=true;
+adminPanel.hidden=false;
+let staffLoginRevision=0;
 window.openClubAdministration=()=>{
  if(typeof currentProfile==='undefined'||currentProfile?.role!=='admin'||currentProfile.approval_status!=='approved'||typeof currentUser==='undefined'||!currentUser?.email_confirmed_at) return;
  if(!window.go('club-eli')||!root.classList.contains('active')) return;
@@ -13,10 +14,10 @@ window.openClubAdministration=()=>{
  adminPanel.querySelector('summary').focus({preventScroll:true});
 };
 new MutationObserver(()=>{
- if(root.classList.contains('active')||adminPanel.hidden) return;
- get('fan-exit').click();
+ if(root.classList.contains('active')) return;
+ if(!adminPanel.open&&!session&&!get('fan-login').dataset.busy)return;
+ closeStaffSession();
  adminPanel.open=false;
- adminPanel.hidden=true;
  root.classList.remove('fan-admin-mode');
 }).observe(root,{attributes:true,attributeFilter:['class']});
 const key='sb_publishable_d3KzzBG8sXIz_p9YJ1jR4A_2x6xbKJb';
@@ -246,6 +247,7 @@ async function showStaffAccount(member,reset=false){
  const panel=get('fan-staff-account');
  if(!access||!panel)return;
  const revision=++staffAccountRevision;
+ closeOwnerMember();
  try{
   const account=await rpc('staff_account',{p_member:member,p_reset:reset},access);
   if(access!==session||revision!==staffAccountRevision)return;
@@ -276,12 +278,20 @@ async function showStaffAccount(member,reset=false){
 }
 async function staffLists(){
  const access=session;
- const [members,requests]=await Promise.all([rpc('staff_members',{},access),rpc('staff_requests',{},access)]);
+ const [members,requests,canManage]=await Promise.all([
+  rpc('staff_members',{},access),
+  rpc('staff_requests',{},access),
+  rpc('can_manage_memberships',{},access).catch(()=>false)
+ ]);
  if(access!==session)return;
  say(members.length+' socias registradas','fan-count');
  get('fan-members').replaceChildren(...members.map(member=>{
   const row=document.createElement('li');const next=Object.keys(milestones).map(Number).find(n=>n>member.stamps);
   row.textContent=member.name+' · Socia '+member.id+' · '+member.stamps+'/9'+(next-member.stamps===1?' · A 1 sello del próximo premio':'');row.append(document.createTextNode(' '),clubButton('Ver cuenta de socia',()=>showStaffAccount(member.id)));
+  if(canManage===true){
+   const detailButton=clubButton('Ver como socia',()=>showOwnerMember(member.id,detailButton));
+   row.append(document.createTextNode(' '),detailButton);
+  }
   return row;
  }));
  requestsForStaff=requests;
@@ -289,11 +299,22 @@ async function staffLists(){
  renderStaffRequest();
 }
 submit('fan-login',async fields=>{
- const login=await api('/auth/v1/token?grant_type=password',{email:fields.email.value.trim(),password:fields.password.value});
+ const revision=++staffLoginRevision;
+ const credentials={email:fields.email.value.trim(),password:fields.password.value};
  fields.password.value='';
- if(await rpc('is_staff',{},login.access_token)!==true)throw Error('Acceso reservado al equipo del club.');
- session=login.access_token;get('fan-login').hidden=true;get('fan-staff').hidden=false;
- await staffLists();say('Sesión iniciada.','fan-admin-status');
+ try{
+  const login=await api('/auth/v1/token?grant_type=password',credentials);
+  if(revision!==staffLoginRevision)return;
+  if(!login.access_token||await rpc('is_staff',{},login.access_token)!==true)throw Error('Acceso reservado al equipo del club.');
+  if(revision!==staffLoginRevision||!root.classList.contains('active'))return;
+  session=login.access_token;
+  root.classList.add('fan-admin-mode');
+  get('fan-login').hidden=true;get('fan-staff').hidden=false;
+  await staffLists();
+  if(revision===staffLoginRevision)say('Sesión iniciada.','fan-admin-status');
+ }catch(error){
+  if(revision===staffLoginRevision)throw error;
+ }
 },'fan-admin-status');
 submit('fan-verify',async fields=>{
  const result=get('fan-verification');
@@ -326,12 +347,19 @@ submit('fan-verify',async fields=>{
  }
  say('','fan-admin-status');
 },'fan-admin-status');
-get('fan-exit').onclick=()=>{
+function closeStaffSession(){
+ staffLoginRevision++;
  staffAccountRevision++;
+ closeOwnerMember();
+ root.classList.remove('fan-admin-mode');
  get('fan-staff-account')?.replaceChildren();
  get('fan-verification')?.replaceChildren();get('fan-verify')?.reset();
  session='';requestsForStaff=[];visibleRequestId=undefined;get('fan-staff').hidden=true;get('fan-login').hidden=false;
  get('fan-members').replaceChildren();get('fan-requests').replaceChildren();get('fan-invite-url').value='';get('fan-visit').reset();say('Sesión cerrada.','fan-admin-status');
+}
+get('fan-exit').onclick=()=>{
+ closeStaffSession();
+ adminPanel.querySelector('summary').focus();
 };
 get('fan-staff-refresh').onclick=()=>staffLists().catch(error=>say(error.message,'fan-admin-status'));
 get('fan-invite').onclick=async event=>{
@@ -1172,6 +1200,112 @@ function installClubHelp(){
  };
 }
 installClubHelp();
+
+
+const ownerMemberPanel=document.createElement('section');
+ownerMemberPanel.hidden=true;
+ownerMemberPanel.setAttribute('aria-label','Ficha privada de socia');
+get('fan-staff-account').after(ownerMemberPanel);
+let ownerMemberRevision=0;
+const membershipLabels={active:'Activa',blocked:'Bloqueada',removed:'Dada de baja'};
+
+function closeOwnerMember(){
+ ownerMemberRevision++;
+ ownerMemberPanel.hidden=true;
+ ownerMemberPanel.replaceChildren();
+}
+
+async function showOwnerMember(member,opener,notice=''){
+ const access=session;
+ if(!access)return;
+ const revision=++ownerMemberRevision;
+ const isCurrent=()=>revision===ownerMemberRevision&&access===session;
+ const close=clubButton('Cerrar ficha',()=>{
+  closeOwnerMember();
+  opener.focus();
+ });
+ const status=clubStatus();
+ status.textContent='Cargando ficha…';
+ ownerMemberPanel.replaceChildren(close,status);
+ ownerMemberPanel.hidden=false;
+ close.focus();
+ try{
+  const data=await rpc('owner_member_view',{p_member:member},access);
+  if(!isCurrent())return;
+  if(!data?.card)throw Error('No encontramos esta cuenta.');
+  const {card,state,requests,history}=data;
+  const total=card.stamps9??card.stamps;
+  const heading=clubText('h3',card.name+' · Socia n.º '+card.id);
+  heading.tabIndex=-1;
+  const stamps=document.createElement('ol');
+  stamps.className='fan-overview-stamps';
+  stamps.setAttribute('aria-label','Sellos del carnet');
+  for(let index=0;index<9;index++){
+   const earned=index<total;
+   const stamp=clubText('li',earned?'✓':String(index+1));
+   stamp.classList.toggle('fan-earned',earned);
+   stamp.setAttribute('aria-label','Sello '+(index+1)+(earned?' confirmado':' pendiente'));
+   stamps.append(stamp);
+  }
+  const benefits=[
+   ['decoracion',card.decoration],['detalle',card.detail_rewards],
+   ['descuento',card.discount],['final',card.final_rewards]
+  ].filter(([,count])=>count>0).map(([key,count])=>rewards[key]+' × '+count);
+  if(total>0)benefits.unshift(milestones[1]);
+  const visits=document.createElement('ol');
+  for(const visit of card.stamp_visits??[]){
+   visits.append(clubText('li',visit.detail||catalog.find(row=>row[0]===visit.service)?.[1]||'Visita confirmada'));
+  }
+  const carnet=document.createElement('section');
+  carnet.className='fan-loyalty';
+  carnet.append(clubText('h4','Carnet'),stamps,clubText('p',total+' de 9 sellos'));
+  const requestsList=document.createElement('ul');
+  for(const request of requests){
+   requestsList.append(clubText('li',[
+    new Date(request.created).toLocaleDateString('es'),(request.service??'').split('|').pop(),
+    request.paid?'Visita registrada':'Pendiente',request.preference,rewards[request.reward]
+   ].filter(Boolean).join(' · ')));
+  }
+  const historyList=document.createElement('ul');
+  for(const action of history){
+   historyList.append(clubText('li',new Date(action.changed).toLocaleString('es')+
+    ' · '+membershipLabels[action.previous]+' → '+membershipLabels[action.state]));
+  }
+  const controls=document.createElement('div');
+  const actions=[
+   ['blocked','Bloquear','La socia perderá el acceso al Club.'],
+   ['removed','Dar de baja','La socia perderá el acceso al Club. Su historial se conservará.'],
+   ['active','Reactivar','La socia podrá volver a acceder al Club.']
+  ];
+  for(const [next,label,consequence] of actions){
+   if(next===state||(state==='removed'&&next==='blocked'))continue;
+   controls.append(clubButton(label,async()=>{
+    if(!isCurrent()||!window.confirm(label+' a '+card.name+' (socia n.º '+card.id+')? '+consequence))return;
+    const buttons=Array.from(controls.querySelectorAll('button'));
+    buttons.forEach(button=>{button.disabled=true;});
+    status.textContent='Guardando…';
+    try{
+     await rpc('owner_set_membership',{p_member:member,p_expected:state,p_state:next},access);
+     if(isCurrent())await showOwnerMember(member,opener,'Estado actualizado.');
+    }catch(error){
+     if(isCurrent()){
+      status.textContent=error.message;
+      buttons.forEach(button=>{button.disabled=false;});
+     }
+    }
+   }));
+  }
+  status.textContent=notice;
+  ownerMemberPanel.replaceChildren(heading,close,clubText('p','Estado de la membresía: '+membershipLabels[state]),
+   carnet,...(visits.children.length?[clubText('h4','Visitas de este carnet'),visits]:[]),
+   clubText('h4','Beneficios'),clubText('p',benefits.join(' · ')||'Todavía no hay premios disponibles.'),
+   clubText('h4','Solicitudes de cita'),requestsList.children.length?requestsList:clubText('p','Sin solicitudes.'),
+   clubText('h4','Gestionar acceso'),controls,status,clubText('h4','Historial privado de cambios'),
+   historyList.children.length?historyList:clubText('p','Sin cambios registrados.'));
+  heading.focus();
+ }catch(error){if(isCurrent())status.textContent=error.message;}
+}
+
 function invitationEntry(){
  const hash=location.hash.match(/^#inscripcion-club=([0-9a-f-]{36})$/i);
  if(!hash||typeof window.go!=='function')return false;
