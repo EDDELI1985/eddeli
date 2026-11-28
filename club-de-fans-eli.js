@@ -83,17 +83,7 @@ function show(data,value){
   cell.setAttribute('aria-label','Sello '+(index+1)+(earned?' confirmado':' pendiente'));
  });
  say(total+' de 9 sellos'+(total===9?' · Tarjeta completa':''),'fan-progress');
- get('fan-stamps').replaceChildren(...Array.from({length:9},(_,index)=>{
-  const item=document.createElement('li'),stamp=document.createElement('b'),label=document.createElement('span');
-  const visit=data.stamp_visits?.[index];
-  stamp.textContent=index<total?'✓':String(index+1);
-  item.classList.toggle('fan-earned',index<total);
-  const next=Object.keys(milestones).map(Number).find(n=>n>index+1);
-  label.textContent=milestones[index+1]||'Hacia '+milestones[next].toLowerCase();
-  if(visit){const service=document.createElement('small');service.textContent=visit.detail||catalog.find(row=>row[0]===visit.service)?.[1]||'Visita confirmada';item.append(stamp,service,label);}
-  else item.append(stamp,label);
-  return item;
- }));
+ renderDetailedCard(data,total);
  const counts=[['decoracion',data.decoration],['detalle',data.detail_rewards],['descuento',data.discount],['final',data.final_rewards]];
  const available=counts.filter(pair=>pair[1]>0).map(([code,count])=>rewards[code]+' × '+count);
  const benefits = available.join(' · ')||'Todavía no tienes premios disponibles.';
@@ -161,6 +151,7 @@ get('fan-signout').onclick=()=>{
  inspirationStatus.textContent = '';
  quizResult.textContent = '';
  pollStatus.textContent = '';
+ selectedCardStamp=null;
  token='';card=null;requestId=undefined;profileRevision++;displayPhoto(null);photoForm.reset();localStorage.removeItem('eddeli.club.card');
  get('fan-member').hidden=true;get('fan-identify').hidden=false;
  get('fan-private').value='';clearPostal();say('');
@@ -447,6 +438,29 @@ design.textContent = `
 #club-eli .fan-dashboard nav button span{color:#785522;font-size:1.25rem}
 #club-eli .fan-exclusive{text-align:center;font-family:Georgia,serif;margin:0}
 #club-eli .fan-dashboard #fan-signout{justify-self:center}
+
+#club-eli .fan-detailed-card{position:relative;isolation:isolate;overflow:hidden;display:grid;gap:.85rem;padding:clamp(.7rem,4vw,1.8rem);color:#fff1df;background:radial-gradient(ellipse at top right,#7b2a49,transparent 65%),linear-gradient(145deg,#51192f,#340f20);border:1px solid #d69c6e;border-radius:22px;box-shadow:inset 0 0 0 3px #3e1324,0 8px 20px #4d203025;margin:.75rem 0}
+#club-eli .fan-card-flower{width:clamp(7rem,30%,12rem);position:absolute;right:-.8rem;top:-1.2rem;z-index:-1;color:#e1a77e;opacity:.48;fill:none;stroke:currentColor;stroke-width:1.25}
+#club-eli .fan-card-brand{text-transform:uppercase;letter-spacing:.17em;color:#f5c598;font:700 .72rem Georgia,serif;margin:0}
+#club-eli .fan-card-name{font:italic 700 clamp(1.2rem,5vw,2rem) Georgia,serif;margin:0;overflow-wrap:anywhere}
+#club-eli .fan-detailed-card #fan-stamps{gap:clamp(.2rem,1.7vw,1rem);margin:0}
+#club-eli .fan-detailed-card #fan-stamps li{background:none;border:0;padding:0;min-width:0}
+#club-eli .fan-stamp-button{display:flex;align-items:center;flex-direction:column;gap:.4rem;width:100%;height:100%;margin:0;border:1px solid transparent;background:none;color:#fff1df;padding:.35rem .12rem;border-radius:10px}
+#club-eli .fan-stamp-button:hover,#club-eli .fan-stamp-button[aria-pressed="true"]{border-color:#e8b38c;background:#fff4da14}
+#club-eli .fan-stamp-button:focus-visible{outline-color:#fff1df}
+#club-eli .fan-stamp-medal{display:grid;place-items:center;inline-size:clamp(2.55rem,12vw,4.8rem);aspect-ratio:1;box-sizing:border-box;color:#f7c09a;border:2px solid #dfa57b;border-radius:36% 44% 36% 44%;box-shadow:0 3px 6px #19081377}
+#club-eli .fan-milestone .fan-stamp-medal{outline:1px solid #e7ad82;outline-offset:2px}
+#club-eli .fan-earned .fan-stamp-medal{color:#4c1628;background:linear-gradient(140deg,#ffe2bf,#db9b72 70%,#efbf95);border-color:#ffdbb5}
+#club-eli .fan-stamp-medal svg{width:62%;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+#club-eli .fan-stamp-label{font-size:clamp(.7rem,2.6vw,.9rem);line-height:1.2;overflow-wrap:anywhere}
+#club-eli .fan-card-count{margin:0;font:700 1rem Georgia,serif}
+#club-eli .fan-detailed-card progress{width:100%;height:.52rem;color:#e6a378;accent-color:#e6a378;border:0;border-radius:2rem;background:#270c18;overflow:hidden}
+#club-eli .fan-detailed-card progress::-webkit-progress-bar{background:#270c18}
+#club-eli .fan-detailed-card progress::-webkit-progress-value{background:#e6a378;border-radius:2rem}
+#club-eli .fan-detailed-card progress::-moz-progress-bar{background:#e6a378;border-radius:2rem}
+#club-eli .fan-next-benefit,#club-eli #fan-stamp-detail{padding:.75rem .9rem;border:1px solid #e1b996;border-radius:12px;background:#fff8eb}
+#club-eli #fan-stamp-detail h4,#club-eli #fan-stamp-detail p{margin:.25rem 0}
+
 `;
 root.append(design);
 const back = document.createElement('button');
@@ -643,10 +657,119 @@ community.append(
  ),
  pollStatus
 );
+
+const detailedCard=document.createElement('div');
+detailedCard.className='fan-detailed-card';
+const cardName=clubText('p','');
+cardName.className='fan-card-name';
+const cardProgress=document.createElement('progress');
+cardProgress.max=9;
+cardProgress.setAttribute('aria-label','Progreso de sellos del carnet');
+const cardCount=clubText('p','');
+cardCount.className='fan-card-count';
+const cardSelection=clubText('section','');
+cardSelection.id='fan-stamp-detail';
+cardSelection.setAttribute('role','status');
+const nextBenefit=clubText('p','');
+nextBenefit.className='fan-next-benefit';
+const stampList=get('fan-stamps');
+const stampLabels=[
+ milestones[1],'Hacia tu detalle',milestones[3],
+ 'Hacia tu descuento','Hacia tu descuento',milestones[6],
+ 'Hacia tu decoración especial','Hacia tu decoración especial',milestones[9]
+];
+const stampGoals=[1,3,3,6,6,6,9,9,9];
+const benefitFields={3:'detail_rewards',6:'discount',9:'final_rewards'};
+const stampArt=[
+ '<rect x="5" y="8" width="25" height="23" rx="4"/><path d="M5 15h25M11 5v6m13-6v6m-13 9h2m4 0h2m-8 5h2"/><circle cx="30" cy="29" r="7"/><path d="M30 25v4l3 2"/>',
+ '<path d="M15 6h10v10H15zM14 16h12l4 5v12a3 3 0 0 1-3 3H13a3 3 0 0 1-3-3V21zM15 25h10v6H15z"/>',
+ '<path d="M6 31l10-12c3-4 8 0 5 4L12 35m7 1 9-11c3-4 8 0 5 4l-5 7M24 10c-5-7 3-9 5-3 5-5 11 1 4 5l-5 3z"/>',
+ '<path d="M5 23 22 6h12v12L17 35z"/><circle cx="28" cy="12" r="2.5"/>',
+ '<path d="M8 21 19 7h10v10L17 31zM22 30l7 5 9-13V10l-5-1"/><circle cx="24" cy="12" r="2"/>',
+ '<path d="M4 12h32v6a3 3 0 0 0 0 6v6H4v-6a3 3 0 0 0 0-6zM15 26l10-10"/><circle cx="15" cy="17" r="2"/><circle cx="25" cy="25" r="2"/>',
+ '<path d="M10 35V16c0-13 16-13 16 0v19m-13-18c2 3 8 3 10 0m8-9v8m-4-4h8"/>',
+ '<path d="M11 35V16c0-13 18-13 18 0v19m-17-9c10 1 7-10 16-12m-15 18c7 1 8-9 15-10"/>',
+ '<path d="M5 34V20c0-9 10-9 10 0v14m7 0V16c0-10 11-10 11 0v18M10 19v7m-3-3h6m14-9v8m-3-4h6"/>'
+];
+function cardArt(markup,box='0 0 40 40'){
+ const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+ svg.setAttribute('viewBox',box);
+ svg.setAttribute('aria-hidden','true');
+ svg.setAttribute('focusable','false');
+ svg.innerHTML=markup;
+ return svg;
+}
+const magnolia=cardArt('<path d="M95 140c-4-35-28-54-44-69m46 59c11-39 31-59 58-67M92 121C55 117 11 93 10 55c33 1 65 22 82 66Zm0 0C67 90 67 48 95 14c20 31 20 65-3 107Zm0 0c13-38 44-57 74-57-6 36-35 56-74 57Zm0 0c-31 2-62 16-65 44 26 1 55-17 65-44Zm0 0c18 2 45 17 51 43-29-1-49-16-51-43ZM91 123c8 26 6 45 1 65M100 152c24-25 52-28 73-19-16 23-43 30-73 19Z"/>','0 0 185 190');
+magnolia.classList.add('fan-card-flower');
+const cardBrand=clubText('p','ELI Beauty Studio');
+cardBrand.className='fan-card-brand';
+detailedCard.append(magnolia,cardBrand,cardName,stampList,cardCount,cardProgress);
+const stampButtons=stampArt.map((art,index)=>{
+ const item=document.createElement('li');
+ const button=clubButton('',()=>{
+  selectCardStamp(index);
+  cardSelection.scrollIntoView({block:'nearest'});
+ });
+ button.className='fan-stamp-button';
+ button.classList.toggle('fan-milestone',Boolean(milestones[index+1]));
+ button.setAttribute('aria-controls',cardSelection.id);
+ button.setAttribute('aria-pressed','false');
+ const medallion=clubText('span','');
+ medallion.className='fan-stamp-medal';
+ medallion.append(cardArt(art));
+ const label=clubText('span',stampLabels[index]);
+ label.className='fan-stamp-label';
+ button.append(medallion,label);
+ item.append(button);
+ return {item,button};
+});
+stampList.replaceChildren(...stampButtons.map(({item})=>item));
+let selectedCardStamp=null;
+
+function renderDetailedCard(data,total){
+ cardName.textContent=data.name;
+ cardCount.textContent=total+' de 9 sellos';
+ cardProgress.value=total;
+ stampButtons.forEach(({item,button},index)=>{
+  const earned=index<total;
+  item.classList.toggle('fan-earned',earned);
+  button.setAttribute('aria-label','Sello '+(index+1)+(earned?' confirmado. ':' pendiente. ')+stampLabels[index]);
+ });
+ const next=stampGoals.find(goal=>goal>total);
+ const remaining=next-total;
+ nextBenefit.textContent=next
+  ? 'Próximo beneficio · '+milestones[next]+' · '+(remaining===1?'Falta 1 sello':'Faltan '+remaining+' sellos')
+  : 'Tarjeta completa · 9 de 9 sellos';
+ selectCardStamp(selectedCardStamp);
+}
+
+function selectCardStamp(index){
+ selectedCardStamp=index;
+ stampButtons.forEach(({button},position)=>button.setAttribute('aria-pressed',String(position===index)));
+ if(index===null||!card){
+  cardSelection.replaceChildren(clubText('p','Pulsa un sello para ver su beneficio y su estado.'));
+  return;
+ }
+ const goal=stampGoals[index];
+ const total=card.stamps9??card.stamps;
+ const remaining=goal-total;
+ const available=card[benefitFields[goal]]??0;
+ const status=remaining>0?(remaining===1?'Te falta 1 sello para desbloquearlo.':'Te faltan '+remaining+' sellos para desbloquearlo.')
+  :goal===1?'Desbloqueado. Ya tienes acceso anticipado a turnos.'
+  :available>0?'Desbloqueado. Disponible: '+available+'.':'Alcanzado en este carnet. Actualmente no tienes este premio disponible.';
+ const visit=card.stamp_visits?.[index];
+ const visitName=visit&&(visit.detail||catalog.find(row=>row[0]===visit.service)?.[1]||'Visita confirmada');
+ const heading=clubText('h4',milestones[goal]);
+ const context=clubText('p','Sello '+(index+1)+(index<total?' confirmado':' pendiente')+
+  (index+1===goal?' · Beneficio de este sello':' · Avance hacia este beneficio'));
+ cardSelection.replaceChildren(heading,context,clubText('p',status));
+ if(visitName)cardSelection.append(clubText('p','Visita: '+visitName));
+}
+
 const bookingProfile = clubButton('Ir a Mi perfil',()=>openMemberView('profile'));
 bookingHint.append(document.createElement('br'),bookingProfile);
 for (const [name, label, icon, content] of [
- ['card','Mi tarjeta','▦',[get('fan-stamps'),cardBenefits,get('fan-refresh')]],
+ ['card','Mi tarjeta','▦',[detailedCard,cardSelection,nextBenefit,cardBenefits,get('fan-refresh')]],
  ['appointment','Reservar cita','◷',[bookingHint,appointment]],
  ['rewards','Mis premios','✦',[get('fan-benefits')]],
  ['inspiration','Inspiración','❀',[inspiration]],
