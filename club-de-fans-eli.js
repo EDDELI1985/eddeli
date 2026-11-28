@@ -645,12 +645,80 @@ for (const [name, label, icon, content] of [
  views.set(name,view);
  member.append(view);
 }
-const academyButton = clubButton('Curso de extensiones de pestañas',()=>window.go('registro'));
+const registration=document.getElementById('registro');
+const registrationForm=registration?.querySelector('form');
+const registrationBack=registration?.querySelector('#reg-back');
+const identityFields={name:document.getElementById('reg-name'),email:document.getElementById('reg-email'),phone:document.getElementById('reg-phone')};
+const identityMismatch='Tus datos deben coincidir con los de tu perfil del Club de Fans ELI. Revisa tu perfil antes de continuar.';
+let academyRegistration=null;
+
+function clearClubRegistration(){
+ if(!academyRegistration)return;
+ academyRegistration=null;
+ registrationForm.reset();
+ for(const field of Object.values(identityFields))field.readOnly=false;
+ registrationBack.textContent='VOLVER';
+}
+window.hasClubAcademyRegistration=()=>Boolean(academyRegistration&&registration.classList.contains('active'));
+window.returnToClubAfterRegistration=()=>{
+ if(!window.hasClubAcademyRegistration())return false;
+ clearClubRegistration();
+ window.go('club-eli');
+ academyButton.focus({preventScroll:true});
+ return true;
+};
+window.submitClubAcademyRegistration=async fields=>{
+ const entry=academyRegistration;
+ if(!entry||entry.token!==token||!registration.classList.contains('active')||
+    Object.keys(identityFields).some(key=>fields[key]!==entry.profile[key])){
+  throw Error(identityMismatch);
+ }
+ const response=await fetch(base+'/functions/v1/club-academy-registration',{
+  method:'POST',headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({...fields,token:entry.token}),signal:AbortSignal.timeout(30000)
+ });
+ const result=await response.json().catch(()=>null);
+ if(!response.ok||!result?.ok)throw Error(result?.message||'No se pudo verificar la inscripción. Inténtalo de nuevo.');
+};
+if(registration) new MutationObserver(()=>{
+ if(!registration.classList.contains('active'))clearClubRegistration();
+}).observe(registration,{attributes:true,attributeFilter:['class']});
+
+const academyButton = clubButton('Curso de extensiones de pestañas',async()=>{
+ if(!registrationForm||!registrationBack||Object.values(identityFields).some(field=>!field)||!token)return;
+ const value=token;
+ academyButton.disabled=true;
+ say('Comprobando los datos de tu perfil…');
+ try{
+  const [profile,identity]=await Promise.all([rpc('profile_details',{p_token:value}),rpc('identity_status',{p_token:value})]);
+  if(token!==value||!root.classList.contains('active'))return;
+  const missing=[];
+  if(!identity?.complete)missing.push('nombre, apellidos y foto');
+  if(!profile?.phone)missing.push('teléfono');
+  if(!profile?.email)missing.push('correo electrónico');
+  if(missing.length){
+   openMemberView('profile');
+   say('Para inscribirte, completa estos datos en Mi perfil: '+missing.join(', ')+'.');
+   return;
+  }
+  registrationForm.reset();
+  for(const [key,field] of Object.entries(identityFields)){
+   field.value=profile[key];
+   field.readOnly=true;
+  }
+  academyRegistration={token:value,profile};
+  registrationBack.textContent='VOLVER AL CLUB DE FANS ELI';
+  say('');
+  if(!window.go('registro'))clearClubRegistration();
+ }catch(error){if(token===value)say(error.message||'No pudimos consultar tu perfil. Inténtalo de nuevo.');}
+ finally{academyButton.disabled=false;}
+});
 const academyIcon = clubText('span','🎓');
 academyIcon.setAttribute('aria-hidden','true');
 academyButton.prepend(academyIcon);
 academyButton.append(clubText('small','ELI Beauty Academy'));
 menuButtons.get('card').after(academyButton);
+menuGrid.after(clubText('p','Usa tus datos reales y mantenlos actualizados en Mi perfil. EDDELI los utiliza para vincular tu inscripción en ELI Beauty Academy con tu cuenta del Club de Fans ELI.'));
 appointment.open = true;
 openMemberView('menu',false);
 
