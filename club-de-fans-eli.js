@@ -49,14 +49,50 @@ async function api(path,body,access){
 }
 const rpc=(name,body,access)=>api('/rest/v1/rpc/club_'+name,body,access);
 const say=(message,id='fan-status')=>{get(id).textContent=message;};
+const buttonFeedbackTimers=new WeakMap();
+const buttonFeedbackLabels=new WeakMap();
+const actionAnnouncement=document.createElement('span');
+actionAnnouncement.setAttribute('role','status');
+actionAnnouncement.style.cssText='position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap';
+root.append(actionAnnouncement);
+function reportButton(button,message,temporary=true){
+ if(!button)return;
+ clearTimeout(buttonFeedbackTimers.get(button));
+ if(!buttonFeedbackLabels.has(button))buttonFeedbackLabels.set(button,button.textContent);
+ button.textContent=message;
+ actionAnnouncement.textContent=message;
+ if(temporary)buttonFeedbackTimers.set(button,setTimeout(()=>resetButton(button),3500));
+}
+function resetButton(button){
+ if(!button||!buttonFeedbackLabels.has(button))return;
+ clearTimeout(buttonFeedbackTimers.get(button));
+ button.textContent=buttonFeedbackLabels.get(button);
+}
+const submitMessages={
+ 'fan-request':['Preparando solicitud…','✓ Solicitud preparada','No se pudo preparar · Reintentar'],
+ 'fan-verify':['Verificando carnet…','✓ Carnet verificado','No se pudo verificar · Reintentar'],
+ 'fan-visit':['Confirmando visita…','✓ Visita confirmada','No se pudo confirmar · Reintentar']
+};
 function submit(id,action,status='fan-status'){
  get(id)?.addEventListener('submit',async event=>{
   event.preventDefault();const form=event.currentTarget;
   if(form.dataset.busy)return;
   form.dataset.busy='true';
   const buttons=[...form.querySelectorAll('button')];
+  const messages=submitMessages[id];
+  const submitter=event.submitter||buttons[0];
   buttons.forEach(button=>button.disabled=true);say('Un momento…',status);
-  try{await action(form.elements);}catch(error){say(error.message,status);}
+  if(messages)reportButton(submitter,messages[0],false);
+  try{
+   const result=await action(form.elements);
+   if(messages){
+    if(result===false)resetButton(submitter);
+    else reportButton(submitter,messages[1]);
+   }
+  }catch(error){
+   say(error.message,status);
+   if(messages)reportButton(submitter,messages[2]);
+  }
   finally{delete form.dataset.busy;buttons.forEach(button=>button.disabled=false);}
  });
 }
@@ -139,7 +175,26 @@ submit('fan-password-reset',async fields=>{
  get('fan-password-reset').hidden=true;
  say('Contraseña guardada. Ya puedes entrar con tu número de socia.');
 });
-get('fan-refresh').onclick=()=>load(token).catch(error=>say(error.message));
+get('fan-refresh').onclick=async event=>{
+ const button=event.currentTarget;
+ const value=token;
+ if(!value||button.disabled)return;
+ const previous=card?.stamps9??card?.stamps;
+ button.disabled=true;
+ reportButton(button,'Actualizando sellos…',false);
+ try{
+  const updated=await rpc('card',{p_token:value});
+  if(value!==token){resetButton(button);return;}
+  show(updated,value);
+  const current=updated.stamps9??updated.stamps;
+  reportButton(button,(current===previous?'Al día':'✓ Sellos actualizados')+' · '+current+' de 9');
+ }catch(error){
+  if(value===token){
+   say(error.message);
+   reportButton(button,'No se pudo actualizar · Reintentar');
+  }else resetButton(button);
+ }finally{button.disabled=false;}
+};
 get('fan-signout').onclick=()=>{
  openMemberView('menu',false);
  contact.reset();
@@ -169,12 +224,12 @@ submit('fan-request',async fields=>{
  const preparedId=requestId;
  clearPostal();
  const saved=await rpc('request_verified',{p_token:requestCardToken,p_id:preparedId,p_service:value,p_preference:preference,p_reward:reward||null});
- if(token!==requestCardToken||requestId!==preparedId)return;
+ if(token!==requestCardToken||requestId!==preparedId)return false;
  let file;
  try {
   file=await makePostal({name:saved.name,id:saved.member},saved.service.split('|')[1],saved.preference,saved.reward,saved.price,saved.photo);
  } catch { throw Error('La solicitud quedó registrada. Pulsa Preparar solicitud para volver a generar el carnet.'); }
- if(token!==requestCardToken||requestId!==preparedId)return;
+ if(token!==requestCardToken||requestId!==preparedId)return false;
  postalFile=new File([file],'Club-ELI-cita-'+saved.reference+'.jpg',{type:file.type});
  postalReference.textContent='Referencia del carnet: '+saved.reference;
  postalUrl=URL.createObjectURL(postalFile);
@@ -314,7 +369,7 @@ submit('fan-verify',async fields=>{
  if(!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(reference))throw Error('Escribe la referencia completa del carnet.');
  const access=session;
  const record=await rpc('staff_verify_request',{p_id:reference},access);
- if(!access||access!==session)return;
+ if(!access||access!==session)return false;
  if(!record)throw Error('No encontramos una solicitud con esa referencia.');
  const items=[
   'Referencia: '+record.reference,
@@ -352,15 +407,36 @@ get('fan-exit').onclick=()=>{
  closeStaffSession();
  adminPanel.querySelector('summary').focus();
 };
-get('fan-staff-refresh').onclick=()=>staffLists().catch(error=>say(error.message,'fan-admin-status'));
+get('fan-staff-refresh').onclick=async event=>{
+ const button=event.currentTarget;
+ const access=session;
+ if(!access||button.disabled)return;
+ button.disabled=true;
+ reportButton(button,'Actualizando listados…',false);
+ try{
+  await staffLists();
+  if(access===session)reportButton(button,'✓ Listados actualizados');
+  else resetButton(button);
+ }catch(error){
+  if(access===session){
+   say(error.message,'fan-admin-status');
+   reportButton(button,'No se pudo actualizar · Reintentar');
+  }else resetButton(button);
+ }finally{button.disabled=false;}
+};
 get('fan-invite').onclick=async event=>{
  const button=event.currentTarget;button.disabled=true;const access=session;
+ reportButton(button,'Generando invitación…',false);
  try{
   const invitation=await rpc('invite',{},access);
-  if(access!==session)return;
+  if(access!==session){resetButton(button);return;}
   const link=new URL(location.pathname,location.origin);link.hash='inscripcion-club='+invitation;
-  get('fan-invite-url').value=link.href;get('fan-invite-url').select();say('Invitación lista. Copia el enlace para compartirlo.','fan-admin-status');
- }catch(error){say(error.message,'fan-admin-status');}finally{button.disabled=false;}
+  get('fan-invite-url').value=link.href;say('Invitación lista. Copia el enlace para compartirlo.','fan-admin-status');
+  reportButton(button,'✓ Invitación lista');
+ }catch(error){
+  say(error.message,'fan-admin-status');
+  reportButton(button,'No se pudo generar · Reintentar');
+ }finally{button.disabled=false;}
 };
 const staffService=get('fan-visit').elements.service;
 staffService.replaceChildren(...Array.from(get('fan-service').children).map(option=>option.cloneNode(true)));
@@ -537,16 +613,23 @@ contact.onsubmit=async event=>{
  const national=phone.value.replace(/[\s().-]/g,'');
  const number=national&&!national.startsWith('+')&&country.value!=='other'?country.value+national:national;
  const save=contact.querySelector('button');
+ if(!value||save.disabled)return;
  save.disabled=true;
+ reportButton(save,'Guardando…',false);
  try{
   await rpc('update_profile',{p_token:value,p_phone:number,p_email:email.value,p_photo:photoDraft||null});
-  if(value!==token)return;
+  if(value!==token){resetButton(save);return;}
   if(photoDraft){avatar.src=photoDraft;avatar.hidden=false;}
   photo.value='';
   photo.onchange();
   photoStatus.textContent='Cambios guardados.';
- }catch(error){if(value===token)photoStatus.textContent=error.message;}
- finally{save.disabled=false;}
+  reportButton(save,'✓ Cambios guardados');
+ }catch(error){
+  if(value===token){
+   photoStatus.textContent=error.message;
+   reportButton(save,'No se pudo guardar · Reintentar');
+  }else resetButton(save);
+ }finally{save.disabled=false;}
 };
 const security = document.createElement('section');
 const passwordInfo=clubText('p','');
@@ -1092,16 +1175,22 @@ photoForm.addEventListener('submit',async event=>{
  const value=token;
  if(!value||button.disabled)return;
  button.disabled=true;
+ reportButton(button,'Guardando perfil…',false);
  photoStatus.textContent='Guardando tu perfil…';
  try{
   const image=photo.files[0]?await prepareProfilePhoto(photo.files[0]):null;
-  if(token!==value)return;
+  if(token!==value){resetButton(button);return;}
   const updated=await rpc('complete_identity',{p_token:value,p_given:given.value,p_family:family.value,p_photo:image});
-  if(token!==value)return;
+  if(token!==value){resetButton(button);return;}
   photoForm.reset();
   show(updated,value);
- }catch(error){if(token===value)photoStatus.textContent=error.message;}
- finally{button.disabled=false;}
+  reportButton(button,'✓ Perfil guardado');
+ }catch(error){
+  if(token===value){
+   photoStatus.textContent=error.message;
+   reportButton(button,'No se pudo guardar · Reintentar');
+  }else resetButton(button);
+ }finally{button.disabled=false;}
 });
 function profileButton(id) {
  const button = document.createElement('button');
@@ -1349,9 +1438,11 @@ async function showOwnerMember(member,opener,notice=''){
  });
  const status=clubStatus();
  status.textContent='Cargando ficha…';
- ownerMemberPanel.replaceChildren(close,status);
- ownerMemberPanel.hidden=false;
- close.focus();
+ if(!notice){
+  ownerMemberPanel.replaceChildren(close,status);
+  ownerMemberPanel.hidden=false;
+  close.focus();
+ }
  try{
   const data=await rpc('owner_member_view',{p_member:member},access);
   if(!isCurrent())return;
@@ -1396,27 +1487,35 @@ async function showOwnerMember(member,opener,notice=''){
   }
   const controls=document.createElement('div');
   const actions=[
-   ['blocked','Bloquear','La socia perderá el acceso al Club.'],
-   ['removed','Dar de baja','La socia perderá el acceso al Club. Su historial se conservará.'],
-   ['active','Reactivar','La socia podrá volver a acceder al Club.']
+   ['blocked','Bloquear','La socia perderá el acceso al Club.','Bloqueando…','✓ Socia bloqueada'],
+   ['removed','Dar de baja','La socia perderá el acceso al Club. Su historial se conservará.','Dando de baja…','✓ Socia dada de baja'],
+   ['active','Reactivar','La socia podrá volver a acceder al Club.','Reactivando…','✓ Socia reactivada']
   ];
-  for(const [next,label,consequence] of actions){
+  for(const [next,label,consequence,pending,success] of actions){
    if(next===state||(state==='removed'&&next==='blocked'))continue;
-   controls.append(clubButton(label,async()=>{
-    if(!isCurrent()||!window.confirm(label+' a '+card.name+' (socia n.º '+card.id+')? '+consequence))return;
+   const action=clubButton(label,async event=>{
+    const button=event.currentTarget;
+    if(button.disabled||!isCurrent()||!window.confirm(label+' a '+card.name+' (socia n.º '+card.id+')? '+consequence))return;
     const buttons=Array.from(controls.querySelectorAll('button'));
     buttons.forEach(button=>{button.disabled=true;});
     status.textContent='Guardando…';
+    reportButton(button,pending,false);
     try{
      await rpc('owner_set_membership',{p_member:member,p_expected:state,p_state:next},access);
-     if(isCurrent())await showOwnerMember(member,opener,'Estado actualizado.');
     }catch(error){
      if(isCurrent()){
       status.textContent=error.message;
-      buttons.forEach(button=>{button.disabled=false;});
+      reportButton(button,'No se pudo completar · Reintentar');
+      buttons.forEach(control=>{control.disabled=false;});
      }
+     return;
     }
-   }));
+    if(!isCurrent())return;
+    reportButton(button,success,false);
+    status.textContent=success;
+    setTimeout(()=>{if(isCurrent())void showOwnerMember(member,opener,success);},2200);
+   });
+   controls.append(action);
   }
   status.textContent=notice;
   ownerMemberPanel.replaceChildren(heading,close,clubText('p','Estado de la membresía: '+membershipLabels[state]),
@@ -1425,8 +1524,13 @@ async function showOwnerMember(member,opener,notice=''){
    clubText('h4','Solicitudes de cita'),requestsList.children.length?requestsList:clubText('p','Sin solicitudes.'),
    clubText('h4','Gestionar acceso'),controls,status,clubText('h4','Historial privado de cambios'),
    historyList.children.length?historyList:clubText('p','Sin cambios registrados.'));
-  heading.focus();
- }catch(error){if(isCurrent())status.textContent=error.message;}
+  heading.focus({preventScroll:Boolean(notice)});
+ }catch(error){
+  if(isCurrent()&&notice){
+   const priorStatus=ownerMemberPanel.querySelector('[role="status"]');
+   if(priorStatus)priorStatus.textContent=notice+' Vuelve a abrir la ficha para actualizar los datos.';
+  }else if(isCurrent())status.textContent=error.message;
+ }
 }
 
 function invitationEntry(){
