@@ -361,6 +361,7 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
 <header class="topbar">
   <div class="brand">EDDELI</div>
   <div class="top-actions">
+    <button id="eli-admin-launch" type="button" hidden aria-label="Abrir panel privado de ELI" aria-haspopup="dialog">e</button>
     <input class="search" placeholder="Buscar en EDDELI..." oninput="searchContent(this.value)">
     <button class="circle" onclick="go('notificaciones')" title="Notificaciones">♧</button>
     <button class="circle" onclick="go('perfil')" title="Perfil">●</button>
@@ -381,7 +382,6 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
   <button class="navbtn" data-page="perfil" onclick="go('perfil')"><span class="navicon">◉</span> Mi perfil</button>
   <button class="navbtn" data-page="acceso" onclick="go('acceso')"><span class="navicon">⇥</span> Acceder</button>
   <div class="side-label">GESTIÓN</div>
-  <button class="navbtn" data-page="login-admin" onclick="go('login-admin')"><span class="navicon">⚙</span> Administración</button>
   <button class="navbtn" data-page="login-alumno" onclick="go('login-alumno')"><span class="navicon">♙</span> Estudiantes</button>
 </aside>
 
@@ -496,8 +496,7 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
 <section id="acceso" class="view">
   <h1 class="section-title">Acceso a EDDELI</h1>
   <div class="grid">
-    <div class="card"><div class="card-icon">⚙</div><h2>Administración</h2><p>Gestión general de la plataforma.</p><button class="primary" onclick="go('login-admin')">CONTINUAR</button></div>
-    <div class="card"><div class="card-icon">🎓</div><h2>Estudiantes</h2><p>Acceso al espacio académico.</p><button class="primary" onclick="go('login-alumno')">CONTINUAR</button></div>
+    <div class="card"><div class="card-icon">🎓</div><h2>Iniciar sesión</h2><p>Entra con tu cuenta de EDDELI.</p><button class="primary" onclick="go('login-alumno')">CONTINUAR</button></div>
   </div>
   <div class="card" style="margin-top:17px"><h3>¿Todavía no tienes cuenta?</h3><p>Solicita tu registro como estudiante.</p><button class="secondary" onclick="go('registro')">SOLICITAR REGISTRO</button></div>
 </section>
@@ -518,7 +517,7 @@ body{background:#f4f6fa;color:#18243a}.topbar{background:#101a32;border-bottom:1
 
 <section id="login-alumno" class="view">
   <div class="card form-card">
-    <h2>Acceso de estudiantes</h2>
+    <h2>Iniciar sesión en EDDELI</h2>
     <p>Accede con tu correo y contraseña. Tu cuenta debe estar aprobada para entrar.</p>
     <form onsubmit="demoLogin(event,'alumno')">
       <label>Correo electrónico</label><input type="email" required placeholder="Tu correo">
@@ -826,8 +825,8 @@ async function demoLogin(event,type){
  const pr=await supabaseClient.from("profiles").select("id,full_name,role,approval_status,phone,country").eq("id",currentUser.id).single();if(pr.error)throw pr.error;currentProfile=pr.data;
  if(currentProfile.approval_status!=="approved"){await supabaseClient.auth.signOut();currentUser=null;alert("Tu cuenta está pendiente de aprobación administrativa.");return;}
  if(type==="admin"&&currentProfile.role!=="admin"){await supabaseClient.auth.signOut();currentUser=null;alert("Esta cuenta no tiene permisos de administración.");return;}
- if(type==="alumno"&&currentProfile.role!=="student"){await supabaseClient.auth.signOut();currentUser=null;alert("Utiliza el acceso administrativo para esta cuenta.");return;}
- go(type==="admin"?"admin":"estudiante");if(type==="alumno")startStudentPresence();
+ if(type==="alumno"&&!["student","admin"].includes(currentProfile.role)){await supabaseClient.auth.signOut();currentUser=null;alert("Esta cuenta no tiene acceso a EDDELI.");return;}
+ go(currentProfile.role==="admin"?"admin":"estudiante");if(currentProfile.role==="student")startStudentPresence();
  }catch(err){alert("No se pudo iniciar sesión: "+(err.message||"Comprueba tus datos."));}
  finally{button.disabled=false;button.textContent="ENTRAR";}
 }
@@ -1022,7 +1021,7 @@ document.addEventListener("DOMContentLoaded",function(){
 });
 
 if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(err=>console.warn("PWA:",err)));}
-supabaseClient.auth.onAuthStateChange(function(event,session){currentUser=session?session.user:null;if(event==="SIGNED_OUT"){currentProfile=null;const cocinaArea=document.getElementById("cocina");if(cocinaArea?.classList.contains("active"))window.go("inicio");if(typeof window.stopStudentPresence==="function")window.stopStudentPresence(false);}if(event==="PASSWORD_RECOVERY"){setTimeout(async function(){const password=prompt("Escribe tu nueva contraseña (mínimo 12 caracteres, con mayúscula, minúscula, número y símbolo):");if(!password||password.length<12||!/[a-z]/.test(password)||!/[A-Z]/.test(password)||!/[0-9]/.test(password)||!/[^A-Za-z0-9]/.test(password)){alert("La contraseña debe tener al menos 12 caracteres, una mayúscula, una minúscula, un número y un símbolo. Solicita nuevamente el cambio si es necesario.");return;}const result=await supabaseClient.auth.updateUser({password:password});if(result.error)alert("No se pudo cambiar la contraseña: "+result.error.message);else alert("Contraseña actualizada correctamente.");},0);}});</script>
+supabaseClient.auth.onAuthStateChange(function(event,session){currentUser=session?session.user:null;if(event==="SIGNED_OUT"){currentProfile=null;window.syncEliAdminPanel?.();const cocinaArea=document.getElementById("cocina");if(cocinaArea?.classList.contains("active"))window.go("inicio");if(typeof window.stopStudentPresence==="function")window.stopStudentPresence(false);}if(event==="PASSWORD_RECOVERY"){setTimeout(async function(){const password=prompt("Escribe tu nueva contraseña (mínimo 12 caracteres, con mayúscula, minúscula, número y símbolo):");if(!password||password.length<12||!/[a-z]/.test(password)||!/[A-Z]/.test(password)||!/[0-9]/.test(password)||!/[^A-Za-z0-9]/.test(password)){alert("La contraseña debe tener al menos 12 caracteres, una mayúscula, una minúscula, un número y un símbolo. Solicita nuevamente el cambio si es necesario.");return;}const result=await supabaseClient.auth.updateUser({password:password});if(result.error)alert("No se pudo cambiar la contraseña: "+result.error.message);else alert("Contraseña actualizada correctamente.");},0);}});</script>
 
 <script>
 let activeModule=null;
@@ -1211,14 +1210,14 @@ async function checkSystem(){const el=document.getElementById("system-status");t
       if(modules)modules.hidden=false;
       window.__lashViewState=null;
     }
-    if(adminPages.has(page) && (typeof currentProfile === "undefined" || !currentProfile || currentProfile.role !== "admin" || currentProfile.approval_status !== "approved" || !currentUser || !currentUser.email_confirmed_at)){
-      page = "login-admin";
+    if((adminPages.has(page) || page === "login-admin") && !canOpenCookingCourse()){
+      page = "login-alumno";
     } else if((studentPages.has(page) || academicPages.has(page)) && !hasApprovedAcademyAccess()){
       page = "login-alumno";
     } else if(page === "perfil" && (typeof currentUser === "undefined" || !currentUser)){
       page = "acceso";
     }
-    if(page === "cocina" && !canOpenCookingCourse()) page = currentUser ? "areas" : "login-admin";
+    if(page === "cocina" && !canOpenCookingCourse()) page = currentUser ? "areas" : "login-alumno";
     const cocina = document.getElementById("cocina");
     if(cocina){
       cocina.hidden = page !== "cocina";
@@ -1255,6 +1254,7 @@ async function checkSystem(){const el=document.getElementById("system-status");t
     if(page === "estudiante" && typeof window.loadStudentResults === "function") window.loadStudentResults();
     if(page === "perfil" && typeof window.fillProfile === "function") window.fillProfile();
     if(page !== "club-eli") window.scrollTo({top:0,behavior:"auto"});
+    window.syncEliAdminPanel?.();
     return true;
   };
   window.loadStudentProgress = typeof loadStudentProgress === "function" ? loadStudentProgress : undefined;
@@ -3262,6 +3262,125 @@ if (typeof window.renderLashCurriculum === "function") {
   return result;
  };
  if(document.getElementById("estudiante")?.classList.contains("active"))void loadNext();
+})();
+</script>
+
+
+<style>
+#eli-admin-launch[hidden],html:not(.eli-admin-authorized) #fan-admin-access{display:none!important}
+#eli-admin-launch{flex:0 0 42px;width:42px;height:42px;border:2px solid #eab98f;border-radius:36%;background:radial-gradient(ellipse at 25% 12%,#db7c9b,#9c305e 40%,#591433 80%);color:#ffe0a0;font:700 25px/1 system-ui;cursor:pointer}
+#eli-admin-hub{position:fixed;inset:4.6rem 1rem auto auto;margin:0;width:min(31rem,calc(100% - 2rem));max-height:calc(100dvh - 6rem);overflow:auto;box-sizing:border-box;border:1px solid #d8a48a;border-radius:18px;padding:1rem;background:#fff7ef;color:#4e2037;box-shadow:0 12px 36px #38142460}
+#eli-admin-hub::backdrop{background:#37102455}
+#eli-admin-hub header{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+#eli-admin-hub h2,#eli-admin-hub h3{margin:.45rem 0}
+#eli-admin-hub details{padding:.55rem .7rem;margin:.45rem 0;border:1px solid #ead1c0;border-radius:.65rem;background:#fffdf9}
+#eli-admin-hub summary{cursor:pointer;font-weight:700;min-height:2rem}
+#eli-admin-hub ul{padding-left:1.15rem}
+#eli-admin-hub li{margin:.4rem 0;overflow-wrap:anywhere}
+#eli-admin-hub a{color:#742549;text-decoration:underline}
+#eli-admin-hub button{font:inherit;cursor:pointer;border:1px solid #874866;border-radius:.5rem;background:#fff;color:#6d2649;padding:.4rem .7rem}
+#eli-admin-hub [data-pending]{color:#695862;font-size:.9em}
+@media(max-width:650px){#eli-admin-hub{inset:auto 0 0;margin:0;width:100%;max-width:100%;max-height:85dvh;border-radius:18px 18px 0 0;padding:1rem 1rem max(1rem,env(safe-area-inset-bottom))}}
+</style>
+<dialog id="eli-admin-hub" aria-labelledby="eli-admin-title">
+ <header><h2 id="eli-admin-title">Administración de ELI</h2><form method="dialog"><button>Cerrar</button></form></header>
+ <details><summary>Club de Fans ELI</summary><ul>
+  <li><button type="button" data-club-target="fan-count">Socias</button></li>
+  <li><button type="button" data-club-target="fan-invite">Invitaciones</button></li>
+  <li><button type="button" data-club-target="fan-verify">Solicitudes de cita</button></li>
+  <li><button type="button" data-club-target="fan-visit">Visitas</button></li>
+ </ul></details>
+ <details><summary>Academia</summary><ul>
+  <li><button type="button" data-admin-page="admin-alumnos">Estudiantes</button></li>
+  <li><button type="button" data-admin-page="admin-cursos">Cursos y módulos</button></li>
+  <li><button type="button" data-admin-page="admin-examenes">Exámenes</button></li>
+  <li><button type="button" data-admin-page="admin-certificados">Certificados</button></li>
+ </ul></details>
+ <details><summary>Curso de Cocina</summary><ul>
+  <li><button type="button" data-admin-food>Abrir el curso</button></li>
+  <li data-pending>Gestionar lecciones · Pendiente de conectar</li>
+  <li data-pending>Revisar inscripciones · Pendiente de conectar</li>
+  <li data-pending>Consultar progreso · Pendiente de conectar</li>
+ </ul></details>
+ <details><summary>Configuración de EDDELI</summary><ul>
+  <li><button type="button" data-admin-page="admin-config">Ver ajustes administrativos</button></li>
+ </ul></details>
+ <details><summary>Información de EDDELI</summary>
+  <h3>Cómo funciona</h3>
+  <p>EDDELI reúne el Club, la Academia y Cocina. GitHub guarda y publica el código de la web. Supabase comprueba los accesos y guarda los datos.</p>
+  <h3>Código y archivos</h3>
+  <ul>
+   <li><a href="https://github.com/EDDELI1985/eddeli" target="_blank" rel="noopener">Repositorio de EDDELI</a></li>
+   <li><a href="https://github.com/EDDELI1985/eddeli/blob/main/index.html" target="_blank" rel="noopener">index.html</a> · Menús, accesos y pantallas principales.</li>
+   <li><a href="https://github.com/EDDELI1985/eddeli/blob/main/club-de-fans-eli.js" target="_blank" rel="noopener">club-de-fans-eli.js</a> · Carnet, sellos, citas y gestión de socias.</li>
+   <li><a href="https://github.com/EDDELI1985/eddeli/blob/main/sw.js" target="_blank" rel="noopener">sw.js</a> · Carga de archivos y copias guardadas por el navegador.</li>
+  </ul>
+  <h3>Estado y problemas</h3>
+  <ul>
+   <li><a href="https://github.com/EDDELI1985/eddeli/deployments" target="_blank" rel="noopener">Ver publicaciones y versión en GitHub</a></li>
+   <li><a href="https://github.com/EDDELI1985/eddeli/commits/main/" target="_blank" rel="noopener">Historial de cambios</a></li>
+   <li><a href="https://supabase.com/dashboard/project/ywkqfmxtceyktovyzhbt" target="_blank" rel="noopener">Supabase de EDDELI y Academia</a></li>
+   <li><a href="https://supabase.com/dashboard/project/zhqgtbbcnycsieqzbpro" target="_blank" rel="noopener">Supabase del Club ELI</a></li>
+  </ul>
+  <h3>Revisar y corregir</h3>
+  <p>Identifica la pantalla y anota el mensaje que aparece. Si falla «Mi tarjeta», empieza por el archivo del Club y, si falla la carga de datos, revisa Supabase del Club. Si falla un inicio de sesión, revisa el proyecto que corresponde a esa cuenta.</p>
+  <p>Desde el historial puedes localizar el último cambio y preparar una corrección o una reversión. Pruébala antes de publicarla. GitHub y Supabase te pedirán sus propios permisos.</p>
+ </details>
+ <button type="button" data-admin-signout>Cerrar sesión</button>
+</dialog>
+<script>
+(()=>{
+ const dialog=document.getElementById('eli-admin-hub');
+ const launch=document.getElementById('eli-admin-launch');
+ const club=document.getElementById('club-eli');
+ const clubPanel=document.getElementById('fan-admin-access');
+ const staff=document.getElementById('fan-staff');
+ let clubTarget=null;
+ const authorized=()=>Boolean(currentUser?.email_confirmed_at&&currentUser.id===currentProfile?.id&&
+   currentProfile.role==='admin'&&currentProfile.approval_status==='approved');
+
+ window.syncEliAdminPanel=()=>{
+  const allowed=authorized();
+  const previouslyAllowed=document.documentElement.classList.contains('eli-admin-authorized');
+  document.documentElement.classList.toggle('eli-admin-authorized',allowed);
+  launch.hidden=!allowed;
+  if(allowed)return;
+  if(dialog.open)dialog.close();
+  clubTarget=null;
+  if(previouslyAllowed)document.getElementById('fan-exit').click();
+  clubPanel.open=false;
+ };
+ const focusClubTarget=()=>{
+  if(!clubTarget||!authorized()||staff.hidden||!club.classList.contains('active'))return;
+  const target=document.getElementById(clubTarget);
+  clubTarget=null;
+  if(!target)return;
+  if(!target.matches('button'))target.tabIndex=-1;
+  target.focus({preventScroll:true});
+  target.scrollIntoView({block:'nearest'});
+ };
+ new MutationObserver(focusClubTarget).observe(staff,{attributes:true,attributeFilter:['hidden']});
+ new MutationObserver(()=>{if(!club.classList.contains('active'))clubTarget=null;})
+  .observe(club,{attributes:true,attributeFilter:['class']});
+ launch.addEventListener('click',()=>{
+  window.syncEliAdminPanel();
+  if(authorized()&&!dialog.open)dialog.showModal();
+ });
+ dialog.addEventListener('click',event=>{
+  const button=event.target.closest('button');
+  if(!button)return;
+  if(!authorized()){window.syncEliAdminPanel();return;}
+  if(button.matches('[data-admin-signout]')){dialog.close();signOut();return;}
+  if(button.dataset.adminPage){dialog.close();window.go(button.dataset.adminPage);return;}
+  if(button.matches('[data-admin-food]')){dialog.close();window.openLearningArea('food');return;}
+  if(button.dataset.clubTarget){
+   dialog.close();
+   clubTarget=button.dataset.clubTarget;
+   window.openClubAdministration?.();
+   focusClubTarget();
+  }
+ });
+ window.syncEliAdminPanel();
 })();
 </script>
 
