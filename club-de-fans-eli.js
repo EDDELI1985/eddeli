@@ -3,6 +3,7 @@ const root=document.querySelector('#club-eli');
 if(!root)return;
 const get=id=>root.querySelector('#'+id);
 const adminPanel=get('fan-admin-access');
+adminPanel.hidden=true;
 window.openClubAdministration=()=>{
  if(typeof currentProfile==='undefined'||currentProfile?.role!=='admin'||currentProfile.approval_status!=='approved'||typeof currentUser==='undefined'||!currentUser?.email_confirmed_at) return;
  if(!window.go('club-eli')||!root.classList.contains('active')) return;
@@ -48,7 +49,7 @@ async function api(path,body,access){
 const rpc=(name,body,access)=>api('/rest/v1/rpc/club_'+name,body,access);
 const say=(message,id='fan-status')=>{get(id).textContent=message;};
 function submit(id,action,status='fan-status'){
- get(id).addEventListener('submit',async event=>{
+ get(id)?.addEventListener('submit',async event=>{
   event.preventDefault();const form=event.currentTarget;
   if(form.dataset.busy)return;
   form.dataset.busy='true';
@@ -123,6 +124,7 @@ function parseInvitation(value) {
 submit('fan-join',async fields=>{
  const invitation=parseInvitation(fields.invite.value);
  if(!invitation)throw Error('Pega el enlace de invitación completo que te envió el salón o copia el código que aparece al final del enlace.');
+ if(!fields.photo)throw Error('Recarga EDDELI para abrir el formulario actualizado.');
  const photo=await prepareProfilePhoto(fields.photo.files[0]);
  const pending='eddeli.club.pending.'+invitation;
  let secret=localStorage.getItem(pending);
@@ -195,6 +197,7 @@ function renderStaffRequest(){
   fields.service.focus();
  };
  row.append(loadButton,document.createTextNode(' '),profileButton(request.member),clubButton('Verificar carnet',()=>{
+  if(!get('fan-verify'))return;
   get('fan-verify').elements.reference.value=request.id;
   get('fan-verify').requestSubmit();
  }));
@@ -264,9 +267,10 @@ submit('fan-verify',async fields=>{
   photo.width=photo.height=88;
   result.append(photo);
  }
+ say('','fan-admin-status');
 },'fan-admin-status');
 get('fan-exit').onclick=()=>{
- get('fan-verification').replaceChildren();get('fan-verify').reset();
+ get('fan-verification')?.replaceChildren();get('fan-verify')?.reset();
  session='';requestsForStaff=[];visibleRequestId=undefined;get('fan-staff').hidden=true;get('fan-login').hidden=false;
  get('fan-members').replaceChildren();get('fan-requests').replaceChildren();get('fan-invite-url').value='';get('fan-visit').reset();say('Sesión cerrada.','fan-admin-status');
 };
