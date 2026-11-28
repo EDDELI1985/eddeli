@@ -99,7 +99,7 @@ function show(data,value){
  say(benefits,'fan-benefits');
  cardBenefits.textContent = total >= 1 ? 'Acceso anticipado a turnos. ' + benefits : benefits;
  vipBenefits.textContent = cardBenefits.textContent;
- get('fan-private').value=value;refreshPrices();loadPhoto(value);say('Tarjeta actualizada.');
+ get('fan-private').value='';refreshPrices();loadPhoto(value);say('Tarjeta actualizada.');
 }
 async function load(value){show(await rpc('card',{p_token:value}),value);}
 const recoveryCode = get('fan-recover').elements.code;
@@ -132,9 +132,31 @@ submit('fan-join',async fields=>{
  show(await rpc('join_with_profile',{p_invitation:invitation,p_given:fields.given.value,p_family:fields.family.value,p_token:secret,p_photo:photo}),secret);
  localStorage.removeItem(pending);fields.invite.form.reset();
 });
+submit('fan-password-login',async fields=>{
+ const value=await rpc('login_password',{p_member:fields.member.value,p_password:fields.password.value});
+ fields.password.value='';
+ if(!value)throw Error('Revisa el número de socia y la contraseña. Si has hecho varios intentos, espera 15 minutos.');
+ await load(value);
+});
+let resetCredentials;
+submit('fan-password-reset',async fields=>{
+ if(!resetCredentials)throw Error('El enlace ya no está disponible.');
+ if(fields.password.value!==fields.confirm.value)throw Error('Las contraseñas deben coincidir.');
+ await rpc('reset_password',{...resetCredentials,p_password:fields.password.value});
+ resetCredentials=null;
+ fields.password.form.reset();
+ get('fan-password-reset').hidden=true;
+ say('Contraseña guardada. Ya puedes entrar con tu número de socia.');
+});
 get('fan-refresh').onclick=()=>load(token).catch(error=>say(error.message));
 get('fan-signout').onclick=()=>{
  openMemberView('menu',false);
+ contact.reset();
+ contact.elements.photo.onchange();
+ createPassword.reset();
+ recovery.open=false;
+ revealCode.textContent='Mostrar código';
+ recoveryCodeField.type='password';
  inspirationStatus.textContent = '';
  quizResult.textContent = '';
  pollStatus.textContent = '';
@@ -218,6 +240,40 @@ function renderStaffRequest(){
  list.replaceChildren(row);
  say('Solicitud '+(position+1)+' de '+total+' pendientes','fan-request-count');
 }
+let staffAccountRevision=0;
+async function showStaffAccount(member,reset=false){
+ const access=session;
+ const panel=get('fan-staff-account');
+ if(!access||!panel)return;
+ const revision=++staffAccountRevision;
+ try{
+  const account=await rpc('staff_account',{p_member:member,p_reset:reset},access);
+  if(access!==session||revision!==staffAccountRevision)return;
+  panel.replaceChildren();
+  if(!account){say('No encontramos esta cuenta.','fan-admin-status');return;}
+  panel.append(
+   clubText('h3',account.name+' · Socia n.º '+account.member),
+   clubText('p','Alta: '+new Date(account.joined).toLocaleDateString('es')),
+   clubText('p','Teléfono: '+(account.phone||'Sin indicar')),
+   clubText('p','Correo: '+(account.email||'Sin indicar')),
+   clubText('p',account.has_password?'Contraseña configurada':'Contraseña pendiente'),
+   profileButton(account.member)
+  );
+  if(account.has_password)panel.append(clubButton('Generar enlace de restablecimiento',()=>showStaffAccount(account.member,true)));
+  if(account.reset){
+   const link=new URL(location.pathname,location.origin);
+   link.hash='club-restablecer='+account.member+'.'+account.reset;
+   const label=clubText('label','Enlace de un solo uso (24 horas)');
+   const input=document.createElement('input');
+   input.readOnly=true;
+   input.value=link.href;
+   label.append(input);
+   panel.append(label);
+   input.select();
+  }
+  say('','fan-admin-status');
+ }catch(error){if(access===session&&revision===staffAccountRevision)say(error.message,'fan-admin-status');}
+}
 async function staffLists(){
  const access=session;
  const [members,requests]=await Promise.all([rpc('staff_members',{},access),rpc('staff_requests',{},access)]);
@@ -225,7 +281,8 @@ async function staffLists(){
  say(members.length+' socias registradas','fan-count');
  get('fan-members').replaceChildren(...members.map(member=>{
   const row=document.createElement('li');const next=Object.keys(milestones).map(Number).find(n=>n>member.stamps);
-  row.textContent=member.name+' · Socia '+member.id+' · '+member.stamps+'/9'+(next-member.stamps===1?' · A 1 sello del próximo premio':'');return row;
+  row.textContent=member.name+' · Socia '+member.id+' · '+member.stamps+'/9'+(next-member.stamps===1?' · A 1 sello del próximo premio':'');row.append(document.createTextNode(' '),clubButton('Ver cuenta de socia',()=>showStaffAccount(member.id)));
+  return row;
  }));
  requestsForStaff=requests;
  if(!requests.some(request=>request.id===visibleRequestId))visibleRequestId=requests[0]?.id;
@@ -270,6 +327,8 @@ submit('fan-verify',async fields=>{
  say('','fan-admin-status');
 },'fan-admin-status');
 get('fan-exit').onclick=()=>{
+ staffAccountRevision++;
+ get('fan-staff-account')?.replaceChildren();
  get('fan-verification')?.replaceChildren();get('fan-verify')?.reset();
  session='';requestsForStaff=[];visibleRequestId=undefined;get('fan-staff').hidden=true;get('fan-login').hidden=false;
  get('fan-members').replaceChildren();get('fan-requests').replaceChildren();get('fan-invite-url').value='';get('fan-visit').reset();say('Sesión cerrada.','fan-admin-status');
@@ -385,7 +444,106 @@ exclusive.className = 'fan-exclusive';
 exclusive.textContent = '✦ Exclusivo para nuestras socias ✦';
 menu.append(welcome,loyalty,menuGrid,exclusive,get('fan-signout'));
 member.append(back,menu);
-const recovery = get('fan-private').closest('details');
+const recoveryCodeField=get('fan-private');
+const recovery = recoveryCodeField.closest('details');
+recovery.hidden=true;
+const revealCode=clubButton('Mostrar código',()=>{
+ const hidden=recoveryCodeField.type==='password';
+ recoveryCodeField.type=hidden?'text':'password';
+ revealCode.textContent=hidden?'Ocultar código':'Mostrar código';
+});
+const copyCode=clubButton('Copiar código',async()=>{
+ try{await navigator.clipboard.writeText(recoveryCodeField.value);say('Código privado copiado.');}
+ catch{say('Pulsa Mostrar código y cópialo manualmente.');}
+});
+recovery.append(revealCode,copyCode);
+recovery.addEventListener('toggle',()=>{
+ if(!recovery.open){recoveryCodeField.type='password';revealCode.textContent='Mostrar código';}
+});
+const profileDetails=clubText('p','');
+const contact=document.createElement('form');
+contact.hidden=true;
+contact.innerHTML='<h4>Datos de contacto</h4><label>País o prefijo<select name="country"></select></label><label>Teléfono nacional (opcional)<input name="phone" type="tel" autocomplete="tel-national" maxlength="24"></label><label>Correo electrónico (opcional)<input name="email" type="email" autocomplete="email" maxlength="254"></label><label>Cambiar foto<input name="photo" type="file" accept="image/*"></label><img alt="Vista previa de la foto nueva" width="88" height="88" hidden><button>Guardar cambios</button>';
+const countries=new Map([['+53','Cuba'],['+34','España'],['+1','Estados Unidos y Canadá'],['+52','México'],['+57','Colombia'],['+58','Venezuela'],['+54','Argentina'],['+56','Chile'],['+51','Perú'],['+593','Ecuador'],['+507','Panamá'],['+49','Alemania'],['+33','Francia'],['+39','Italia'],['+44','Reino Unido']]);
+for(const [code,name] of countries)contact.elements.country.add(new Option(name+' '+code,code));
+contact.elements.country.add(new Option('Otro prefijo (escribe el número con +)','other'));
+const photoPreview=contact.querySelector('img');
+let photoDraft='';
+let photoDraftVersion=0;
+contact.elements.photo.onchange=async()=>{
+ const version=++photoDraftVersion;
+ photoDraft='';
+ photoPreview.hidden=true;
+ photoPreview.removeAttribute('src');
+ const file=contact.elements.photo.files[0];
+ const save=contact.querySelector('button');
+ if(!file){save.disabled=false;return;}
+ save.disabled=true;
+ try{
+  const photo=await prepareProfilePhoto(file);
+  if(version!==photoDraftVersion)return;
+  photoDraft=photo;
+  photoPreview.src=photo;
+  photoPreview.hidden=false;
+ }catch(error){if(version===photoDraftVersion){contact.elements.photo.value='';photoStatus.textContent=error.message;}}
+ finally{if(version===photoDraftVersion)save.disabled=false;}
+};
+contact.onsubmit=async event=>{
+ event.preventDefault();
+ const value=token;
+ const {country,phone,email,photo}=contact.elements;
+ const national=phone.value.replace(/[\s().-]/g,'');
+ const number=national&&!national.startsWith('+')&&country.value!=='other'?country.value+national:national;
+ const save=contact.querySelector('button');
+ save.disabled=true;
+ try{
+  await rpc('update_profile',{p_token:value,p_phone:number,p_email:email.value,p_photo:photoDraft||null});
+  if(value!==token)return;
+  if(photoDraft){avatar.src=photoDraft;avatar.hidden=false;}
+  photo.value='';
+  photo.onchange();
+  photoStatus.textContent='Cambios guardados.';
+ }catch(error){if(value===token)photoStatus.textContent=error.message;}
+ finally{save.disabled=false;}
+};
+const security = document.createElement('section');
+const passwordInfo=clubText('p','');
+const createPassword=document.createElement('form');
+createPassword.hidden=true;
+createPassword.innerHTML='<label>Nueva contraseña<input type="password" name="password" required minlength="12" maxlength="72" autocomplete="new-password"></label><label>Repite la contraseña<input type="password" name="confirm" required minlength="12" maxlength="72" autocomplete="new-password"></label><button>Crear mi contraseña</button>';
+createPassword.onsubmit=async event=>{
+ event.preventDefault();
+ const {password,confirm}=createPassword.elements;
+ const button=createPassword.querySelector('button');
+ const value=token;
+ if(password.value!==confirm.value){passwordInfo.textContent='Las contraseñas deben coincidir.';return;}
+ button.disabled=true;
+ try{
+  await rpc('create_password',{p_token:value,p_password:password.value});
+  if(value!==token)return;
+  createPassword.reset();
+  createPassword.hidden=true;
+  passwordInfo.textContent='Contraseña guardada. Para acceder, usa tu número de socia y contraseña.';
+ }catch(error){if(value===token)passwordInfo.textContent=error.message;}
+ finally{button.disabled=false;}
+};
+security.append(clubText('h4','Seguridad'),passwordInfo,createPassword,recovery);
+profile.append(profileDetails,contact,security);
+function showProfileDetails(details,value){
+ profileDetails.textContent=details.name+' · Socia n.º '+details.member+' · Alta: '+new Date(details.joined).toLocaleDateString('es');
+ const saved=details.phone||'';
+ const prefix=[...countries.keys()].sort((a,b)=>b.length-a.length).find(code=>saved.startsWith(code));
+ contact.elements.country.value=prefix||(saved?'other':'+53');
+ contact.elements.phone.value=prefix?saved.slice(prefix.length):saved;
+ contact.elements.email.value=details.email||'';
+ contact.hidden=false;
+ recovery.hidden=!details.has_recovery_code;
+ recoveryCodeField.value=details.has_recovery_code?value:'';
+ const available=new Date(details.password_ready);
+ createPassword.hidden=details.has_password||available>Date.now();
+ passwordInfo.textContent=details.has_password?'Ya tienes una contraseña. Si la olvidas, contacta al equipo del Club.':
+ createPassword.hidden?'Podrás crear tu contraseña el '+available.toLocaleString('es',{dateStyle:'medium',timeStyle:'short'})+'.':'Crea una contraseña de al menos 12 caracteres.';
+}
 const bookingHint = document.createElement('p');
 bookingHint.textContent = 'Para reservar, completa tu nombre, apellidos y foto en Mi perfil.';
 const cardBenefits = document.createElement('p');
@@ -468,7 +626,7 @@ for (const [name, label, icon, content] of [
  ['offers','Ofertas VIP','♕',[offers]],
  ['advice','Consejos','☼',[advice]],
  ['community','Comunidad','♡',[community]],
- ['profile','Mi perfil','◉',[profile,recovery]]
+ ['profile','Mi perfil','◉',[profile]]
 ]) {
  const button = document.createElement('button');
  button.type = 'button';
@@ -584,11 +742,19 @@ async function loadPhoto(value) {
  const revision = ++profileRevision;
  displayPhoto(null);
  photoForm.hidden = true;
+ contact.hidden=true;
+ profileDetails.textContent='';
+ createPassword.hidden=true;
+ passwordInfo.textContent='';
+ recovery.hidden=true;
+ recovery.open=false;
+ recoveryCodeField.value='';
  photoStatus.textContent = 'Cargando tu perfil…';
  try {
-  const identity = await rpc('identity_status',{p_token:value});
+  const [identity,details] = await Promise.all([rpc('identity_status',{p_token:value}),rpc('profile_details',{p_token:value})]);
   if (revision !== profileRevision || token !== value) return;
   displayPhoto(identity?.photo,identity?.complete);
+  if(details)showProfileDetails(details,value);
   photoStatus.textContent = identity?.complete ? '' : 'Completa tu perfil para pedir citas desde tu tarjeta.';
  } catch {
   if (revision === profileRevision && token === value) photoStatus.textContent = 'No pudimos cargar tu perfil. Pulsa Actualizar sellos para volver a intentar.';
@@ -851,7 +1017,17 @@ function invitationEntry(){
  window.go('club-eli');get('fan-identify').hidden=false;get('fan-join').parentElement.open=true;
  get('fan-join').elements.invite.value=hash[1];history.replaceState(null,'',location.pathname+location.search);return true;
 }
-if(!invitationEntry()){
+function passwordResetEntry(){
+ const match=location.hash.match(/^#club-restablecer=(\d{1,16})\.([0-9a-f]{64})$/i);
+ const form=get('fan-password-reset');
+ if(!match||!form||typeof window.go!=='function')return false;
+ resetCredentials={p_member:match[1],p_reset:match[2]};
+ window.go('club-eli');
+ form.hidden=false;
+ history.replaceState(null,'',location.pathname+location.search);
+ return true;
+}
+if(!passwordResetEntry()&&!invitationEntry()){
  try{const saved=localStorage.getItem('eddeli.club.card');if(saved)load(saved).catch(error=>say(error.message));}catch{}
 }
 })();
