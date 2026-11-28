@@ -645,6 +645,12 @@ for (const [name, label, icon, content] of [
  views.set(name,view);
  member.append(view);
 }
+const academyButton = clubButton('Curso de extensiones de pestañas',()=>window.go('registro'));
+const academyIcon = clubText('span','🎓');
+academyIcon.setAttribute('aria-hidden','true');
+academyButton.prepend(academyIcon);
+academyButton.append(clubText('small','ELI Beauty Academy'));
+menuButtons.get('card').after(academyButton);
 appointment.open = true;
 openMemberView('menu',false);
 
