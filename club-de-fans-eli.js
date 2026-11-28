@@ -2,6 +2,22 @@
 const root=document.querySelector('#club-eli');
 if(!root)return;
 const get=id=>root.querySelector('#'+id);
+const adminPanel=get('fan-admin-access');
+window.openClubAdministration=()=>{
+ if(typeof currentProfile==='undefined'||currentProfile?.role!=='admin'||currentProfile.approval_status!=='approved'||typeof currentUser==='undefined'||!currentUser?.email_confirmed_at) return;
+ if(!window.go('club-eli')||!root.classList.contains('active')) return;
+ root.classList.add('fan-admin-mode');
+ adminPanel.hidden=false;
+ adminPanel.open=true;
+ adminPanel.querySelector('summary').focus({preventScroll:true});
+};
+new MutationObserver(()=>{
+ if(root.classList.contains('active')||adminPanel.hidden) return;
+ get('fan-exit').click();
+ adminPanel.open=false;
+ adminPanel.hidden=true;
+ root.classList.remove('fan-admin-mode');
+}).observe(root,{attributes:true,attributeFilter:['class']});
 const key='sb_publishable_d3KzzBG8sXIz_p9YJ1jR4A_2x6xbKJb';
 const base='https://zhqgtbbcnycsieqzbpro.supabase.co';
 let token='',card,requestId;
@@ -107,11 +123,12 @@ function parseInvitation(value) {
 submit('fan-join',async fields=>{
  const invitation=parseInvitation(fields.invite.value);
  if(!invitation)throw Error('Pega el enlace de invitación completo que te envió el salón o copia el código que aparece al final del enlace.');
+ const photo=await prepareProfilePhoto(fields.photo.files[0]);
  const pending='eddeli.club.pending.'+invitation;
  let secret=localStorage.getItem(pending);
  if(!secret){secret=Array.from(crypto.getRandomValues(new Uint8Array(32)),b=>b.toString(16).padStart(2,'0')).join('');localStorage.setItem(pending,secret);}
- show(await rpc('join',{p_invitation:invitation,p_name:fields.name.value.trim(),p_token:secret}),secret);
- localStorage.removeItem(pending);fields.invite.value='';
+ show(await rpc('join_with_profile',{p_invitation:invitation,p_given:fields.given.value,p_family:fields.family.value,p_token:secret,p_photo:photo}),secret);
+ localStorage.removeItem(pending);fields.invite.form.reset();
 });
 get('fan-refresh').onclick=()=>load(token).catch(error=>say(error.message));
 get('fan-signout').onclick=()=>{
@@ -130,18 +147,21 @@ submit('fan-request',async fields=>{
  if(!profileReady)throw Error('Completa tu perfil con foto antes de solicitar una cita.');
  if(!card||price===undefined)throw Error('Elige un servicio.');
  requestId ||= crypto.randomUUID();
- const preference=fields.preference.value.trim(),reward=fields.reward.value,socia=card;
+ const preference=fields.preference.value.trim(),reward=fields.reward.value;
  const requestCardToken=token;
 
  const preparedId=requestId;
  clearPostal();
+ const saved=await rpc('request_verified',{p_token:requestCardToken,p_id:preparedId,p_service:value,p_preference:preference,p_reward:reward||null});
+ if(token!==requestCardToken||requestId!==preparedId)return;
  let file;
- try { file=await makePostal(socia,value.split('|')[1],preference,reward,price,avatar.src); }
- catch { throw Error('No pudimos crear el carné. Vuelve a preparar la solicitud.'); }
+ try {
+  file=await makePostal({name:saved.name,id:saved.member},saved.service.split('|')[1],saved.preference,saved.reward,saved.price,saved.photo);
+ } catch { throw Error('La solicitud quedó registrada. Pulsa Preparar solicitud para volver a generar el carnet.'); }
  if(token!==requestCardToken||requestId!==preparedId)return;
- await rpc('request_visit',{p_token:requestCardToken,p_id:preparedId,p_service:value,p_preference:preference,p_reward:reward||null});
- if(token!==requestCardToken||requestId!==preparedId)return;
- postalFile=file;postalUrl=URL.createObjectURL(file);
+ postalFile=new File([file],'Club-ELI-cita-'+saved.reference+'.jpg',{type:file.type});
+ postalReference.textContent='Referencia del carnet: '+saved.reference;
+ postalUrl=URL.createObjectURL(postalFile);
  preview.src=postalUrl;postal.hidden=false;
  say('');
 });
@@ -174,7 +194,10 @@ function renderStaffRequest(){
   say('Solicitud cargada: '+request.name+' · Socia '+request.member,'fan-admin-status');
   fields.service.focus();
  };
- row.append(loadButton,document.createTextNode(' '),profileButton(request.member));
+ row.append(loadButton,document.createTextNode(' '),profileButton(request.member),clubButton('Verificar carnet',()=>{
+  get('fan-verify').elements.reference.value=request.id;
+  get('fan-verify').requestSubmit();
+ }));
  if(total>1){
   const controls=document.createElement('nav');controls.setAttribute('aria-label','Cambiar solicitud');
   controls.style.cssText='display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.6rem';
@@ -212,7 +235,38 @@ submit('fan-login',async fields=>{
  session=login.access_token;get('fan-login').hidden=true;get('fan-staff').hidden=false;
  await staffLists();say('Sesión iniciada.','fan-admin-status');
 },'fan-admin-status');
+submit('fan-verify',async fields=>{
+ const result=get('fan-verification');
+ result.replaceChildren();
+ const reference=fields.reference.value.trim().replace(/^(?:Referencia del carnet:\s*|club-)/i,'');
+ if(!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(reference))throw Error('Escribe la referencia completa del carnet.');
+ const access=session;
+ const record=await rpc('staff_verify_request',{p_id:reference},access);
+ if(!access||access!==session)return;
+ if(!record)throw Error('No encontramos una solicitud con esa referencia.');
+ const items=[
+  'Referencia: '+record.reference,
+  record.name+' · Socia n.º '+record.member,
+  'Servicio: '+(record.service.split('|')[1]||record.service),
+  'Turno solicitado: '+(record.preference||'Sin preferencia'),
+  'Premio solicitado: '+(rewards[record.reward]||'Ninguno'),
+  record.paid?'Visita pagada registrada':'Solicitud sin visita pagada registrada'
+ ];
+ if(record.legacy)items.push('Solicitud anterior a la verificación del carnet.');
+ else items.push('Precio original: '+Number(record.price).toFixed(2)+' CUP','Total de la reserva: '+Number(record.total).toFixed(2)+' CUP');
+ const list=document.createElement('ul');
+ list.append(...items.map(item=>clubText('li',item)));
+ result.append(clubText('h3','Datos registrados por EDDELI'),list);
+ if(record.photo){
+  const photo=document.createElement('img');
+  photo.alt='Foto registrada con la solicitud';
+  photo.src=record.photo;
+  photo.width=photo.height=88;
+  result.append(photo);
+ }
+},'fan-admin-status');
 get('fan-exit').onclick=()=>{
+ get('fan-verification').replaceChildren();get('fan-verify').reset();
  session='';requestsForStaff=[];visibleRequestId=undefined;get('fan-staff').hidden=true;get('fan-login').hidden=false;
  get('fan-members').replaceChildren();get('fan-requests').replaceChildren();get('fan-invite-url').value='';get('fan-visit').reset();say('Sesión cerrada.','fan-admin-status');
 };
@@ -237,7 +291,7 @@ submit('fan-visit',async fields=>{
 },'fan-admin-status');
 
 const profile = document.createElement('section');
-profile.innerHTML = '<h3>Mi perfil de socia</h3><p>Sube una foto reciente de tu rostro en la que se te vea bien. El salón la usa para reconocer a la titular cuando llega a una cita y evitar que alguien use su tarjeta haciéndose pasar por ella. Tu foto queda en tu tarjeta y la puede consultar el personal autorizado. Tú decides si la adjuntas a tu mensaje de WhatsApp.</p><img alt="Foto de perfil de la socia" width="88" height="88" hidden><form><label>Tu foto de perfil<input type="file" accept="image/*" required></label><button>Guardar mi perfil</button></form><p role="status"></p>';
+profile.innerHTML = '<h3>Mi perfil de socia</h3><p>Sube una foto reciente de tu rostro en la que se te vea bien. El salón la usa para reconocer a la titular cuando llega a una cita y evitar que alguien use su tarjeta haciéndose pasar por ella. Tu foto queda en tu tarjeta y la puede consultar el personal autorizado. Tú decides si la adjuntas a tu mensaje de WhatsApp.</p><img alt="Foto de perfil de la socia" width="88" height="88" hidden><form><label>Nombre<input name="given" required maxlength="80" autocomplete="given-name"></label><label>Apellidos<input name="family" required maxlength="80" autocomplete="family-name"></label><label>Foto de perfil<input name="photo" type="file" accept="image/*" required></label><button>Guardar mi perfil</button></form><p role="status"></p>';
 get('fan-name').after(profile);
 const photoForm = profile.querySelector('form');
 const photoStatus = profile.querySelector('[role=status]');
@@ -329,7 +383,7 @@ menu.append(welcome,loyalty,menuGrid,exclusive,get('fan-signout'));
 member.append(back,menu);
 const recovery = get('fan-private').closest('details');
 const bookingHint = document.createElement('p');
-bookingHint.textContent = 'Para reservar, completa tu foto en Mi perfil. Si ya tienes foto, espera a que se cargue.';
+bookingHint.textContent = 'Para reservar, completa tu nombre, apellidos y foto en Mi perfil.';
 const cardBenefits = document.createElement('p');
 function clubText(tag, value) {
  const element = document.createElement(tag);
@@ -442,7 +496,12 @@ share.type = 'button';
 share.textContent = 'Enviar';
 const help = document.createElement('p');
 help.textContent = 'Elige WhatsApp y selecciona el chat del salón (+53 5065 5825).';
-postal.append(preview,share,help);
+const postalReference=document.createElement('p');
+const copyReference=clubButton('Copiar referencia',async()=>{
+ try{await navigator.clipboard.writeText(postalReference.textContent.slice('Referencia del carnet: '.length));say('Referencia copiada. Pégala junto al carnet en WhatsApp.');}
+ catch{say('Selecciona la referencia y cópiala para pegarla en WhatsApp.');}
+});
+postal.append(preview,postalReference,share,copyReference,help);
 get('fan-wa').after(postal);
 let postalFile;
 let postalUrl;
@@ -452,7 +511,7 @@ function clearPostal(){
 }
 share.onclick=async()=>{
  if(!postalFile)return;
- const data={files:[postalFile]};
+ const data={files:[postalFile],text:postalReference.textContent};
  if(!navigator.canShare?.(data)){
   say('Abre EDDELI desde un teléfono que permita compartir imágenes con WhatsApp.');
   return;
@@ -506,12 +565,14 @@ async function makePostal(socia,service,preference,reward,price,photo){
 }
 let profileReady = false;
 let profileRevision = 0;
-function displayPhoto(photo) {
- profileReady = Boolean(photo);
+function displayPhoto(photo,complete=false) {
+ profileReady = Boolean(photo && complete);
  avatar.hidden = !photo;
- photoForm.hidden = Boolean(photo);
- appointment.hidden = !photo;
- bookingHint.hidden = Boolean(photo);
+ photoForm.hidden = profileReady;
+ photoForm.elements.photo.required = !photo;
+ photoForm.elements.photo.closest('label').hidden = Boolean(photo);
+ appointment.hidden = !profileReady;
+ bookingHint.hidden = profileReady;
  if (photo) avatar.src = photo;
  else avatar.removeAttribute('src');
 }
@@ -521,40 +582,44 @@ async function loadPhoto(value) {
  photoForm.hidden = true;
  photoStatus.textContent = 'Cargando tu perfil…';
  try {
-  const photo = await rpc('member_profile',{p_token:value});
+  const identity = await rpc('identity_status',{p_token:value});
   if (revision !== profileRevision || token !== value) return;
-  displayPhoto(photo);
-  photoStatus.textContent = photo ? '' : 'Completa tu perfil para pedir citas desde tu tarjeta.';
+  displayPhoto(identity?.photo,identity?.complete);
+  photoStatus.textContent = identity?.complete ? '' : 'Completa tu perfil para pedir citas desde tu tarjeta.';
  } catch {
   if (revision === profileRevision && token === value) photoStatus.textContent = 'No pudimos cargar tu perfil. Pulsa Actualizar sellos para volver a intentar.';
  }
 }
-photoForm.addEventListener('submit',async event => {
+async function prepareProfilePhoto(file){
+ if(!file||file.size>20*1024*1024)throw Error('Elige una foto de hasta 20 MB.');
+ const source=URL.createObjectURL(file);
+ const image=new Image();
+ try{image.src=source;await image.decode();}
+ catch{throw Error('Elige una foto que se pueda abrir.');}
+ finally{URL.revokeObjectURL(source);}
+ const canvas=document.createElement('canvas');
+ const side=Math.min(image.naturalWidth,image.naturalHeight);
+ canvas.width=canvas.height=320;
+ canvas.getContext('2d').drawImage(image,(image.naturalWidth-side)/2,(image.naturalHeight-side)/2,side,side,0,0,320,320);
+ return canvas.toDataURL('image/jpeg',.76);
+}
+photoForm.addEventListener('submit',async event=>{
  event.preventDefault();
- const file = photoForm.querySelector('input').files[0];
- const button = photoForm.querySelector('button');
- const value = token;
- if (!file || !value || button.disabled) return;
- button.disabled = true;
- photoStatus.textContent = 'Guardando tu foto…';
- try {
-  if (file.size > 20 * 1024 * 1024) throw Error('Elige una foto de menos de 20 MB.');
-  const source = URL.createObjectURL(file);
-  const image = new Image();
-  try { image.src = source; await image.decode(); }
-  finally { URL.revokeObjectURL(source); }
-  const canvas = document.createElement('canvas');
-  const side = Math.min(image.naturalWidth,image.naturalHeight);
-  canvas.width = canvas.height = 320;
-  canvas.getContext('2d').drawImage(image,(image.naturalWidth-side)/2,(image.naturalHeight-side)/2,side,side,0,0,320,320);
-  if (token !== value) return;
-  const photo = await rpc('member_profile',{p_token:value,p_photo:canvas.toDataURL('image/jpeg',.76)});
-  if (token !== value) return;
-  displayPhoto(photo);
-  photoStatus.textContent = 'Perfil guardado.';
+ const {given,family,photo}=photoForm.elements;
+ const button=photoForm.querySelector('button');
+ const value=token;
+ if(!value||button.disabled)return;
+ button.disabled=true;
+ photoStatus.textContent='Guardando tu perfil…';
+ try{
+  const image=photo.files[0]?await prepareProfilePhoto(photo.files[0]):null;
+  if(token!==value)return;
+  const updated=await rpc('complete_identity',{p_token:value,p_given:given.value,p_family:family.value,p_photo:image});
+  if(token!==value)return;
   photoForm.reset();
- } catch(error) { if(token === value) photoStatus.textContent = error.message || 'Elige una foto que se pueda abrir.'; }
- finally { button.disabled = false; }
+  show(updated,value);
+ }catch(error){if(token===value)photoStatus.textContent=error.message;}
+ finally{button.disabled=false;}
 });
 function profileButton(id) {
  const button = document.createElement('button');
